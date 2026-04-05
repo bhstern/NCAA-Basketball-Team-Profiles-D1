@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Benj Stern | CBB Team Profiles</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0c10;
+  --surface: #111318;
+  --surface2: #181c24;
+  --border: #1e2330;
+  --border2: #2a3045;
+  --accent: #c8a84b;
+  --text: #e8ecf4;
+  --text2: #8892a8;
+  --text3: #555f75;
+  --green: #3dd68c;
+  --yellow: #f5c842;
+  --red: #f0614a;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.nav-brand { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); text-transform: uppercase; }
+.nav-tabs { display: flex; gap: 4px; }
+.nav-tab { padding: 6px 18px; font-family: var(--font-display); font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); border: none; background: transparent; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
+.nav-tab:hover { color: var(--text); background: var(--surface2); }
+.nav-tab.active { color: var(--accent); background: rgba(200,168,75,0.1); }
+#header-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.selector-group { display: flex; align-items: center; gap: 10px; }
+.selector-label { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+select { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: var(--font-body); font-size: 14px; padding: 7px 12px; border-radius: 4px; cursor: pointer; outline: none; transition: border-color 0.15s; min-width: 180px; }
+select:focus { border-color: var(--accent); }
+.team-header-info { display: flex; align-items: center; gap: 16px; margin-left: auto; flex-wrap: wrap; }
+.team-logo-header { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.team-name-header { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1; }
+.team-meta-header { display: flex; gap: 16px; align-items: center; }
+.meta-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+.conf-logo-small { width: 20px; height: 20px; object-fit: contain; opacity: 0.85; }
+.headline-stat { display: flex; flex-direction: column; align-items: center; padding: 0 20px; border-left: 1px solid var(--border); }
+.headline-val { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; }
+.headline-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-top: 2px; }
+.tab-content { display: none; padding: 28px 32px; }
+.tab-content.active { display: block; }
+.section-header { font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.stat-card-title { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+.stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.stat-row:last-child { margin-bottom: 0; }
+.stat-name { font-size: 12px; color: var(--text2); width: 160px; flex-shrink: 0; }
+.stat-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.stat-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.stat-pct-val { font-family: var(--font-mono); font-size: 11px; font-weight: 500; width: 36px; text-align: right; flex-shrink: 0; }
+.stat-rank-val { font-size: 10px; color: var(--text3); width: 50px; text-align: right; flex-shrink: 0; }
+.pct-elite { color: var(--green); } .pct-good { color: #7dd88a; } .pct-avg { color: var(--yellow); } .pct-below { color: #f09a4a; } .pct-poor { color: var(--red); }
+.bar-elite { background: var(--green); } .bar-good { background: #7dd88a; } .bar-avg { background: var(--yellow); } .bar-below { background: #f09a4a; } .bar-poor { background: var(--red); }
+.descriptor-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; }
+.badge-elite { background: rgba(61,214,140,0.15); color: var(--green); } .badge-good { background: rgba(125,216,138,0.15); color: #7dd88a; } .badge-avg { background: rgba(245,200,66,0.15); color: var(--yellow); } .badge-below { background: rgba(240,154,74,0.15); color: #f09a4a; } .badge-poor { background: rgba(240,97,74,0.15); color: var(--red); }
+.view-toggle { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 3px; width: fit-content; }
+.view-btn { padding: 5px 14px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: none; background: transparent; color: var(--text3); cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+.view-btn.active { background: var(--accent); color: #0a0c10; }
+.hist-controls { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.year-range-group { display: flex; align-items: center; gap: 10px; }
+.hist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.trend-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.trend-card-title { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+.trend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.trend-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.trend-stat-name { font-size: 12px; color: var(--text2); width: 150px; flex-shrink: 0; }
+.trend-years { display: flex; gap: 6px; flex: 1; align-items: center; }
+.trend-year-val { display: flex; flex-direction: column; align-items: center; min-width: 44px; }
+.trend-yr-label { font-size: 9px; color: var(--text3); font-family: var(--font-mono); margin-bottom: 3px; }
+.trend-yr-pct { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.trend-arrow { font-size: 14px; flex-shrink: 0; }
+.arrow-up { color: var(--green); } .arrow-down { color: var(--red); } .arrow-flat { color: var(--text3); }
+.conf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.conf-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.conf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.conf-table th { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
+.conf-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.conf-table tr:last-child td { border-bottom: none; }
+.conf-table tr.highlighted td { background: rgba(200,168,75,0.06); color: var(--text); font-weight: 500; }
+.sub-compare-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.compare-row { display: grid; grid-template-columns: 160px 1fr 60px 60px; gap: 8px; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.compare-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.compare-stat-name { font-size: 12px; color: var(--text2); }
+.compare-bars { display: flex; flex-direction: column; gap: 3px; }
+.compare-bar-row { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--text3); }
+.compare-bar-inner { height: 4px; border-radius: 2px; }
+.compare-val { font-family: var(--font-mono); font-size: 11px; text-align: right; }
+.about-wrap { max-width: 820px; margin: 0 auto; }
+.about-hero { display: flex; gap: 36px; align-items: flex-start; margin-bottom: 40px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+.about-avatar { width: 90px; height: 90px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 32px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
+.about-headline h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); line-height: 1; margin-bottom: 6px; }
+.about-headline .title { font-size: 14px; color: var(--accent); font-weight: 500; margin-bottom: 12px; }
+.about-headline .tagline { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 560px; }
+.about-section { margin-bottom: 36px; }
+.about-section h2 { font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.about-section p { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 12px; }
+.about-section p:last-child { margin-bottom: 0; }
+.career-timeline { display: flex; flex-direction: column; gap: 16px; }
+.career-item { display: flex; gap: 16px; align-items: flex-start; }
+.career-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex-shrink: 0; }
+.career-role { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.career-org { font-size: 13px; color: var(--accent); margin-bottom: 2px; }
+.career-dates { font-size: 12px; color: var(--text3); font-family: var(--font-mono); }
+.skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.skill-chip { background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; padding: 8px 12px; font-size: 12px; color: var(--text2); text-align: center; }
+.contact-links { display: flex; gap: 12px; flex-wrap: wrap; }
+.contact-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; font-size: 13px; color: var(--text2); text-decoration: none; transition: all 0.15s; }
+.contact-link:hover { border-color: var(--accent); color: var(--accent); }
+.empty-state { display: flex; align-items: center; justify-content: center; min-height: 200px; font-size: 13px; color: var(--text3); letter-spacing: 0.05em; }
+.loading-spinner { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 200px; font-family: var(--font-display); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">Benj Stern · CBB Team Profiles</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('profile', this)">Team Profile</button>
+    <button class="nav-tab" onclick="switchTab('historical', this)">Historical Trends</button>
+    <button class="nav-tab" onclick="switchTab('conference', this)">Conference Context</button>
+    <button class="nav-tab" onclick="switchTab('about', this)">About</button>
+  </div>
+</nav>
+<div id="header-bar">
+  <div class="selector-group">
+    <span class="selector-label">Team</span>
+    <select id="team-select" onchange="onTeamOrYearChange()"><option value="">— Select Team —</option></select>
+  </div>
+  <div class="selector-group">
+    <span class="selector-label">Season</span>
+    <select id="year-select" onchange="onTeamOrYearChange()"><option value="">— Select Season —</option></select>
+  </div>
+  <div class="team-header-info" id="team-header-info" style="display:none">
+    <img id="header-team-logo" class="team-logo-header" src="" alt="" onerror="this.style.display='none'"/>
+    <div>
+      <div class="team-name-header" id="header-team-name"></div>
+      <div class="team-meta-header">
+        <span class="meta-chip">
+          <img id="header-conf-logo" class="conf-logo-small" src="" alt="" onerror="this.style.display='none'"/>
+          <span id="header-conf-name"></span>
+        </span>
+        <span class="meta-chip" id="header-record"></span>
+      </div>
+    </div>
+    <div class="headline-stat">
+      <div class="headline-val" id="header-adjem"></div>
+      <div class="headline-lbl">Adj EM</div>
+    </div>
+    <div class="headline-stat">
+      <div class="headline-val" id="header-rank" style="font-size:18px;color:var(--text2)"></div>
+      <div class="headline-lbl">National Rank</div>
+    </div>
+  </div>
+</div>
+<div id="tab-profile" class="tab-content active">
+  <div id="profile-empty" class="empty-state">Select a team and season to view profile</div>
+  <div id="profile-loading" class="loading-spinner" style="display:none">Loading...</div>
+  <div id="profile-content" style="display:none">
+    <div class="view-toggle">
+      <button class="view-btn active" onclick="setView('d1', this)">All D1</button>
+      <button class="view-btn" onclick="setView('conf', this)">Conference Rank</button>
+      <button class="view-btn" onclick="setView('sub', this)">Power vs. Mid Major</button>
+    </div>
+    <div class="profile-grid" id="profile-grid"></div>
+  </div>
+</div>
+<div id="tab-historical" class="tab-content">
+  <div id="historical-empty" class="empty-state">Select a team and season above</div>
+  <div id="historical-loading" class="loading-spinner" style="display:none">Loading seasons...</div>
+  <div id="historical-content" style="display:none">
+    <div class="hist-controls">
+      <div class="year-range-group"><span class="selector-label">From</span><select id="hist-start" onchange="renderHistorical()"></select></div>
+      <div class="year-range-group"><span class="selector-label">To</span><select id="hist-end" onchange="renderHistorical()"></select></div>
+    </div>
+    <div class="hist-grid" id="hist-grid"></div>
+  </div>
+</div>
+<div id="tab-conference" class="tab-content">
+  <div id="conference-empty" class="empty-state">Select a team and season above</div>
+  <div id="conference-loading" class="loading-spinner" style="display:none">Loading conference data...</div>
+  <div id="conference-content" style="display:none">
+    <div class="conf-grid">
+      <div>
+        <div class="section-header">Conference Standings — <span id="conf-name-label"></span></div>
+        <div class="conf-table-wrap">
+          <table class="conf-table">
+            <thead><tr><th>Rank</th><th>Team</th><th>Adj EM</th><th>Off Eff</th><th>Def Eff</th></tr></thead>
+            <tbody id="conf-standings-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="section-header" id="subgroup-label">Power vs. Mid Major Context</div>
+        <div class="sub-compare-card"><div id="sub-compare-content"></div></div>
+      </div>
+    </div>
+    <div style="margin-top:24px">
+      <div class="section-header">How They Stack Up vs. Conference Leaders</div>
+      <div id="conf-leaders-content"></div>
+    </div>
+  </div>
+</div>
+<div id="tab-about" class="tab-content">
+  <div class="about-wrap">
+    <div class="about-hero">
+      <div class="about-avatar">BS</div>
+      <div class="about-headline">
+        <h1>Benj Stern</h1>
+        <div class="title">Corporate Strategy · Harris Blitzer Sports & Entertainment</div>
+        <div class="tagline">Strategy professional with a front office background and a genuine obsession with college basketball — building analytics tools to bridge the gap between the two.</div>
+      </div>
+    </div>
+    <div class="about-section">
+      <h2>Background</h2>
+      <p>I grew up loving college basketball and have spent the last several years watching as many games as I can — not just as a fan, but as someone trying to understand the game at a deeper level. Somewhere along the way, that obsession met my professional background in strategy and analytics, and this project was born.</p>
+      <p>By day I work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers and New Jersey Devils, where I have spent the last three years working on strategic initiatives across the sports and entertainment portfolio. Before that, I was a strategy consultant at Deloitte. The through line across all of it has been the same: take complex data, find the signal, and make it useful for decision-makers.</p>
+      <p>I am now actively pursuing opportunities in college basketball operations — Graduate Assistant roles, and positions in recruiting, scouting, NIL, and roster construction at D1 programs. This tool is both a reflection of that work and a demonstration of how I think about the game.</p>
+    </div>
+    <div class="about-section">
+      <h2>Career</h2>
+      <div class="career-timeline">
+        <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Corporate Strategy</div><div class="career-org">Harris Blitzer Sports & Entertainment (76ers / Devils)</div><div class="career-dates">2022 — Present · Philadelphia, PA</div></div></div>
+        <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Strategy Consultant</div><div class="career-org">Deloitte</div><div class="career-dates">2020 — 2022</div></div></div>
+        <div class="career-item"><div class="career-dot"></div><div><div class="career-role">B.S. Economics & Data Analytics — Highest Distinction</div><div class="career-org">Indiana University, Kelley School of Business</div><div class="career-dates">Class of 2020</div></div></div>
+      </div>
+    </div>
+    <div class="about-section">
+      <h2>About This Project</h2>
+      <p>This dashboard is built on 11 years of team-level college basketball data (2016-2026), combining Bart Torvik efficiency metrics with shot quality and profile data scraped, engineered, and assembled from scratch using Python. Every team, every season has roughly 50 variables with D1-wide percentiles, conference ranks, and power vs. mid-major context — all designed to be immediately useful to a coach or ops staff making decisions.</p>
+      <p>The goal was to build something that answers real basketball questions: How does this team score? Where are they vulnerable? Are they getting better or worse? How do they compare to the top teams in their conference? Clustering work is ongoing and will be integrated as a second phase.</p>
+    </div>
+    <div class="about-section">
+      <h2>Skills & Tools</h2>
+      <div class="skills-grid">
+        <div class="skill-chip">Python (pandas, sklearn)</div>
+        <div class="skill-chip">Web Scraping</div>
+        <div class="skill-chip">K-Means Clustering</div>
+        <div class="skill-chip">Data Visualization</div>
+        <div class="skill-chip">Strategic Analysis</div>
+        <div class="skill-chip">Front Office Operations</div>
+        <div class="skill-chip">Bart Torvik / KenPom</div>
+        <div class="skill-chip">Roster Construction</div>
+        <div class="skill-chip">NIL & Recruiting</div>
+      </div>
+    </div>
+    <div class="about-section">
+      <h2>Get In Touch</h2>
+      <div class="contact-links">
+        <a class="contact-link" href="https://www.linkedin.com/in/benjamin-stern-b73a27151/" target="_blank">LinkedIn</a>
+        <a class="contact-link" href="mailto:benjstern@gmail.com">Email</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const TEAM_LOGO_DIR = 'logos/teams/';
+const CONF_LOGO_DIR = 'logos/conferences/';
+let INDEX = {};
+let YEAR_CACHE = {};
+let currentTeam = null;
+let currentYear = null;
+let currentYearData = null;
+let currentRow = null;
+let currentView = 'd1';
+
+function isPowerConf(conf, year) {
+  const power = ['ACC','Big Ten','Big 12','SEC','Big East'];
+  if (year <= 2024) power.push('Pac-12');
+  return power.includes(conf);
+}
+
+const STAT_CATEGORIES = [
+  { title:'Overview', stats:[
+    {key:'adj_em',label:'Adj. Efficiency Margin',higherBetter:true},
+    {key:'barthag',label:'Barthag (Win Prob)',higherBetter:true},
+    {key:'elite_sos_rate',label:'Elite SOS Rate',higherBetter:true},
+    {key:'talent',label:'Talent',higherBetter:true},
+    {key:'exp.',label:'Experience',higherBetter:true}
+  ]},
+  { title:'Offense', stats:[
+    {key:'adj_oe',label:'Adj. Offensive Efficiency',higherBetter:true},
+    {key:'efg_rate_off',label:'eFG% (Off)',higherBetter:true},
+    {key:'tov_rate_off',label:'Turnover Rate (Off)',higherBetter:false},
+    {key:'orb_rate_off',label:'Off. Rebound Rate',higherBetter:true},
+    {key:'ft_rate_off',label:'FT Rate (Off)',higherBetter:true},
+    {key:'ppp_off_full',label:'Points Per Possession',higherBetter:true},
+    {key:'xPPP_off',label:'Expected PPP (Off)',higherBetter:true},
+    {key:'ppp_residual_off',label:'PPP Residual (Off)',higherBetter:true}
+  ]},
+  { title:'Defense', stats:[
+    {key:'adj_de',label:'Adj. Defensive Efficiency',higherBetter:false},
+    {key:'efg_rate_def',label:'eFG% Allowed',higherBetter:false},
+    {key:'tov_rate_def',label:'Turnover Rate Forced',higherBetter:true},
+    {key:'orb_rate_def',label:'Def. Rebound Rate',higherBetter:false},
+    {key:'ft_rate_def',label:'FT Rate Allowed',higherBetter:false},
+    {key:'ppp_def_full',label:'Points Per Possession Allowed',higherBetter:false},
+    {key:'xPPP_def',label:'Expected PPP (Def)',higherBetter:false},
+    {key:'ppp_residual_def',label:'PPP Residual (Def)',higherBetter:false}
+  ]},
+  { title:'Shot Profile — Offense', stats:[
+    {key:'off_dunks_rate_total',label:'Dunk Rate',higherBetter:true},
+    {key:'off_dunks_fg',label:'Dunk FG%',higherBetter:true},
+    {key:'off_close_twos_rate_total',label:'Close 2s Rate',higherBetter:true},
+    {key:'off_close_twos_fg',label:'Close 2s FG%',higherBetter:true},
+    {key:'off_long_twos_rate_total',label:'Long 2s Rate',higherBetter:false},
+    {key:'off_threes_rate_total',label:'3-Point Rate',higherBetter:true},
+    {key:'off_threes_fg',label:'3-Point FG%',higherBetter:true}
+  ]},
+  { title:'Shot Profile — Defense', stats:[
+    {key:'def_dunks_rate_total',label:'Dunk Rate Allowed',higherBetter:false},
+    {key:'def_close_twos_rate_total',label:'Close 2s Allowed',higherBetter:false},
+    {key:'def_close_twos_fg',label:'Close 2s FG% Allowed',higherBetter:false},
+    {key:'def_long_twos_rate_total',label:'Long 2s Allowed',higherBetter:true},
+    {key:'def_threes_rate_total',label:'3-Point Rate Allowed',higherBetter:false},
+    {key:'def_threes_fg',label:'3-Point FG% Allowed',higherBetter:false}
+  ]},
+  { title:'Style & Athleticism', stats:[
+    {key:'adj._t',label:'Adjusted Tempo',higherBetter:null},
+    {key:'raw_t',label:'Raw Tempo',higherBetter:null},
+    {key:'avg_hgt.',label:'Average Height',higherBetter:true},
+    {key:'eff._hgt.',label:'Effective Height',higherBetter:true},
+    {key:'blk_pct_off',label:'Block % (Blocked)',higherBetter:false},
+    {key:'blk_pct_def',label:'Block % (Blocks)',higherBetter:true},
+    {key:'ast_pct_off',label:'Assist Rate (Off)',higherBetter:true},
+    {key:'ast_pct_def',label:'Assist Rate Allowed',higherBetter:false}
+  ]}
+];
+
+const TREND_STATS = [
+  {key:'adj_em',label:'Adj. Efficiency Margin',higherBetter:true},
+  {key:'adj_oe',label:'Offensive Efficiency',higherBetter:true},
+  {key:'adj_de',label:'Defensive Efficiency',higherBetter:false},
+  {key:'barthag',label:'Barthag',higherBetter:true},
+  {key:'efg_rate_off',label:'eFG% Off',higherBetter:true},
+  {key:'efg_rate_def',label:'eFG% Def',higherBetter:false},
+  {key:'tov_rate_off',label:'Turnover Rate Off',higherBetter:false},
+  {key:'orb_rate_off',label:'Off. Rebound Rate',higherBetter:true},
+  {key:'off_threes_rate_total',label:'3-Point Rate',higherBetter:true},
+  {key:'off_threes_fg',label:'3-Point FG%',higherBetter:true},
+  {key:'talent',label:'Talent',higherBetter:true},
+  {key:'adj._t',label:'Tempo',higherBetter:null}
+];
+
+async function loadIndex() {
+  try {
+    const resp = await fetch('data/index.json');
+    INDEX = await resp.json();
+    initSelectors();
+  } catch(e) {
+    document.getElementById('profile-empty').textContent = 'Error loading data. Make sure you ran convert_data.py.';
+  }
+}
+
+async function loadYear(year) {
+  if (YEAR_CACHE[year]) return YEAR_CACHE[year];
+  const resp = await fetch(`data/cbb_${year}.json`);
+  const data = await resp.json();
+  YEAR_CACHE[year] = data;
+  return data;
+}
+
+function initSelectors() {
+  const years = Object.keys(INDEX).map(Number).sort((a,b) => b-a);
+  const allTeams = [...new Set(Object.values(INDEX).flat())].sort();
+  const tSel = document.getElementById('team-select');
+  allTeams.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; tSel.appendChild(o); });
+  const ySel = document.getElementById('year-select');
+  years.forEach(y => { const o = document.createElement('option'); o.value=y; o.textContent=y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`; ySel.appendChild(o); });
+  tSel.value='Villanova'; ySel.value='2026';
+  onTeamOrYearChange();
+}
+
+async function onTeamOrYearChange() {
+  const team = document.getElementById('team-select').value;
+  const year = parseInt(document.getElementById('year-select').value);
+  if (!team || !year) return;
+  currentTeam=team; currentYear=year;
+  showLoadingAll();
+  try {
+    const yearData = await loadYear(year);
+    currentYearData = yearData;
+    const row = yearData.find(d => d.team_name===team);
+    if (!row) { showEmptyAll(`No data for ${team} in ${year}`); return; }
+    currentRow=row;
+    updateHeader(row); renderProfile(row); initHistoricalSelectors(team,year); renderConference(row,yearData);
+  } catch(e) { showEmptyAll('Error loading data.'); }
+}
+
+function showLoadingAll() {
+  ['profile','historical','conference'].forEach(t => {
+    document.getElementById(`${t}-empty`).style.display='none';
+    document.getElementById(`${t}-loading`).style.display='flex';
+    document.getElementById(`${t}-content`).style.display='none';
+  });
+}
+
+function showEmptyAll(msg) {
+  ['profile','historical','conference'].forEach(t => {
+    document.getElementById(`${t}-loading`).style.display='none';
+    const el=document.getElementById(`${t}-empty`); el.textContent=msg; el.style.display='flex';
+  });
+}
+
+function safeFileName(name) { return name.replace(/ /g,'_').replace(/\./g,'').replace(/'/g,'').replace(/&/g,'').replace(/\//g,'_'); }
+
+function updateHeader(row) {
+  document.getElementById('team-header-info').style.display='flex';
+  document.getElementById('header-team-logo').src=`${TEAM_LOGO_DIR}${safeFileName(row.team_name)}.png`;
+  document.getElementById('header-team-name').textContent=row.team_name;
+  document.getElementById('header-conf-logo').src=`${CONF_LOGO_DIR}${row.conference.replace(/ /g,'_').replace(/-/g,'_').replace(/\//g,'_')}.png`;
+  document.getElementById('header-conf-name').textContent=row.conference;
+  document.getElementById('header-record').textContent=row.full_season_record;
+  const em=parseFloat(row.adj_em);
+  document.getElementById('header-adjem').textContent=(em>0?'+':'') + em.toFixed(1);
+  document.getElementById('header-rank').textContent='#'+row.adj_em_rank;
+}
+
+function setView(v,btn) {
+  currentView=v;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  if(currentRow) renderProfile(currentRow);
+}
+
+function getPct(row,key,view) {
+  if(view==='conf') { const r=parseInt(row[key+'_conf_rank']); if(isNaN(r)) return null; return 1-(r-1)/currentYearData.filter(d=>d.conference===row.conference).length; }
+  if(view==='sub') { const v=parseFloat(row[key+'_sub_pct']); return isNaN(v)?null:v; }
+  const v=parseFloat(row[key+'_pct']); return isNaN(v)?null:v;
+}
+
+function pctClass(pct,hb) {
+  if(pct===null||pct===undefined) return {color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'N/A'};
+  const d=hb===false?1-pct:pct;
+  if(d>=0.85) return {color:'pct-elite',bar:'bar-elite',badge:'badge-elite',label:'Elite'};
+  if(d>=0.65) return {color:'pct-good',bar:'bar-good',badge:'badge-good',label:'Above Avg'};
+  if(d>=0.40) return {color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
+  if(d>=0.20) return {color:'pct-below',bar:'bar-below',badge:'badge-below',label:'Below Avg'};
+  return {color:'pct-poor',bar:'bar-poor',badge:'badge-poor',label:'Poor'};
+}
+
+function renderProfile(row) {
+  document.getElementById('profile-loading').style.display='none';
+  document.getElementById('profile-empty').style.display='none';
+  document.getElementById('profile-content').style.display='block';
+  const grid=document.getElementById('profile-grid'); grid.innerHTML='';
+  STAT_CATEGORIES.forEach(cat => {
+    const card=document.createElement('div'); card.className='stat-card';
+    card.innerHTML=`<div class="stat-card-title">${cat.title}</div>`;
+    cat.stats.forEach(stat => {
+      const pct=getPct(row,stat.key,currentView); const cls=pctClass(pct,stat.higherBetter);
+      const dp=pct!==null?Math.round(pct*100):null; const bw=pct!==null?Math.round(pct*100):0;
+      const rd=currentView==='conf'?`Conf: #${row[stat.key+'_conf_rank']||'—'}`:`#${row[stat.key+'_rank']||'—'}`;
+      card.innerHTML+=`<div class="stat-row"><div class="stat-name">${stat.label}</div><div class="stat-bar-wrap"><div class="stat-bar ${cls.bar}" style="width:${bw}%"></div></div><div class="stat-pct-val ${cls.color}">${dp!==null?dp+'%':'—'}</div><div class="stat-rank-val">${rd}</div><div class="descriptor-badge ${cls.badge}">${cls.label}</div></div>`;
+    });
+    grid.appendChild(card);
+  });
+}
+
+function initHistoricalSelectors(team,currentYr) {
+  const teamYears=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(team)).sort((a,b)=>a-b);
+  const ss=document.getElementById('hist-start'); const se=document.getElementById('hist-end');
+  ss.innerHTML=''; se.innerHTML='';
+  teamYears.forEach(y => { const l=y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`; ss.innerHTML+=`<option value="${y}">${l}</option>`; se.innerHTML+=`<option value="${y}">${l}</option>`; });
+  se.value=currentYr; ss.value=teamYears.includes(currentYr-1)?currentYr-1:teamYears[0];
+  renderHistorical();
+}
+
+async function renderHistorical() {
+  if(!currentTeam) return;
+  const s=parseInt(document.getElementById('hist-start').value); const e=parseInt(document.getElementById('hist-end').value);
+  if(s>=e) { document.getElementById('historical-loading').style.display='none'; document.getElementById('historical-empty').style.display='flex'; document.getElementById('historical-empty').textContent='Start year must be before end year.'; document.getElementById('historical-content').style.display='none'; return; }
+  document.getElementById('historical-loading').style.display='flex'; document.getElementById('historical-empty').style.display='none'; document.getElementById('historical-content').style.display='none';
+  const yn=[]; for(let y=s;y<=e;y++) { if(INDEX[String(y)]&&INDEX[String(y)].includes(currentTeam)) yn.push(y); }
+  if(yn.length<2) { document.getElementById('historical-loading').style.display='none'; document.getElementById('historical-empty').style.display='flex'; document.getElementById('historical-empty').textContent='Not enough seasons in range.'; return; }
+  await Promise.all(yn.map(y=>loadYear(y)));
+  const td=yn.map(y=>YEAR_CACHE[y].find(d=>d.team_name===currentTeam)).filter(Boolean);
+  document.getElementById('historical-loading').style.display='none'; document.getElementById('historical-content').style.display='block';
+  const yrs=td.map(d=>d.year_stats); const grid=document.getElementById('hist-grid'); grid.innerHTML='';
+  const half=Math.ceil(TREND_STATS.length/2);
+  [TREND_STATS.slice(0,half),TREND_STATS.slice(half)].forEach(group => {
+    const card=document.createElement('div'); card.className='trend-card';
+    card.innerHTML=`<div class="trend-card-title">Season by Season — D1 Percentiles</div>`;
+    group.forEach(stat => {
+      const vals=td.map(d=>{const p=parseFloat(d[stat.key+'_pct']);return isNaN(p)?null:p;});
+      const f=vals[0]; const l=vals[vals.length-1]; let ah='';
+      if(f!==null&&l!==null){const diff=l-f;const imp=stat.higherBetter===false?diff<-0.03:diff>0.03;const dec=stat.higherBetter===false?diff>0.03:diff<-0.03;if(imp)ah='<span class="trend-arrow arrow-up">↑</span>';else if(dec)ah='<span class="trend-arrow arrow-down">↓</span>';else ah='<span class="trend-arrow arrow-flat">→</span>';}
+      let yh=''; yrs.forEach((yr,i)=>{const p=vals[i];const c=pctClass(p,stat.higherBetter);const lb=yr===2026?'25-26':`${String(yr-1).slice(2)}-${String(yr).slice(2)}`;yh+=`<div class="trend-year-val"><div class="trend-yr-label">${lb}</div><div class="trend-yr-pct ${c.color}">${p!==null?Math.round(p*100)+'%':'—'}</div></div>`;});
+      card.innerHTML+=`<div class="trend-row"><div class="trend-stat-name">${stat.label}</div><div class="trend-years">${yh}</div>${ah}</div>`;
+    });
+    grid.appendChild(card);
+  });
+}
+
+function renderConference(row,yearData) {
+  document.getElementById('conference-loading').style.display='none'; document.getElementById('conference-empty').style.display='none'; document.getElementById('conference-content').style.display='block';
+  const conf=row.conference; const year=row.year_stats;
+  document.getElementById('conf-name-label').textContent=`${conf} — ${year===2026?'2025-26':`${year-1}-${String(year).slice(2)}`}`;
+  const ct=yearData.filter(d=>d.conference===conf).sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
+  const tbody=document.getElementById('conf-standings-body'); tbody.innerHTML='';
+  ct.forEach((t,i)=>{const em=parseFloat(t.adj_em);const sel=t.team_name===row.team_name;const sn=safeFileName(t.team_name);tbody.innerHTML+=`<tr class="${sel?'highlighted':''}"><td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${i+1}</td><td><div style="display:flex;align-items:center;gap:8px"><img src="${TEAM_LOGO_DIR}${sn}.png" style="width:18px;height:18px;object-fit:contain" onerror="this.style.display='none'"/><span style="color:${sel?'var(--accent)':'var(--text2)'}">${t.team_name}</span><span style="font-size:10px;color:var(--text3)">${t.full_season_record}</span></div></td><td style="font-family:var(--font-mono);font-size:11px;color:${em>0?'var(--green)':'var(--red)'}">${em>0?'+':''}${em.toFixed(1)}</td><td style="font-family:var(--font-mono);font-size:11px">${parseFloat(t.adj_oe).toFixed(1)}</td><td style="font-family:var(--font-mono);font-size:11px">${parseFloat(t.adj_de).toFixed(1)}</td></tr>`;});
+  const ip=isPowerConf(conf,year); document.getElementById('subgroup-label').textContent=ip?'Power Conference Context':'Mid-Major Context';
+  const sub=yearData.filter(d=>isPowerConf(d.conference,year)===ip);
+  const cs=[{key:'adj_em',label:'Adj EM',higherBetter:true},{key:'adj_oe',label:'Off Efficiency',higherBetter:true},{key:'adj_de',label:'Def Efficiency',higherBetter:false},{key:'efg_rate_off',label:'eFG% Off',higherBetter:true},{key:'efg_rate_def',label:'eFG% Def',higherBetter:false},{key:'off_threes_rate_total',label:'3-Point Rate',higherBetter:true},{key:'talent',label:'Talent',higherBetter:true}];
+  const top=ct.slice(0,Math.min(3,ct.length)); let ch='';
+  cs.forEach(stat=>{const mv=parseFloat(row[stat.key]);const tv=top.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));const ta=tv.length?tv.reduce((a,b)=>a+b,0)/tv.length:null;const sv=sub.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v)).sort((a,b)=>a-b);const sm=sv.length?sv[Math.floor(sv.length/2)]:null;if(isNaN(mv)||ta===null||sm===null)return;const av=[mv,ta,sm];const mn=Math.min(...av);const mx=Math.max(...av);const rn=mx-mn||1;const mw=((mv-mn)/rn*100).toFixed(0);const tw=((ta-mn)/rn*100).toFixed(0);const sw=((sm-mn)/rn*100).toFixed(0);const mc=stat.higherBetter?(mv>=ta?'var(--green)':mv>=sm?'var(--yellow)':'var(--red)'):(mv<=ta?'var(--green)':mv<=sm?'var(--yellow)':'var(--red)');ch+=`<div class="compare-row"><div class="compare-stat-name">${stat.label}</div><div class="compare-bars"><div class="compare-bar-row"><span style="width:60px;text-align:right">${row.team_name.split(' ').pop()}</span><div class="compare-bar-inner" style="width:${mw}%;background:${mc}"></div></div><div class="compare-bar-row"><span style="width:60px;text-align:right;font-size:8px">Conf Top</span><div class="compare-bar-inner" style="width:${tw}%;background:var(--accent)"></div></div><div class="compare-bar-row"><span style="width:60px;text-align:right;font-size:8px">Sub Med</span><div class="compare-bar-inner" style="width:${sw}%;background:var(--border2)"></div></div></div><div class="compare-val" style="color:${mc}">${mv.toFixed(mv>10?1:3)}</div><div class="compare-val" style="color:var(--accent)">${ta.toFixed(ta>10?1:3)}</div></div>`;});
+  document.getElementById('sub-compare-content').innerHTML=ch||'<div class="empty-state">No data</div>';
+  const ldr=ct[0];
+  if(!ldr||ldr.team_name===row.team_name){document.getElementById('conf-leaders-content').innerHTML='<div class="empty-state" style="height:80px">This team leads the conference.</div>';return;}
+  const ls=[{key:'adj_em',label:'Adj EM',higherBetter:true},{key:'adj_oe',label:'Off Eff',higherBetter:true},{key:'adj_de',label:'Def Eff',higherBetter:false},{key:'efg_rate_off',label:'eFG% Off',higherBetter:true},{key:'efg_rate_def',label:'eFG% Def',higherBetter:false},{key:'tov_rate_off',label:'TOV Rate',higherBetter:false},{key:'orb_rate_off',label:'ORB Rate',higherBetter:true},{key:'off_threes_fg',label:'3P FG%',higherBetter:true},{key:'talent',label:'Talent',higherBetter:true},{key:'adj._t',label:'Tempo',higherBetter:null}];
+  let html=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px 18px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><img src="${TEAM_LOGO_DIR}${safeFileName(ldr.team_name)}.png" style="width:28px;height:28px;object-fit:contain" onerror="this.style.display='none'"/><span style="font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">${row.team_name} vs. Conf Leader: ${ldr.team_name}</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">`;
+  ls.forEach(stat=>{const mv=parseFloat(row[stat.key]);const lv=parseFloat(ldr[stat.key]);if(isNaN(mv)||isNaN(lv))return;let adv=null;if(stat.higherBetter===true)adv=mv>lv+0.001?'me':lv>mv+0.001?'leader':'tie';else if(stat.higherBetter===false)adv=mv<lv-0.001?'me':lv<mv-0.001?'leader':'tie';const mc=adv==='me'?'var(--green)':adv==='leader'?'var(--red)':'var(--text2)';const lc=adv==='leader'?'var(--green)':adv==='me'?'var(--red)':'var(--text2)';html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:10px 12px"><div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">${stat.label}</div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:9px;color:var(--text3);margin-bottom:2px">${row.team_name.split(' ').slice(-1)}</div><div style="font-family:var(--font-mono);font-size:13px;color:${mc};font-weight:500">${mv.toFixed(mv>10?1:3)}</div></div><div style="font-size:14px;color:var(--border2)">·</div><div style="text-align:right"><div style="font-size:9px;color:var(--text3);margin-bottom:2px">${ldr.team_name.split(' ').slice(-1)}</div><div style="font-family:var(--font-mono);font-size:13px;color:${lc};font-weight:500">${lv.toFixed(lv>10?1:3)}</div></div></div></div>`;});
+  html+='</div></div>'; document.getElementById('conf-leaders-content').innerHTML=html;
+}
+
+function switchTab(tab,btn) {
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+loadIndex();
+</script>
+</body>
+</html>
