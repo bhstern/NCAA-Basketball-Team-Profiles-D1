@@ -7,230 +7,211 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #0f1923;
-  --surface: #151f2e;
-  --surface2: #1a2640;
-  --surface3: #1e2d42;
-  --border: #1e2d42;
-  --border2: #253550;
-  --accent: #4a9eff;
-  --accent2: #7ab8ff;
-  --text: #ffffff;
-  --text2: #e2e8f0;
-  --text3: #94a3b8;
-  --text4: #4a5568;
-  --green: #3dd68c;
-  --yellow: #f5c842;
-  --red: #f0614a;
-  --orange: #f09a4a;
-  --font-display: 'Barlow Condensed', sans-serif;
-  --font-body: 'Barlow', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --bg:#0f1923; --surface:#151f2e; --surface2:#1a2640; --surface3:#1e2d42;
+  --border:#1e2d42; --border2:#253550;
+  --accent:#4a9eff; --text:#ffffff; --text2:#e2e8f0; --text3:#94a3b8; --text4:#4a5568;
+  --green:#3dd68c; --yellow:#f5c842; --red:#f0614a; --orange:#f09a4a;
+  --font-display:'Barlow Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'IBM Plex Mono',monospace;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text2); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
-
-/* NAV */
-nav { display:flex; align-items:center; justify-content:space-between; padding:0 28px; height:52px; background:var(--bg); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:200; }
-.nav-brand { font-family:var(--font-display); font-size:17px; font-weight:700; letter-spacing:0.08em; color:var(--accent); text-transform:uppercase; }
-.nav-tabs { display:flex; gap:2px; }
-.nav-tab { padding:5px 16px; font-family:var(--font-display); font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text3); border:none; background:transparent; cursor:pointer; border-radius:4px; transition:all 0.15s; }
-.nav-tab:hover { color:var(--text2); background:var(--surface2); }
-.nav-tab.active { color:var(--accent); background:rgba(74,158,255,0.1); }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text2);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+.nav-brand{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;}
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:5px 15px;font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border:none;background:transparent;cursor:pointer;border-radius:4px;transition:all 0.15s;}
+.nav-tab:hover{color:var(--text2);background:var(--surface2);}
+.nav-tab.active{color:var(--accent);background:rgba(74,158,255,0.1);}
 
 /* BANNER */
-#banner { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 28px; }
-.banner-top { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-.selector-group { display:flex; align-items:center; gap:8px; }
-.selector-label { font-family:var(--font-display); font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--text4); }
-select { background:var(--surface2); border:1px solid var(--border2); color:var(--text2); font-family:var(--font-body); font-size:13px; padding:6px 10px; border-radius:4px; cursor:pointer; outline:none; transition:border-color 0.15s; min-width:170px; }
-select:focus { border-color:var(--accent); }
-.banner-team { display:flex; align-items:center; gap:14px; margin-left:auto; flex-wrap:wrap; }
-.banner-logos { display:flex; align-items:center; gap:8px; }
-.team-logo-lg { width:42px; height:42px; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
-.conf-logo-sm { width:22px; height:22px; object-fit:contain; opacity:0.8; }
-.logo-divider { width:1px; height:28px; background:var(--border2); }
-.banner-name-block {}
-.banner-team-name { font-family:var(--font-display); font-size:20px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--text); line-height:1; }
-.banner-meta { display:flex; gap:12px; align-items:center; margin-top:3px; }
-.banner-meta-item { font-size:11px; color:var(--text3); }
-.banner-stats { display:flex; gap:0; }
-.banner-stat { display:flex; flex-direction:column; align-items:center; padding:0 16px; border-left:1px solid var(--border2); }
-.banner-stat-val { font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--accent); line-height:1; }
-.banner-stat-lbl { font-size:9px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text4); margin-top:2px; }
+#banner{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;}
+.banner-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.selector-group{display:flex;align-items:center;gap:8px;}
+.selector-label{font-family:var(--font-display);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);}
+select{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:var(--font-body);font-size:13px;padding:6px 10px;border-radius:4px;cursor:pointer;outline:none;min-width:170px;}
+select:focus{border-color:var(--accent);}
+.banner-team{display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap;}
+.banner-logos{display:flex;align-items:center;gap:8px;}
+.team-logo-lg{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));}
+.conf-logo-sm{width:22px;height:22px;object-fit:contain;opacity:0.8;}
+.logo-divider{width:1px;height:28px;background:var(--border2);}
+.banner-team-name{font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--text);line-height:1;}
+.banner-meta{display:flex;gap:12px;align-items:center;margin-top:3px;}
+.banner-meta-item{font-size:11px;color:var(--text3);}
+.banner-stats{display:flex;gap:0;}
+.banner-stat{display:flex;flex-direction:column;align-items:center;padding:0 16px;border-left:1px solid var(--border2);}
+.banner-stat-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--accent);line-height:1;}
+.banner-stat-lbl{font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text4);margin-top:2px;}
+.banner-summary{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.summary-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text4);margin-right:2px;}
+.strength-tag{font-size:10px;padding:2px 8px;border-radius:3px;background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.2);}
+.weakness-tag{font-size:10px;padding:2px 8px;border-radius:3px;background:rgba(240,97,74,0.12);color:var(--red);border:1px solid rgba(240,97,74,0.2);}
+.shot-profile-blurb{font-size:11px;color:var(--text3);font-style:italic;border-left:2px solid var(--border2);padding-left:10px;}
+.d1-label{font-size:9px;color:var(--text4);font-style:italic;margin-left:4px;}
 
-/* TEAM SUMMARY */
-.banner-summary { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; }
-.summary-strengths, .summary-weaknesses { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-.summary-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text4); margin-right:2px; }
-.strength-tag { font-size:10px; padding:2px 8px; border-radius:3px; background:rgba(61,214,140,0.12); color:var(--green); border:1px solid rgba(61,214,140,0.2); }
-.weakness-tag { font-size:10px; padding:2px 8px; border-radius:3px; background:rgba(240,97,74,0.12); color:var(--red); border:1px solid rgba(240,97,74,0.2); }
-.shot-profile-blurb { font-size:11px; color:var(--text3); font-style:italic; border-left:2px solid var(--border2); padding-left:10px; }
+/* PAGE DESC */
+.page-desc{padding:8px 28px;background:rgba(74,158,255,0.04);border-bottom:1px solid var(--border);font-size:12px;color:var(--text3);font-style:italic;}
 
-/* PAGE DESCRIPTION */
-.page-desc { padding:10px 28px; background:rgba(74,158,255,0.04); border-bottom:1px solid var(--border); font-size:12px; color:var(--text3); font-style:italic; }
-
-/* TAB CONTENT */
-.tab-content { display:none; padding:24px 28px; }
-.tab-content.active { display:block; }
-
-/* SECTION HEADER */
-.section-header { font-family:var(--font-display); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); padding-bottom:7px; border-bottom:1px solid var(--border); margin-bottom:14px; }
+/* TABS */
+.tab-content{display:none;padding:22px 28px;}
+.tab-content.active{display:block;}
+.section-header{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:14px;}
 
 /* VIEW TOGGLE */
-.view-toggle { display:flex; gap:3px; margin-bottom:18px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:3px; width:fit-content; }
-.view-btn { padding:4px 13px; font-family:var(--font-display); font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; border:none; background:transparent; color:var(--text4); cursor:pointer; border-radius:3px; transition:all 0.15s; }
-.view-btn.active { background:var(--accent); color:#0f1923; }
+.view-toggle{display:flex;gap:3px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:3px;width:fit-content;}
+.view-btn{padding:4px 13px;font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border:none;background:transparent;color:var(--text4);cursor:pointer;border-radius:3px;transition:all 0.15s;}
+.view-btn.active{background:var(--accent);color:#0f1923;}
 
 /* STAT CARDS */
-.profile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:14px 16px; }
-.stat-card-title { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text4); margin-bottom:12px; }
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
+.stat-card-title{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text4);margin-bottom:12px;}
+.stat-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;position:relative;}
+.stat-row:last-child{margin-bottom:0;}
+.stat-name{font-size:12px;color:var(--text2);width:152px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
+.stat-val{font-family:var(--font-mono);font-size:10px;color:var(--text3);width:56px;flex-shrink:0;text-align:right;}
+.stat-bar-wrap{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.stat-bar{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.stat-pct-val{font-family:var(--font-mono);font-size:10px;font-weight:500;width:30px;text-align:right;flex-shrink:0;}
+.stat-rank-val{font-size:9px;color:var(--text3);width:44px;text-align:right;flex-shrink:0;}
+.descriptor-badge{font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 5px;border-radius:2px;flex-shrink:0;width:62px;text-align:center;}
+.pct-elite{color:var(--green);} .pct-good{color:#7dd88a;} .pct-avg{color:var(--yellow);} .pct-below{color:var(--orange);} .pct-poor{color:var(--red);}
+.bar-elite{background:var(--green);} .bar-good{background:#7dd88a;} .bar-avg{background:var(--yellow);} .bar-below{background:var(--orange);} .bar-poor{background:var(--red);}
+.badge-elite{background:rgba(61,214,140,0.12);color:var(--green);} .badge-good{background:rgba(125,216,138,0.12);color:#7dd88a;} .badge-avg{background:rgba(245,200,66,0.12);color:var(--yellow);} .badge-below{background:rgba(240,154,74,0.12);color:var(--orange);} .badge-poor{background:rgba(240,97,74,0.12);color:var(--red);}
+.badge-fast{background:rgba(74,158,255,0.12);color:var(--accent);}
+.badge-slow{background:rgba(148,163,184,0.12);color:var(--text3);}
+.pct-fast{color:var(--accent);} .pct-slow{color:var(--text3);}
+.badge-hifreq{background:rgba(61,214,140,0.12);color:var(--green);}
+.badge-lofreq{background:rgba(240,97,74,0.12);color:var(--red);}
 
-/* STAT ROW */
-.stat-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; position:relative; }
-.stat-row:last-child { margin-bottom:0; }
-.stat-name { font-size:11px; color:var(--text2); width:148px; flex-shrink:0; display:flex; align-items:center; gap:4px; }
-.stat-val { font-family:var(--font-mono); font-size:10px; color:var(--text3); width:52px; flex-shrink:0; text-align:right; }
-.stat-bar-wrap { flex:1; height:5px; background:var(--surface3); border-radius:3px; overflow:hidden; }
-.stat-bar { height:100%; border-radius:3px; transition:width 0.5s ease; }
-.stat-pct-val { font-family:var(--font-mono); font-size:10px; font-weight:500; width:30px; text-align:right; flex-shrink:0; }
-.stat-rank-val { font-size:9px; color:var(--text3); width:44px; text-align:right; flex-shrink:0; }
-.descriptor-badge { font-size:8px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:1px 5px; border-radius:2px; flex-shrink:0; width:58px; text-align:center; }
+/* INFO ICON */
+.info-icon{width:13px;height:13px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--text4);font-size:8px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;font-style:normal;}
+.info-icon:hover .tooltip{display:block;}
+.tooltip{display:none;position:absolute;left:16px;top:-4px;width:210px;background:#1a2640;border:1px solid var(--border2);border-radius:4px;padding:6px 8px;font-size:10px;color:var(--text2);line-height:1.5;z-index:999;pointer-events:none;}
 
-.pct-elite { color:var(--green); } .pct-good { color:#7dd88a; } .pct-avg { color:var(--yellow); } .pct-below { color:var(--orange); } .pct-poor { color:var(--red); }
-.bar-elite { background:var(--green); } .bar-good { background:#7dd88a; } .bar-avg { background:var(--yellow); } .bar-below { background:var(--orange); } .bar-poor { background:var(--red); }
-.badge-elite { background:rgba(61,214,140,0.12); color:var(--green); } .badge-good { background:rgba(125,216,138,0.12); color:#7dd88a; } .badge-avg { background:rgba(245,200,66,0.12); color:var(--yellow); } .badge-below { background:rgba(240,154,74,0.12); color:var(--orange); } .badge-poor { background:rgba(240,97,74,0.12); color:var(--red); }
-
-/* INFO ICON TOOLTIP */
-.info-icon { width:12px; height:12px; border-radius:50%; background:var(--surface3); border:1px solid var(--border2); color:var(--text4); font-size:8px; display:inline-flex; align-items:center; justify-content:center; cursor:help; flex-shrink:0; position:relative; font-style:normal; font-family:var(--font-body); }
-.info-icon:hover .tooltip { display:block; }
-.tooltip { display:none; position:absolute; left:16px; top:-4px; width:200px; background:#1a2640; border:1px solid var(--border2); border-radius:4px; padding:6px 8px; font-size:10px; color:var(--text2); line-height:1.5; z-index:999; pointer-events:none; }
-
-/* SHOT PROFILE GRID */
-.shot-grid-wrap { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; margin-bottom:0; }
-.shot-grid-table { width:100%; border-collapse:collapse; }
-.shot-grid-table th { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text4); padding:8px 12px; text-align:center; border-bottom:1px solid var(--border); background:var(--surface2); }
-.shot-grid-table th.cat-col { text-align:left; width:130px; }
-.shot-grid-table td { padding:8px 12px; border-bottom:1px solid var(--border); font-size:11px; vertical-align:middle; }
-.shot-grid-table tr:last-child td { border-bottom:none; }
-.shot-grid-table td.cat-name { font-size:11px; color:var(--text2); font-weight:500; }
-.shot-metric-cell { text-align:center; }
-.shot-val { font-family:var(--font-mono); font-size:11px; color:var(--text3); display:block; margin-bottom:2px; }
-.shot-pct-bar-wrap { height:3px; background:var(--surface3); border-radius:2px; width:60px; margin:0 auto 2px; }
-.shot-pct-bar { height:100%; border-radius:2px; }
-.shot-pct-label { font-family:var(--font-mono); font-size:9px; display:block; }
-.shot-rank { font-size:8px; color:var(--text4); display:block; }
-.shot-badge { font-size:7px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:1px 4px; border-radius:2px; display:inline-block; margin-top:1px; }
+/* SHOT PROFILE */
+.shot-profile-wrap{grid-column:1/-1;}
+.shot-grid{display:grid;grid-template-columns:140px repeat(4,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.shot-header-row{display:contents;}
+.shot-header-cell{background:var(--surface2);padding:8px 10px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
+.shot-header-cell.cat-h{text-align:left;border-right:1px solid var(--border);}
+.shot-subheader{display:contents;}
+.shot-subheader-cell{background:var(--surface2);padding:5px 10px;font-size:9px;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
+.shot-subheader-cell.cat-sh{border-right:1px solid var(--border);}
+.shot-row{display:contents;}
+.shot-cat-cell{padding:10px 12px;font-size:12px;color:var(--text2);font-weight:500;border-bottom:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;}
+.shot-row:last-child .shot-cat-cell,.shot-row:last-child .shot-metric-cell{border-bottom:none;}
+.shot-metric-cell{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.shot-val{font-family:var(--font-mono);font-size:11px;color:var(--text2);display:block;margin-bottom:3px;}
+.shot-bar-wrap{height:3px;background:var(--surface3);border-radius:2px;width:70px;margin:0 auto 2px;}
+.shot-bar{height:100%;border-radius:2px;}
+.shot-pct{font-family:var(--font-mono);font-size:10px;display:block;margin-bottom:1px;}
+.shot-rank{font-size:8px;color:var(--text4);display:block;margin-bottom:2px;}
+.shot-badge{font-size:7px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;display:inline-block;}
 
 /* HISTORICAL */
-.hist-controls { display:flex; align-items:center; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
-.year-range-group { display:flex; align-items:center; gap:8px; }
-.hist-category-filter { display:flex; gap:3px; flex-wrap:wrap; }
-.hist-cat-btn { padding:3px 10px; font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; border:1px solid var(--border2); background:transparent; color:var(--text4); cursor:pointer; border-radius:3px; transition:all 0.15s; }
-.hist-cat-btn.active { background:var(--surface2); color:var(--text2); border-color:var(--accent); }
-.hist-comparison-filter { display:flex; gap:3px; }
-.hist-comp-btn { padding:3px 10px; font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; border:1px solid var(--border2); background:transparent; color:var(--text4); cursor:pointer; border-radius:3px; transition:all 0.15s; }
-.hist-comp-btn.active { background:rgba(74,158,255,0.15); color:var(--accent); border-color:var(--accent); }
+.hist-controls{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.hist-filter-group{display:flex;flex-direction:column;gap:4px;}
+.hist-btn-row{display:flex;gap:3px;flex-wrap:wrap;}
+.hist-cat-btn{padding:3px 10px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--text4);cursor:pointer;border-radius:3px;transition:all 0.15s;}
+.hist-cat-btn.active{background:var(--surface2);color:var(--text2);border-color:var(--accent);}
+.hist-comp-btn{padding:3px 10px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--text4);cursor:pointer;border-radius:3px;transition:all 0.15s;}
+.hist-comp-btn.active{background:rgba(74,158,255,0.15);color:var(--accent);border-color:var(--accent);}
 
-.hist-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-.hist-table { width:100%; border-collapse:collapse; font-size:11px; }
-.hist-table th { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text4); padding:8px 12px; text-align:center; border-bottom:1px solid var(--border); background:var(--surface2); }
-.hist-table th.stat-col { text-align:left; width:160px; }
-.hist-table td { padding:7px 12px; border-bottom:1px solid var(--border); text-align:center; vertical-align:middle; }
-.hist-table tr:last-child td { border-bottom:none; }
-.hist-table td.stat-col { text-align:left; font-size:11px; color:var(--text2); display:flex; align-items:center; gap:4px; }
-.hist-cell { display:flex; flex-direction:column; align-items:center; gap:1px; }
-.hist-val { font-family:var(--font-mono); font-size:10px; color:var(--text3); }
-.hist-pct { font-family:var(--font-mono); font-size:10px; font-weight:500; }
-.hist-rank { font-size:8px; color:var(--text4); }
-.hist-arrow { font-size:12px; }
-.arrow-up { color:var(--green); } .arrow-down { color:var(--red); } .arrow-flat { color:var(--text4); }
+.hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;overflow-x:auto;}
+.hist-table{width:100%;border-collapse:collapse;font-size:12px;}
+.hist-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);padding:9px 14px;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;}
+.hist-table th.stat-col{text-align:left;min-width:160px;}
+.hist-table td{padding:8px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.hist-table tr:last-child td{border-bottom:none;}
+.hist-table td.stat-col{text-align:left;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);}
+.hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:6px 14px;}
+.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.hist-val{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
+.hist-pct{font-family:var(--font-mono);font-size:11px;font-weight:500;}
+.hist-rank{font-size:9px;color:var(--text4);}
+.hist-arrow{font-size:13px;}
+.arrow-up{color:var(--green);} .arrow-down{color:var(--red);} .arrow-flat{color:var(--text4);}
 
 /* CONFERENCE */
-.conf-layout { display:grid; grid-template-columns:320px 1fr; gap:16px; }
-.conf-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-.conf-table { width:100%; border-collapse:collapse; font-size:11px; }
-.conf-table th { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text4); padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); background:var(--surface2); }
-.conf-table td { padding:7px 10px; border-bottom:1px solid var(--border); color:var(--text2); cursor:pointer; transition:background 0.1s; }
-.conf-table tr:last-child td { border-bottom:none; }
-.conf-table tr:hover td { background:rgba(74,158,255,0.05); }
-.conf-table tr.highlighted td { background:rgba(74,158,255,0.08); }
-.conf-table tr.selected-compare td { background:rgba(245,200,66,0.06); }
+.conf-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;}
+.conf-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.conf-table{width:100%;border-collapse:collapse;font-size:12px;}
+.conf-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text4);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);}
+.conf-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);cursor:pointer;transition:background 0.1s;font-size:12px;}
+.conf-table tr:last-child td{border-bottom:none;}
+.conf-table tr:hover td{background:rgba(74,158,255,0.05);}
+.conf-table tr.highlighted td{background:rgba(74,158,255,0.08);}
+.conf-table tr.selected-compare td{background:rgba(245,200,66,0.06);}
 
-.conf-detail { display:flex; flex-direction:column; gap:14px; }
-.conf-detail-header { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-.top-n-control { display:flex; align-items:center; gap:6px; }
-.top-n-label { font-size:10px; color:var(--text4); font-family:var(--font-display); letter-spacing:0.1em; text-transform:uppercase; }
-.top-n-btns { display:flex; gap:2px; }
-.top-n-btn { padding:2px 8px; font-size:9px; font-family:var(--font-display); font-weight:700; border:1px solid var(--border2); background:transparent; color:var(--text4); cursor:pointer; border-radius:3px; transition:all 0.15s; }
-.top-n-btn.active { background:var(--surface2); color:var(--text2); border-color:var(--border2); }
+.conf-right{}
+.conf-right-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.top-n-btns{display:flex;gap:2px;}
+.top-n-btn{padding:3px 9px;font-size:10px;font-family:var(--font-display);font-weight:700;border:1px solid var(--border2);background:transparent;color:var(--text4);cursor:pointer;border-radius:3px;transition:all 0.15s;}
+.top-n-btn.active{background:var(--surface2);color:var(--text2);border-color:var(--border2);}
 
-.conf-stats-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-.conf-stats-table { width:100%; border-collapse:collapse; font-size:11px; }
-.conf-stats-table th { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text4); padding:7px 10px; text-align:center; border-bottom:1px solid var(--border); background:var(--surface2); white-space:nowrap; }
-.conf-stats-table th.stat-col { text-align:left; }
-.conf-stats-table td { padding:6px 10px; border-bottom:1px solid var(--border); text-align:center; }
-.conf-stats-table tr:last-child td { border-bottom:none; }
-.conf-stats-table td.stat-col { text-align:left; font-size:11px; color:var(--text2); }
-.conf-stats-table tr.my-team td { background:rgba(74,158,255,0.06); }
-.conf-stats-table tr.my-team td.stat-col { color:var(--accent); font-weight:500; }
+.conf-stats-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;overflow-x:auto;}
+.conf-stats-table{width:100%;border-collapse:collapse;font-size:12px;}
+.conf-stats-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;text-align:center;}
+.conf-stats-table th.stat-col{text-align:left;min-width:150px;color:var(--text4);}
+.conf-stats-table td{padding:7px 12px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.conf-stats-table tr:last-child td{border-bottom:none;}
+.conf-stats-table td.stat-col{text-align:left;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;}
+.conf-stats-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:5px 12px;}
+.conf-stats-table tr.my-row td{background:rgba(74,158,255,0.05);}
+.conf-stats-table tr.my-row td.stat-col{color:var(--accent);font-weight:500;}
+.conf-cell{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.conf-val{font-family:var(--font-mono);font-size:11px;}
+.conf-pct{font-family:var(--font-mono);font-size:10px;}
+.conf-rank{font-size:8px;color:var(--text4);}
 
-/* SUBGROUP */
-.subgroup-section { margin-top:16px; }
-.subgroup-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-
-/* HEAD TO HEAD */
-.h2h-selectors { display:flex; gap:20px; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap; }
-.h2h-team-picker { display:flex; flex-direction:column; gap:6px; }
-.h2h-team-label { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--text4); }
-.h2h-vs { font-family:var(--font-display); font-size:20px; font-weight:800; color:var(--text4); padding-bottom:8px; }
-.h2h-selects { display:flex; gap:6px; }
-
-.h2h-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-.h2h-table { width:100%; border-collapse:collapse; font-size:11px; }
-.h2h-table th { font-family:var(--font-display); font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:8px 12px; border-bottom:1px solid var(--border); background:var(--surface2); }
-.h2h-table th.stat-col { text-align:left; color:var(--text4); width:160px; }
-.h2h-table th.team-col { text-align:center; }
-.h2h-table td { padding:7px 12px; border-bottom:1px solid var(--border); }
-.h2h-table tr:last-child td { border-bottom:none; }
-.h2h-table td.stat-col { font-size:11px; color:var(--text2); display:flex; align-items:center; gap:4px; }
-.h2h-cell { display:flex; flex-direction:column; align-items:center; gap:1px; }
-.h2h-val { font-family:var(--font-mono); font-size:11px; font-weight:500; }
-.h2h-pct { font-family:var(--font-mono); font-size:9px; }
-.h2h-rank { font-size:8px; color:var(--text4); }
-.h2h-year-note { font-size:9px; color:var(--text4); text-align:center; margin-bottom:12px; font-style:italic; }
+/* H2H */
+.h2h-selectors{display:flex;gap:20px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;}
+.h2h-team-picker{display:flex;flex-direction:column;gap:6px;}
+.h2h-team-label{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;}
+.h2h-vs{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--text4);padding-bottom:8px;}
+.h2h-selects{display:flex;gap:6px;}
+.h2h-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;overflow-x:auto;}
+.h2h-table{width:100%;border-collapse:collapse;font-size:12px;}
+.h2h-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.h2h-table th.stat-col{text-align:left;color:var(--text4);min-width:155px;}
+.h2h-table th.team-col{text-align:center;}
+.h2h-table td{padding:8px 14px;border-bottom:1px solid var(--border);}
+.h2h-table tr:last-child td{border-bottom:none;}
+.h2h-table td.stat-col{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;}
+.h2h-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:5px 14px;}
+.h2h-cell{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.h2h-val{font-family:var(--font-mono);font-size:12px;font-weight:500;}
+.h2h-pct{font-family:var(--font-mono);font-size:10px;}
+.h2h-rank{font-size:9px;color:var(--text4);}
 
 /* ABOUT */
-.about-wrap { max-width:800px; margin:0 auto; }
-.about-hero { display:flex; gap:28px; align-items:flex-start; margin-bottom:32px; padding-bottom:32px; border-bottom:1px solid var(--border); }
-.about-avatar { width:80px; height:80px; border-radius:50%; background:var(--surface2); border:2px solid var(--border2); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:28px; font-weight:800; color:var(--accent); flex-shrink:0; }
-.about-headline h1 { font-family:var(--font-display); font-size:28px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--text); line-height:1; margin-bottom:5px; }
-.about-headline .title { font-size:13px; color:var(--accent); font-weight:500; margin-bottom:10px; }
-.about-headline .tagline { font-size:13px; color:var(--text3); line-height:1.6; max-width:520px; }
-.about-section { margin-bottom:28px; }
-.about-section h2 { font-family:var(--font-display); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); padding-bottom:7px; border-bottom:1px solid var(--border); margin-bottom:14px; }
-.about-section p { font-size:13px; color:var(--text3); line-height:1.75; margin-bottom:10px; }
-.about-section p:last-child { margin-bottom:0; }
-.career-timeline { display:flex; flex-direction:column; gap:14px; }
-.career-item { display:flex; gap:14px; align-items:flex-start; }
-.career-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); margin-top:5px; flex-shrink:0; }
-.career-role { font-size:13px; font-weight:600; color:var(--text); margin-bottom:1px; }
-.career-org { font-size:12px; color:var(--accent); margin-bottom:1px; }
-.career-dates { font-size:11px; color:var(--text4); font-family:var(--font-mono); }
-.skills-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.skill-chip { background:var(--surface2); border:1px solid var(--border2); border-radius:4px; padding:7px 10px; font-size:11px; color:var(--text3); text-align:center; }
-.contact-links { display:flex; gap:10px; flex-wrap:wrap; }
-.contact-link { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; background:var(--surface2); border:1px solid var(--border2); border-radius:4px; font-size:12px; color:var(--text3); text-decoration:none; transition:all 0.15s; }
-.contact-link:hover { border-color:var(--accent); color:var(--accent); }
+.about-wrap{max-width:800px;margin:0 auto;}
+.about-hero{display:flex;gap:28px;align-items:flex-start;margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+.about-avatar{width:80px;height:80px;border-radius:50%;background:var(--surface2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;font-weight:800;color:var(--accent);flex-shrink:0;}
+.about-headline h1{font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--text);line-height:1;margin-bottom:5px;}
+.about-headline .title{font-size:13px;color:var(--accent);font-weight:500;margin-bottom:10px;}
+.about-headline .tagline{font-size:13px;color:var(--text3);line-height:1.6;max-width:520px;}
+.about-section{margin-bottom:28px;}
+.about-section h2{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.about-section p{font-size:13px;color:var(--text3);line-height:1.75;margin-bottom:10px;}
+.about-section p:last-child{margin-bottom:0;}
+.career-timeline{display:flex;flex-direction:column;gap:14px;}
+.career-item{display:flex;gap:14px;align-items:flex-start;}
+.career-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0;}
+.career-role{font-size:13px;font-weight:600;color:var(--text);margin-bottom:1px;}
+.career-org{font-size:12px;color:var(--accent);margin-bottom:1px;}
+.career-dates{font-size:11px;color:var(--text4);font-family:var(--font-mono);}
+.skills-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.skill-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:7px 10px;font-size:11px;color:var(--text3);text-align:center;}
+.contact-links{display:flex;gap:10px;flex-wrap:wrap;}
+.contact-link{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;font-size:12px;color:var(--text3);text-decoration:none;transition:all 0.15s;}
+.contact-link:hover{border-color:var(--accent);color:var(--accent);}
 
-/* EMPTY / LOADING */
-.empty-state { display:flex; align-items:center; justify-content:center; min-height:200px; font-size:12px; color:var(--text4); letter-spacing:0.05em; }
-.loading-state { display:flex; align-items:center; justify-content:center; min-height:200px; font-family:var(--font-display); font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text4); }
-
-::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-track { background:var(--bg); }
-::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+.empty-state{display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;color:var(--text4);}
+.loading-state{display:flex;align-items:center;justify-content:center;min-height:180px;font-family:var(--font-display);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 </style>
 </head>
 <body>
@@ -239,8 +220,8 @@ select:focus { border-color:var(--accent); }
   <div class="nav-brand">Benj Stern · CBB Team Profiles</div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('profile',this)">Team Profile</button>
-    <button class="nav-tab" onclick="switchTab('historical',this)">Historical Trends</button>
     <button class="nav-tab" onclick="switchTab('conference',this)">Conference Context</button>
+    <button class="nav-tab" onclick="switchTab('historical',this)">Historical Trends</button>
     <button class="nav-tab" onclick="switchTab('h2h',this)">Head to Head</button>
     <button class="nav-tab" onclick="switchTab('about',this)">About</button>
   </div>
@@ -262,7 +243,7 @@ select:focus { border-color:var(--accent); }
         <div class="logo-divider"></div>
         <img id="banner-conf-logo" class="conf-logo-sm" src="" alt="" onerror="this.style.display='none'"/>
       </div>
-      <div class="banner-name-block">
+      <div>
         <div class="banner-team-name" id="banner-team-name"></div>
         <div class="banner-meta">
           <span class="banner-meta-item" id="banner-conf-name"></span>
@@ -270,20 +251,14 @@ select:focus { border-color:var(--accent); }
         </div>
       </div>
       <div class="banner-stats">
-        <div class="banner-stat">
-          <div class="banner-stat-val" id="banner-adjem"></div>
-          <div class="banner-stat-lbl">Adj EM</div>
-        </div>
-        <div class="banner-stat">
-          <div class="banner-stat-val" id="banner-rank" style="font-size:17px;color:var(--text3)"></div>
-          <div class="banner-stat-lbl">Nat'l Rank</div>
-        </div>
+        <div class="banner-stat"><div class="banner-stat-val" id="banner-adjem"></div><div class="banner-stat-lbl">Adj EM</div></div>
+        <div class="banner-stat"><div class="banner-stat-val" id="banner-rank" style="font-size:17px;color:var(--text3)"></div><div class="banner-stat-lbl">Nat'l Rank</div></div>
       </div>
     </div>
   </div>
   <div class="banner-summary" id="banner-summary" style="display:none">
-    <div class="summary-strengths" id="summary-strengths"></div>
-    <div class="summary-weaknesses" id="summary-weaknesses"></div>
+    <div id="summary-strengths" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
+    <div id="summary-weaknesses" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
     <div class="shot-profile-blurb" id="shot-profile-blurb"></div>
   </div>
 </div>
@@ -304,27 +279,63 @@ select:focus { border-color:var(--accent); }
   </div>
 </div>
 
+<!-- CONFERENCE TAB -->
+<div id="tab-conference" class="tab-content">
+  <div id="conference-empty" class="empty-state">Select a team and season above</div>
+  <div id="conference-content" style="display:none">
+    <div class="conf-layout">
+      <div>
+        <div class="section-header">Standings — <span id="conf-standings-label"></span></div>
+        <div class="conf-table-wrap">
+          <table class="conf-table">
+            <thead><tr><th>#</th><th>Team</th><th>Adj EM</th><th>W-L</th></tr></thead>
+            <tbody id="conf-standings-body"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text4);font-style:italic">Click any team to compare</div>
+      </div>
+      <div class="conf-right">
+        <div class="conf-right-header">
+          <div class="section-header" style="margin-bottom:0;border:none;padding:0" id="conf-detail-title">Statistical Comparison</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="selector-label">Compare vs. top</span>
+            <div class="top-n-btns">
+              <button class="top-n-btn active" onclick="setTopN(1,this)">1</button>
+              <button class="top-n-btn" onclick="setTopN(2,this)">2</button>
+              <button class="top-n-btn" onclick="setTopN(3,this)">3</button>
+              <button class="top-n-btn" onclick="setTopN(4,this)">4</button>
+              <button class="top-n-btn" onclick="setTopN(5,this)">5</button>
+              <button class="top-n-btn" onclick="setTopN(0,this)">All</button>
+            </div>
+          </div>
+        </div>
+        <div id="conf-stats-container" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- HISTORICAL TAB -->
 <div id="tab-historical" class="tab-content">
   <div id="historical-empty" class="empty-state">Select a team and season above</div>
   <div id="historical-loading" class="loading-state" style="display:none">Loading seasons...</div>
   <div id="historical-content" style="display:none">
     <div class="hist-controls">
-      <div class="year-range-group">
-        <span class="selector-label">From</span>
-        <select id="hist-start" onchange="renderHistorical()"></select>
+      <div class="hist-filter-group">
+        <span class="selector-label">Season Range</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="hist-start" onchange="renderHistorical()" style="min-width:100px"></select>
+          <span style="color:var(--text4);font-size:12px">to</span>
+          <select id="hist-end" onchange="renderHistorical()" style="min-width:100px"></select>
+        </div>
       </div>
-      <div class="year-range-group">
-        <span class="selector-label">To</span>
-        <select id="hist-end" onchange="renderHistorical()"></select>
+      <div class="hist-filter-group">
+        <span class="selector-label">Stat Category</span>
+        <div class="hist-btn-row" id="hist-cat-filter"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        <span class="selector-label">Category</span>
-        <div class="hist-category-filter" id="hist-cat-filter"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:4px">
+      <div class="hist-filter-group">
         <span class="selector-label">Compare vs.</span>
-        <div class="hist-comparison-filter">
+        <div class="hist-btn-row">
           <button class="hist-comp-btn active" onclick="setHistComp('d1',this)">All D1</button>
           <button class="hist-comp-btn" onclick="setHistComp('conf',this)">Conference</button>
           <button class="hist-comp-btn" onclick="setHistComp('sub',this)" id="hist-sub-btn">Power Conf</button>
@@ -335,47 +346,6 @@ select:focus { border-color:var(--accent); }
   </div>
 </div>
 
-<!-- CONFERENCE TAB -->
-<div id="tab-conference" class="tab-content">
-  <div id="conference-empty" class="empty-state">Select a team and season above</div>
-  <div id="conference-content" style="display:none">
-    <div class="conf-layout">
-      <div>
-        <div class="section-header">Standings — <span id="conf-standings-label"></span></div>
-        <div class="conf-table-wrap">
-          <table class="conf-table">
-            <thead><tr>
-              <th>#</th><th>Team</th><th>Adj EM</th><th>W-L</th>
-            </tr></thead>
-            <tbody id="conf-standings-body"></tbody>
-          </table>
-        </div>
-        <div style="margin-top:8px;font-size:10px;color:var(--text4);font-style:italic">Click any team to compare</div>
-      </div>
-      <div class="conf-detail">
-        <div class="conf-detail-header">
-          <div class="section-header" style="margin-bottom:0;border-bottom:none;padding-bottom:0" id="conf-detail-title">Statistical Comparison</div>
-          <div class="top-n-control">
-            <span class="top-n-label">Top</span>
-            <div class="top-n-btns">
-              <button class="top-n-btn active" onclick="setTopN(1,this)">1</button>
-              <button class="top-n-btn" onclick="setTopN(2,this)">2</button>
-              <button class="top-n-btn" onclick="setTopN(3,this)">3</button>
-              <button class="top-n-btn" onclick="setTopN(4,this)">4</button>
-              <button class="top-n-btn" onclick="setTopN(5,this)">5</button>
-            </div>
-          </div>
-        </div>
-        <div id="conf-stats-container"></div>
-      </div>
-    </div>
-    <div class="subgroup-section">
-      <div class="section-header" id="subgroup-section-label">vs. Power Conference</div>
-      <div id="subgroup-container"></div>
-    </div>
-  </div>
-</div>
-
 <!-- HEAD TO HEAD TAB -->
 <div id="tab-h2h" class="tab-content">
   <div class="h2h-selectors">
@@ -383,7 +353,7 @@ select:focus { border-color:var(--accent); }
       <div class="h2h-team-label" style="color:var(--accent)">Team A</div>
       <div class="h2h-selects">
         <select id="h2h-team-a" onchange="renderH2H()" style="min-width:160px"><option value="">— Team —</option></select>
-        <select id="h2h-year-a" onchange="renderH2H()" style="min-width:100px"><option value="">— Year —</option></select>
+        <select id="h2h-year-a" onchange="renderH2H()" style="min-width:105px"><option value="">— Year —</option></select>
       </div>
     </div>
     <div class="h2h-vs">VS</div>
@@ -391,7 +361,7 @@ select:focus { border-color:var(--accent); }
       <div class="h2h-team-label" style="color:var(--yellow)">Team B</div>
       <div class="h2h-selects">
         <select id="h2h-team-b" onchange="renderH2H()" style="min-width:160px"><option value="">— Team —</option></select>
-        <select id="h2h-year-b" onchange="renderH2H()" style="min-width:100px"><option value="">— Year —</option></select>
+        <select id="h2h-year-b" onchange="renderH2H()" style="min-width:105px"><option value="">— Year —</option></select>
       </div>
     </div>
   </div>
@@ -414,8 +384,8 @@ select:focus { border-color:var(--accent); }
     <div class="about-section">
       <h2>Background</h2>
       <p>I grew up loving college basketball and have spent the last several years watching as many games as I can — not just as a fan, but as someone trying to understand the game at a deeper level. Somewhere along the way, that obsession met my professional background in strategy and analytics, and this project was born.</p>
-      <p>By day I work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers and New Jersey Devils, where I have spent the last three years working on strategic initiatives across the sports and entertainment portfolio. Before that, I was a strategy consultant at Deloitte. The through line across all of it has been the same: take complex data, find the signal, and make it useful for decision-makers.</p>
-      <p>I am now actively pursuing opportunities in college basketball operations — Graduate Assistant roles, and positions in recruiting, scouting, NIL, and roster construction at D1 programs. This tool is both a reflection of that work and a demonstration of how I think about the game.</p>
+      <p>By day I work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers and New Jersey Devils. Before that I was a strategy consultant at Deloitte. The through line: take complex data, find the signal, and make it useful for decision-makers.</p>
+      <p>I am actively pursuing Graduate Assistant roles and positions in recruiting, scouting, NIL, and roster construction at D1 programs.</p>
     </div>
     <div class="about-section">
       <h2>Career</h2>
@@ -427,21 +397,15 @@ select:focus { border-color:var(--accent); }
     </div>
     <div class="about-section">
       <h2>About This Project</h2>
-      <p>This dashboard is built on 11 years of team-level D1 college basketball data (2016–2026), combining Bart Torvik efficiency metrics with shot quality and profile data scraped, engineered, and assembled from scratch using Python. Every team, every season has roughly 50 variables with D1-wide percentiles, conference ranks, and power vs. mid-major context.</p>
-      <p>The goal was to build something that answers real basketball questions: How does this team score? Where are they vulnerable? Are they getting better or worse? How do they compare to the top teams in their conference? Clustering work is ongoing and will be integrated as a second phase.</p>
+      <p>This dashboard is built on 11 years of D1 college basketball data (2016–2026), combining Bart Torvik efficiency metrics with shot quality and profile data scraped, engineered, and assembled from scratch using Python. Every team, every season has ~50 variables with D1-wide percentiles, conference ranks, and power vs. mid-major context.</p>
+      <p>The goal: answer real basketball questions. How does this team score? Where are they vulnerable? Are they improving? How do they compare to conference peers? Clustering work is ongoing as Phase 2.</p>
     </div>
     <div class="about-section">
       <h2>Skills & Tools</h2>
       <div class="skills-grid">
-        <div class="skill-chip">Python (pandas, sklearn)</div>
-        <div class="skill-chip">Web Scraping</div>
-        <div class="skill-chip">K-Means Clustering</div>
-        <div class="skill-chip">Data Visualization</div>
-        <div class="skill-chip">Strategic Analysis</div>
-        <div class="skill-chip">Front Office Operations</div>
-        <div class="skill-chip">Bart Torvik / KenPom</div>
-        <div class="skill-chip">Roster Construction</div>
-        <div class="skill-chip">NIL & Recruiting</div>
+        <div class="skill-chip">Python (pandas, sklearn)</div><div class="skill-chip">Web Scraping</div><div class="skill-chip">K-Means Clustering</div>
+        <div class="skill-chip">Data Visualization</div><div class="skill-chip">Strategic Analysis</div><div class="skill-chip">Front Office Operations</div>
+        <div class="skill-chip">Bart Torvik / KenPom</div><div class="skill-chip">Roster Construction</div><div class="skill-chip">NIL & Recruiting</div>
       </div>
     </div>
     <div class="about-section">
@@ -455,835 +419,632 @@ select:focus { border-color:var(--accent); }
 </div>
 
 <script>
-const TEAM_LOGO_DIR = 'logos/teams/';
-const CONF_LOGO_DIR = 'logos/conferences/';
+const TDIR='logos/teams/', CDIR='logos/conferences/';
+let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
+let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=1, cCompTeam=null, cTab='profile';
 
-let INDEX = {};
-let YEAR_CACHE = {};
-let currentTeam = null, currentYear = null, currentYearData = null, currentRow = null;
-let currentView = 'd1';
-let currentHistCat = 'Overview';
-let currentHistComp = 'd1';
-let confTopN = 1;
-let selectedCompareTeam = null;
-let currentTab = 'profile';
+function isPower(conf,year){const p=['ACC','Big Ten','Big 12','SEC','Big East'];if(year<=2024)p.push('Pac-12');return p.includes(conf);}
+function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
+function sf(n){return n.replace(/ /g,'_').replace(/\./g,'').replace(/'/g,'').replace(/&/g,'').replace(/\//g,'_');}
 
-function isPowerConf(conf, year) {
-  const power = ['ACC','Big Ten','Big 12','SEC','Big East'];
-  if (year <= 2024) power.push('Pac-12');
-  return power.includes(conf);
-}
-
-function yearLabel(y) { return y === 2026 ? '2025-26' : `${y-1}-${String(y).slice(2)}`; }
-function safeFile(name) { return name.replace(/ /g,'_').replace(/\./g,'').replace(/'/g,'').replace(/&/g,'').replace(/\//g,'_'); }
-
-// ── STAT CONFIG ───────────────────────────────────────────────────────────────
-const TOOLTIPS = {
-  'adj_em': 'Adjusted Efficiency Margin: offensive efficiency minus defensive efficiency, adjusted for opponent strength.',
-  'barthag': 'Power rating representing estimated probability of beating an average D1 team on a neutral court.',
-  'elite_sos_rate': 'Rate of games played against elite-level opponents (custom variable).',
-  'talent': 'Composite talent rating based on recruiting rankings of roster.',
-  'exp.': 'Composite experience of roster weighted by minutes played.',
-  'avg_hgt.': 'Average height of the roster weighted by minutes.',
-  'eff._hgt.': 'Effective height — accounts for positional value of height.',
-  'adj._t': 'Adjusted tempo: possessions per 40 minutes adjusted for opponent pace.',
-  'raw_t': 'Raw tempo: actual possessions per 40 minutes.',
-  'adj_oe': 'Adjusted Offensive Efficiency: points scored per 100 possessions, adjusted for opponent defense.',
-  'adj_de': 'Adjusted Defensive Efficiency: points allowed per 100 possessions, adjusted for opponent offense.',
-  'efg_rate_off': 'Effective Field Goal % on offense: accounts for 3-pointers being worth more.',
-  'tov_rate_off': 'Turnover rate on offense: turnovers per possession.',
-  'orb_rate_off': 'Offensive rebound rate: % of available offensive rebounds captured.',
-  'ft_rate_off': 'Free throw rate on offense: free throw attempts per field goal attempt.',
-  'ppp_off_full': 'Raw points scored per possession.',
-  'xPPP_off': 'Expected points per possession on offense based on shot quality (custom variable).',
-  'ppp_residual_off': 'Difference between actual PPP and expected PPP — measures shot-making ability above expectation (custom variable).',
-  'efg_rate_def': 'Effective Field Goal % allowed on defense.',
-  'tov_rate_def': 'Turnover rate forced on defense.',
-  'orb_rate_def': 'Defensive rebound rate: % of available defensive rebounds captured.',
-  'ft_rate_def': 'Free throw rate allowed on defense.',
-  'ppp_def_full': 'Raw points allowed per possession.',
-  'xPPP_def': 'Expected points per possession allowed based on shot quality (custom variable).',
-  'ppp_residual_def': 'Difference between actual PPP allowed and expected — measures defensive execution above shot quality (custom variable).',
-  'blk_pct_off': 'Percentage of offensive field goal attempts that were blocked.',
-  'blk_pct_def': 'Percentage of opponent field goal attempts that were blocked.',
-  'ast_pct_off': 'Percentage of field goals that were assisted on offense.',
-  'ast_pct_def': 'Percentage of opponent field goals that were assisted.',
+const TIPS={
+  adj_em:'Adjusted Efficiency Margin: offensive efficiency minus defensive efficiency, adjusted for opponent strength. Higher = better overall team.',
+  barthag:'Power rating: estimated probability of beating an average D1 team on a neutral court. Higher = better.',
+  elite_sos_rate:'Elite SOS Rating: share of games an elite team would be expected to lose against this team\'s schedule. Higher = tougher schedule faced.',
+  talent:'Composite talent rating based on recruiting rankings of the roster.',
+  'exp.':'Composite experience of the roster weighted by minutes played.',
+  'avg_hgt.':'Average height of the roster weighted by minutes.',
+  'eff._hgt.':'Effective height — accounts for positional value of height.',
+  'adj._t':'Adjusted tempo: possessions per 40 minutes, adjusted for opponent pace.',
+  raw_t:'Raw tempo: actual possessions per 40 minutes.',
+  adj_oe:'Adjusted Offensive Efficiency: points scored per 100 possessions, adjusted for opponent defense.',
+  adj_de:'Adjusted Defensive Efficiency: points allowed per 100 possessions, adjusted for opponent offense.',
+  efg_rate_off:'Effective Field Goal % on offense: accounts for 3-pointers being worth more than 2s.',
+  tov_rate_off:'Turnover rate on offense: turnovers per possession. Lower is better.',
+  orb_rate_off:'Offensive rebound rate: % of available offensive rebounds captured.',
+  ft_rate_off:'Free throw rate on offense: free throw attempts per field goal attempt.',
+  ft_pct_off:'Free throw percentage on offense.',
+  ppp_off_full:'Actual points scored per possession (calculated independently, not from Torvik).',
+  xPPP_off:'Expected points per possession on offense: shot profile frequencies multiplied by league-wide season averages by shot type for each year.',
+  ppp_residual_off:'Shotmaking above expectation on offense: actual PPP minus expected PPP. Positive = team scores more than its shot profile would predict.',
+  ppp_diff:'Efficiency differential: actual offensive PPP minus actual defensive PPP. Higher = outscoring opponents per possession.',
+  xPPP_diff:'Expected efficiency differential: expected offensive PPP minus expected defensive PPP based on shot profiles.',
+  residual_diff:'Shotmaking differential: offensive shotmaking residual minus defensive shotmaking residual. Higher = outperforming expectation on both ends.',
+  efg_rate_def:'Effective Field Goal % allowed on defense.',
+  tov_rate_def:'Turnover rate forced on defense: opponent turnovers per possession.',
+  orb_rate_def:'Defensive rebound rate: % of available defensive rebounds captured (1 minus opponent offensive rebound rate).',
+  ft_rate_def:'Free throw rate allowed on defense.',
+  ppp_def_full:'Actual points allowed per possession (calculated independently, not from Torvik).',
+  xPPP_def:'Expected points per possession allowed: opponent shot profile frequencies multiplied by league-wide season averages.',
+  ppp_residual_def:'Shotmaking above expectation allowed on defense: actual PPP allowed minus expected PPP allowed. Negative = defense holds opponents below their expected efficiency.',
+  blk_pct_off:'Percentage of offensive field goal attempts that were blocked. Lower is better.',
+  blk_pct_def:'Percentage of opponent field goal attempts blocked by this team. Higher is better.',
+  ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
+  ast_pct_def:'Percentage of opponent made field goals that were assisted. Lower = forcing tougher, less structured shots.',
 };
 
-const STAT_CATEGORIES = {
-  'Overview': [
-    {key:'adj_em', label:'Adj. Efficiency Margin', fmt: v=>(v>0?'+':'')+v.toFixed(1)},
-    {key:'barthag', label:'Barthag', fmt: v=>v.toFixed(3)},
-    {key:'elite_sos_rate', label:'Elite SOS Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'talent', label:'Talent Rating', fmt: v=>v.toFixed(1)},
-    {key:'exp.', label:'Experience', fmt: v=>v.toFixed(2)},
-    {key:'avg_hgt.', label:'Avg Height', fmt: v=>v.toFixed(1)+'"'},
-    {key:'eff._hgt.', label:'Effective Height', fmt: v=>v.toFixed(1)+'"'},
-    {key:'adj._t', label:'Adjusted Tempo', fmt: v=>v.toFixed(1)},
-    {key:'raw_t', label:'Raw Tempo', fmt: v=>v.toFixed(1)},
+const STAT_CATS={
+  Overview:[
+    {key:'adj_em',label:'Adj. Efficiency Margin',fmt:v=>(v>0?'+':'')+v.toFixed(1)},
+    {key:'barthag',label:'Barthag',fmt:v=>v.toFixed(3)},
+    {key:'elite_sos_rate',label:'Elite SOS Rating',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'talent',label:'Talent Rating',fmt:v=>v.toFixed(1)},
+    {key:'exp.',label:'Experience',fmt:v=>v.toFixed(2)},
+    {key:'avg_hgt.',label:'Avg Height',fmt:v=>v.toFixed(1)+'"'},
+    {key:'eff._hgt.',label:'Effective Height',fmt:v=>v.toFixed(1)+'"'},
+    {key:'adj._t',label:'Adjusted Tempo',fmt:v=>v.toFixed(1),isTempo:true},
+    {key:'raw_t',label:'Raw Tempo',fmt:v=>v.toFixed(1),isTempo:true},
+    {key:'ppp_diff',label:'PPP Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'xPPP_diff',label:'Expected PPP Diff',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'residual_diff',label:'Shotmaking Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
   ],
-  'Offense': [
-    {key:'adj_oe', label:'Adj. Off. Efficiency', fmt: v=>v.toFixed(1)},
-    {key:'efg_rate_off', label:'eFG% (Off)', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'tov_rate_off', label:'Turnover Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'orb_rate_off', label:'Off. Rebound Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'ft_rate_off', label:'FT Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'ppp_off_full', label:'Points Per Possession', fmt: v=>v.toFixed(3)},
-    {key:'xPPP_off', label:'Expected PPP', fmt: v=>v.toFixed(3)},
-    {key:'ppp_residual_off', label:'PPP Residual', fmt: v=>(v>0?'+':'')+v.toFixed(3)},
-    {key:'ast_pct_off', label:'Assist Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'blk_pct_off', label:'Block % (Blocked)', fmt: v=>(v*100).toFixed(1)+'%'},
+  Offense:[
+    {key:'adj_oe',label:'Adj. Off. Efficiency',fmt:v=>v.toFixed(1)},
+    {key:'efg_rate_off',label:'eFG% (Off)',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'tov_rate_off',label:'Turnover Rate',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'orb_rate_off',label:'Off. Rebound Rate',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'ft_rate_off',label:'FT Rate',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'ft_pct_off',label:'FT%',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'ppp_off_full',label:'Points Per Possession',fmt:v=>v.toFixed(3)},
+    {key:'xPPP_off',label:'Expected PPP',fmt:v=>v.toFixed(3)},
+    {key:'ppp_residual_off',label:'PPP Residual',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'ast_pct_off',label:'Assist Rate',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'blk_pct_off',label:'Block % (Blocked)',fmt:v=>(v*100).toFixed(1)+'%'},
   ],
-  'Defense': [
-    {key:'adj_de', label:'Adj. Def. Efficiency', fmt: v=>v.toFixed(1)},
-    {key:'efg_rate_def', label:'eFG% Allowed', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'tov_rate_def', label:'Turnovers Forced', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'orb_rate_def', label:'Def. Rebound Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'ft_rate_def', label:'FT Rate Allowed', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'ppp_def_full', label:'Points Per Poss. Allowed', fmt: v=>v.toFixed(3)},
-    {key:'xPPP_def', label:'Expected PPP Allowed', fmt: v=>v.toFixed(3)},
-    {key:'ppp_residual_def', label:'PPP Residual (Def)', fmt: v=>(v>0?'+':'')+v.toFixed(3)},
-    {key:'ast_pct_def', label:'Opp. Assist Rate', fmt: v=>(v*100).toFixed(1)+'%'},
-    {key:'blk_pct_def', label:'Block %', fmt: v=>(v*100).toFixed(1)+'%'},
+  Defense:[
+    {key:'adj_de',label:'Adj. Def. Efficiency',fmt:v=>v.toFixed(1)},
+    {key:'efg_rate_def',label:'eFG% Allowed',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'tov_rate_def',label:'Turnovers Forced',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'orb_rate_def',label:'Def. Rebound Rate',fmt:v=>((1-v)*100).toFixed(1)+'%'},
+    {key:'ft_rate_def',label:'FT Rate Allowed',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'ppp_def_full',label:'Points Per Poss Allowed',fmt:v=>v.toFixed(3)},
+    {key:'xPPP_def',label:'Expected PPP Allowed',fmt:v=>v.toFixed(3)},
+    {key:'ppp_residual_def',label:'PPP Residual (Def)',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'ast_pct_def',label:'Opp. Assist Rate',fmt:v=>(v*100).toFixed(1)+'%'},
+    {key:'blk_pct_def',label:'Block %',fmt:v=>(v*100).toFixed(1)+'%'},
   ],
-  'Shot Profile': null, // special render
 };
 
-const SHOT_CATEGORIES = [
-  {name:'Dunks', rateKey:'off_dunks_rate_total', fgKey:'off_dunks_fg', defRateKey:'def_dunks_rate_total', defFgKey:'def_dunks_fg', offGood:true, defGood:false},
-  {name:'Close 2s', rateKey:'off_close_twos_rate_total', fgKey:'off_close_twos_fg', defRateKey:'def_close_twos_rate_total', defFgKey:'def_close_twos_fg', offGood:true, defGood:false},
-  {name:'Long 2s', rateKey:'off_long_twos_rate_total', fgKey:'off_long_twos_fg', defRateKey:'def_long_twos_rate_total', defFgKey:'def_long_twos_fg', offGood:false, defGood:true},
-  {name:'3-Pointers', rateKey:'off_threes_rate_total', fgKey:'off_threes_fg', defRateKey:'def_threes_rate_total', defFgKey:'def_threes_fg', offGood:true, defGood:false},
+const SHOT_CATS=[
+  {name:'Dunks',rk:'off_dunks_rate_total',fk:'off_dunks_fg',drk:'def_dunks_rate_total',dfk:'def_dunks_fg',offRateGood:true},
+  {name:'Close 2s',rk:'off_close_twos_rate_total',fk:'off_close_twos_fg',drk:'def_close_twos_rate_total',dfk:'def_close_twos_fg',offRateGood:true},
+  {name:'Long 2s',rk:'off_long_twos_rate_total',fk:'off_long_twos_fg',drk:'def_long_twos_rate_total',dfk:'def_long_twos_fg',offRateGood:false},
+  {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true},
 ];
 
-// Key stats for banner summary
-const SUMMARY_STATS = [
-  {key:'adj_em', label:'Overall Efficiency'},
-  {key:'adj_oe', label:'Offense'},
-  {key:'adj_de', label:'Defense'},
-  {key:'efg_rate_off', label:'eFG% Offense'},
-  {key:'efg_rate_def', label:'eFG% Defense'},
-  {key:'orb_rate_off', label:'Off. Rebounding'},
-  {key:'tov_rate_off', label:'Ball Security'},
-  {key:'talent', label:'Talent'},
-  {key:'barthag', label:'Win Probability'},
-  {key:'adj._t', label:'Tempo'},
-];
+const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','efg_rate_def','tov_rate_def','orb_rate_def',
+  'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
+const SUMMARY_LABELS={
+  efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',
+  efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',
+  ppp_off_full:'Scoring Efficiency',ppp_def_full:'Defensive Efficiency',
+  ppp_residual_off:'Shotmaking (Off)',ppp_residual_def:'Shotmaking (Def)',
+  blk_pct_def:'Blocking Shots',blk_pct_off:'Getting Blocked',ast_pct_off:'Ball Movement',
+};
 
-// ── DATA LOADING ──────────────────────────────────────────────────────────────
-async function loadIndex() {
-  try {
-    const resp = await fetch('data/index.json');
-    INDEX = await resp.json();
-    initSelectors();
-  } catch(e) {
-    document.getElementById('profile-empty').textContent = 'Error loading data. Make sure you ran convert_data.py.';
-  }
+const PAGE_DESCS={
+  profile:(t,y)=>`Team profile shows how ${t} ranks across all D1 programs in ${yLabel(y)}. Toggle between All D1 percentiles, Conference rank, and power/mid-major comparison above.`,
+  conference:(t,y,c)=>`Conference context shows where ${t} stands within the ${c} in ${yLabel(y)}. Click teams in the standings to compare, or use the top N selector.`,
+  historical:(t,y)=>`Historical trends show ${t}'s trajectory over the selected range. Filter by stat category and compare against All D1, conference rank, or power/mid-major peers.`,
+  h2h:()=>`Head to Head lets you compare any two teams from any two seasons. Percentiles reflect each team's standing within their own season.`,
+  about:()=>`Learn about the creator of this tool and the methodology behind it.`,
+};
+
+async function loadIndex(){
+  try{const r=await fetch('data/index.json');INDEX=await r.json();initSelectors();}
+  catch(e){document.getElementById('profile-empty').textContent='Error loading data.';}
 }
 
-async function loadYear(year) {
-  if (YEAR_CACHE[year]) return YEAR_CACHE[year];
-  const resp = await fetch(`data/cbb_${year}.json`);
-  const data = await resp.json();
-  YEAR_CACHE[year] = data;
-  return data;
+async function loadYear(y){
+  if(YCACHE[y])return YCACHE[y];
+  const r=await fetch(`data/cbb_${y}.json`);const d=await r.json();YCACHE[y]=d;return d;
 }
 
-function initSelectors() {
-  const years = Object.keys(INDEX).map(Number).sort((a,b)=>b-a);
-  const allTeams = [...new Set(Object.values(INDEX).flat())].sort();
-
-  const tSel = document.getElementById('team-select');
-  allTeams.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; tSel.appendChild(o); });
-
-  const ySel = document.getElementById('year-select');
-  years.forEach(y => { const o=document.createElement('option'); o.value=y; o.textContent=yearLabel(y); ySel.appendChild(o); });
-
-  // H2H selectors
-  ['h2h-team-a','h2h-team-b'].forEach(id => {
-    const s = document.getElementById(id);
-    allTeams.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; s.appendChild(o); });
+function initSelectors(){
+  const years=Object.keys(INDEX).map(Number).sort((a,b)=>b-a);
+  const teams=[...new Set(Object.values(INDEX).flat())].sort();
+  const tSel=document.getElementById('team-select');
+  teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;tSel.appendChild(o);});
+  const ySel=document.getElementById('year-select');
+  years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);ySel.appendChild(o);});
+  ['h2h-team-a','h2h-team-b'].forEach(id=>{const s=document.getElementById(id);teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});});
+  ['h2h-year-a','h2h-year-b'].forEach(id=>{const s=document.getElementById(id);years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);s.appendChild(o);});});
+  const cf=document.getElementById('hist-cat-filter');
+  ['Overview','Offense','Defense','Shot Profile'].forEach((c,i)=>{
+    const b=document.createElement('button');b.className='hist-cat-btn'+(i===0?' active':'');
+    b.textContent=c;b.onclick=()=>setHistCat(c,b);cf.appendChild(b);
   });
-  ['h2h-year-a','h2h-year-b'].forEach(id => {
-    const s = document.getElementById(id);
-    years.forEach(y => { const o=document.createElement('option'); o.value=y; o.textContent=yearLabel(y); s.appendChild(o); });
-  });
-
-  // Historical category filter
-  const catFilter = document.getElementById('hist-cat-filter');
-  Object.keys(STAT_CATEGORIES).forEach((cat,i) => {
-    const btn = document.createElement('button');
-    btn.className = 'hist-cat-btn' + (i===0?' active':'');
-    btn.textContent = cat;
-    btn.onclick = () => setHistCat(cat, btn);
-    catFilter.appendChild(btn);
-  });
-
-  tSel.value = 'Villanova';
-  ySel.value = '2026';
+  tSel.value='Villanova';ySel.value='2026';
   onSelectionChange();
 }
 
-// ── MAIN UPDATE ───────────────────────────────────────────────────────────────
-async function onSelectionChange() {
-  const team = document.getElementById('team-select').value;
-  const year = parseInt(document.getElementById('year-select').value);
-  if (!team || !year) return;
-
-  currentTeam = team; currentYear = year;
-  selectedCompareTeam = null;
-
+async function onSelectionChange(){
+  const team=document.getElementById('team-select').value;
+  const year=parseInt(document.getElementById('year-select').value);
+  if(!team||!year)return;
+  cTeam=team;cYear=year;cCompTeam=null;
   showLoading();
-  try {
-    const yearData = await loadYear(year);
-    currentYearData = yearData;
-    const row = yearData.find(d => d.team_name === team);
-    if (!row) { showEmpty(`No data for ${team} in ${year}`); return; }
-    currentRow = row;
-
-    updateBanner(row);
-    updateSubViewLabel(row);
-    renderCurrentTab();
-  } catch(e) { showEmpty('Error loading data.'); }
+  try{
+    const yd=await loadYear(year);cYearData=yd;
+    const row=yd.find(d=>d.team_name===team);
+    if(!row){showEmpty(`No data for ${team} in ${year}`);return;}
+    cRow=row;
+    updateBanner(row);updateSubLabels(row);renderTab();
+  }catch(e){showEmpty('Error loading data.');}
 }
 
-function showLoading() {
-  ['profile','historical','conference'].forEach(t => {
-    const e=document.getElementById(`${t}-empty`); if(e) e.style.display='none';
-    const l=document.getElementById(`${t}-loading`); if(l) l.style.display='flex';
-    const c=document.getElementById(`${t}-content`); if(c) c.style.display='none';
+function showLoading(){
+  ['profile','conference','historical'].forEach(t=>{
+    const e=document.getElementById(`${t}-empty`);if(e)e.style.display='none';
+    const l=document.getElementById(`${t}-loading`);if(l)l.style.display='flex';
+    const c=document.getElementById(`${t}-content`);if(c)c.style.display='none';
+  });
+}
+function showEmpty(msg){
+  ['profile','conference','historical'].forEach(t=>{
+    const l=document.getElementById(`${t}-loading`);if(l)l.style.display='none';
+    const e=document.getElementById(`${t}-empty`);if(e){e.textContent=msg;e.style.display='flex';}
   });
 }
 
-function showEmpty(msg) {
-  ['profile','historical','conference'].forEach(t => {
-    const l=document.getElementById(`${t}-loading`); if(l) l.style.display='none';
-    const e=document.getElementById(`${t}-empty`); if(e) { e.textContent=msg; e.style.display='flex'; }
+function updateBanner(row){
+  document.getElementById('banner-team').style.display='flex';
+  document.getElementById('banner-summary').style.display='flex';
+  document.getElementById('banner-team-logo').src=`${TDIR}${sf(row.team_name)}.png`;
+  document.getElementById('banner-team-name').textContent=row.team_name;
+  const cs=row.conference.replace(/ /g,'_').replace(/-/g,'_').replace(/\//g,'_');
+  document.getElementById('banner-conf-logo').src=`${CDIR}${cs}.png`;
+  document.getElementById('banner-conf-name').textContent=row.conference;
+  document.getElementById('banner-record').textContent=row.full_season_record;
+  const em=parseFloat(row.adj_em);
+  document.getElementById('banner-adjem').textContent=(em>0?'+':'')+em.toFixed(1);
+  document.getElementById('banner-rank').textContent='#'+row.adj_em_rank;
+
+  // Strengths / weaknesses from D1 pct — focused stats only
+  const strs=[],wks=[];
+  SUMMARY_KEYS.forEach(k=>{
+    const p=parseFloat(row[k+'_pct']);if(isNaN(p))return;
+    if(p>=0.75&&strs.length<3)strs.push(SUMMARY_LABELS[k]);
+    else if(p<=0.25&&wks.length<3)wks.push(SUMMARY_LABELS[k]);
   });
-}
-
-function renderCurrentTab() {
-  if (currentTab === 'profile') renderProfile();
-  else if (currentTab === 'historical') { initHistSelectors(); renderHistorical(); }
-  else if (currentTab === 'conference') renderConference();
-}
-
-// ── BANNER ────────────────────────────────────────────────────────────────────
-function updateBanner(row) {
-  document.getElementById('banner-team').style.display = 'flex';
-  document.getElementById('banner-summary').style.display = 'flex';
-
-  const sn = safeFile(row.team_name);
-  document.getElementById('banner-team-logo').src = `${TEAM_LOGO_DIR}${sn}.png`;
-  document.getElementById('banner-team-name').textContent = row.team_name;
-  const confSafe = row.conference.replace(/ /g,'_').replace(/-/g,'_').replace(/\//g,'_');
-  document.getElementById('banner-conf-logo').src = `${CONF_LOGO_DIR}${confSafe}.png`;
-  document.getElementById('banner-conf-name').textContent = row.conference;
-  document.getElementById('banner-record').textContent = row.full_season_record;
-  const em = parseFloat(row.adj_em);
-  document.getElementById('banner-adjem').textContent = (em>0?'+':'')+em.toFixed(1);
-  document.getElementById('banner-rank').textContent = '#'+row.adj_em_rank;
-
-  // Strengths / weaknesses
-  const strengths = [], weaknesses = [];
-  SUMMARY_STATS.forEach(s => {
-    const pct = parseFloat(row[s.key+'_pct']);
-    if (isNaN(pct)) return;
-    if (pct >= 0.75 && strengths.length < 3) strengths.push(s.label);
-    else if (pct <= 0.25 && weaknesses.length < 3) weaknesses.push(s.label);
-  });
-
-  const strEl = document.getElementById('summary-strengths');
-  strEl.innerHTML = `<span class="summary-label">Strengths</span>` +
-    (strengths.length ? strengths.map(s=>`<span class="strength-tag">${s}</span>`).join('') : '<span style="font-size:10px;color:var(--text4)">None in top 25%</span>');
-
-  const wkEl = document.getElementById('summary-weaknesses');
-  wkEl.innerHTML = `<span class="summary-label">Weaknesses</span>` +
-    (weaknesses.length ? weaknesses.map(s=>`<span class="weakness-tag">${s}</span>`).join('') : '<span style="font-size:10px;color:var(--text4)">None in bottom 25%</span>');
+  const sEl=document.getElementById('summary-strengths');
+  sEl.innerHTML=`<span class="summary-label">Strengths</span>`+
+    (strs.length?strs.map(s=>`<span class="strength-tag">${s}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
+    `<span class="d1-label">vs. All D1</span>`;
+  const wEl=document.getElementById('summary-weaknesses');
+  wEl.innerHTML=`<span class="summary-label">Weaknesses</span>`+
+    (wks.length?wks.map(s=>`<span class="weakness-tag">${s}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
+    `<span class="d1-label">vs. All D1</span>`;
 
   // Shot profile blurb
-  const threeRate = parseFloat(row['off_threes_rate_total']);
-  const threePct = parseFloat(row['off_threes_rate_total_pct']);
-  const dunkRate = parseFloat(row['off_dunks_rate_total']);
-  const dunkPct = parseFloat(row['off_dunks_rate_total_pct']);
-  const longTwoPct = parseFloat(row['off_long_twos_rate_total_pct']);
-
-  let blurb = '';
-  if (!isNaN(threePct) && !isNaN(dunkPct)) {
-    const threeAdj = threePct >= 0.65 ? 'perimeter-heavy' : threePct <= 0.35 ? 'low three-point volume' : 'balanced three-point usage';
-    const rimAdj = dunkPct >= 0.65 ? 'strong at the rim' : dunkPct <= 0.35 ? 'limited rim attacks' : 'average rim presence';
-    const longTwoAdj = longTwoPct <= 0.35 ? 'and avoids long twos' : longTwoPct >= 0.65 ? 'and relies on long twos (inefficient)' : '';
-    blurb = `${row.team_name.split(' ').slice(-1)} plays a ${threeAdj} offense, is ${rimAdj}${longTwoAdj ? ' ' + longTwoAdj : ''}.`;
+  const tR=parseFloat(row.off_threes_rate_total_pct),dR=parseFloat(row.off_dunks_rate_total_pct),lR=parseFloat(row.off_long_twos_rate_total_pct);
+  let blurb='';
+  if(!isNaN(tR)&&!isNaN(dR)){
+    const t3=tR>=0.65?'perimeter-heavy offense':tR<=0.35?'low three-point volume':'balanced perimeter attack';
+    const rim=dR>=0.65?'strong at the rim':dR<=0.35?'limited rim attacks':'average rim presence';
+    const l2=!isNaN(lR)&&lR>=0.65?' and relies heavily on long twos (an inefficient shot type)':!isNaN(lR)&&lR<=0.35?' and avoids the long two':'';
+    blurb=`${row.team_name.split(' ').slice(-1)} runs a ${t3}, is ${rim}${l2}.`;
   }
-  document.getElementById('shot-profile-blurb').textContent = blurb;
+  document.getElementById('shot-profile-blurb').textContent=blurb;
 }
 
-function updateSubViewLabel(row) {
-  if (!row) return;
-  const isPower = isPowerConf(row.conference, row.year_stats);
-  const label = isPower ? 'vs. Power Conf' : 'vs. Mid Major';
-  document.getElementById('sub-view-btn').textContent = label;
-  document.getElementById('hist-sub-btn').textContent = label;
+function updateSubLabels(row){
+  if(!row)return;
+  const lbl=isPower(row.conference,row.year_stats)?'vs. Power Conf':'vs. Mid Major';
+  document.getElementById('sub-view-btn').textContent=lbl;
+  document.getElementById('hist-sub-btn').textContent=lbl;
 }
 
-// ── PAGE DESCRIPTIONS ─────────────────────────────────────────────────────────
-const PAGE_DESCS = {
-  profile: (t,y) => `Team profile shows how ${t} ranks across all D1 programs in the ${yearLabel(y)} season across six statistical categories. Toggle between All D1, Conference, and subgroup percentiles using the buttons above.`,
-  historical: (t,y) => `Historical trends show ${t}'s trajectory over the selected season range. Filter by stat category and compare against All D1 percentiles, conference rank, or your power/mid-major subgroup.`,
-  conference: (t,y,conf) => `Conference context shows where ${t} stands within the ${conf} in ${yearLabel(y)} and how they compare to conference peers and their broader subgroup.`,
-  h2h: () => `Head to Head lets you compare any two teams from any two seasons side by side. Percentiles shown are within each team's own season to account for different competitive contexts.`,
-  about: () => `Learn more about the creator of this tool and the methodology behind it.`,
-};
-
-function updatePageDesc() {
-  const desc = document.getElementById('page-desc');
-  if (!currentTeam || !currentYear) return;
-  const conf = currentRow ? currentRow.conference : '';
-  desc.textContent = PAGE_DESCS[currentTab] ? PAGE_DESCS[currentTab](currentTeam, currentYear, conf) : '';
+function updatePageDesc(){
+  const el=document.getElementById('page-desc');
+  if(!cTeam||!cYear){el.textContent='Select a team and season to begin.';return;}
+  const conf=cRow?cRow.conference:'';
+  el.textContent=PAGE_DESCS[cTab]?PAGE_DESCS[cTab](cTeam,cYear,conf):'';
 }
 
-// ── PROFILE TAB ───────────────────────────────────────────────────────────────
-function setView(v, btn) {
-  currentView = v;
-  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if (currentRow) renderProfile();
+function renderTab(){
+  if(cTab==='profile')renderProfile();
+  else if(cTab==='conference')renderConference();
+  else if(cTab==='historical'){initHistSelectors();renderHistorical();}
 }
 
-function getPct(row, key, view) {
-  if (view==='conf') {
-    const r = parseInt(row[key+'_conf_rank']);
-    if (isNaN(r)) return null;
-    const sz = currentYearData.filter(d=>d.conference===row.conference).length;
-    return 1-(r-1)/sz;
+// ── PROFILE ───────────────────────────────────────────────────────────────────
+function setView(v,btn){
+  cView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  if(cRow)renderProfile();
+}
+
+function getPct(row,key,view){
+  if(view==='conf'){const r=parseInt(row[key+'_conf_rank']);if(isNaN(r))return null;const sz=cYearData.filter(d=>d.conference===row.conference).length;return 1-(r-1)/sz;}
+  if(view==='sub'){const v=parseFloat(row[key+'_sub_pct']);return isNaN(v)?null:v;}
+  const v=parseFloat(row[key+'_pct']);return isNaN(v)?null:v;
+}
+
+function pctCls(pct,isTempo,isFreq){
+  if(pct===null||pct===undefined){
+    if(isTempo)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'N/A'};
+    return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'N/A'};
   }
-  if (view==='sub') { const v=parseFloat(row[key+'_sub_pct']); return isNaN(v)?null:v; }
-  const v = parseFloat(row[key+'_pct']); return isNaN(v)?null:v;
+  if(isTempo){
+    if(pct>=0.75)return{color:'pct-fast',bar:'bar-elite',badge:'badge-fast',label:'Fast'};
+    if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Mid'};
+    return{color:'pct-slow',bar:'bar-poor',badge:'badge-slow',label:'Slow'};
+  }
+  if(isFreq){
+    if(pct>=0.65)return{color:'pct-elite',bar:'bar-elite',badge:'badge-hifreq',label:'High Freq'};
+    if(pct>=0.35)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Mid Freq'};
+    return{color:'pct-poor',bar:'bar-poor',badge:'badge-lofreq',label:'Low Freq'};
+  }
+  if(pct>=0.85)return{color:'pct-elite',bar:'bar-elite',badge:'badge-elite',label:'Elite'};
+  if(pct>=0.65)return{color:'pct-good',bar:'bar-good',badge:'badge-good',label:'Above Avg'};
+  if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
+  if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-below',label:'Below Avg'};
+  return{color:'pct-poor',bar:'bar-poor',badge:'badge-poor',label:'Poor'};
 }
 
-function pctClass(pct) {
-  if (pct===null||pct===undefined) return {color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'N/A'};
-  if (pct>=0.85) return {color:'pct-elite',bar:'bar-elite',badge:'badge-elite',label:'Elite'};
-  if (pct>=0.65) return {color:'pct-good',bar:'bar-good',badge:'badge-good',label:'Above Avg'};
-  if (pct>=0.40) return {color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
-  if (pct>=0.20) return {color:'pct-below',bar:'bar-below',badge:'badge-below',label:'Below Avg'};
-  return {color:'pct-poor',bar:'bar-poor',badge:'badge-poor',label:'Poor'};
-}
+function tip(key){const t=TIPS[key];if(!t)return'';return`<span class="info-icon">i<span class="tooltip">${t}</span></span>`;}
 
-function makeInfoIcon(key) {
-  const tip = TOOLTIPS[key] || '';
-  if (!tip) return '';
-  return `<span class="info-icon">i<span class="tooltip">${tip}</span></span>`;
-}
-
-function renderStatRow(row, stat, view) {
-  const pct = getPct(row, stat.key, view);
-  const cls = pctClass(pct);
-  const bw = pct!==null ? Math.round(pct*100) : 0;
-  const displayPct = pct!==null ? Math.round(pct*100)+'%' : '—';
-  const rawVal = parseFloat(row[stat.key]);
-  const fmtVal = !isNaN(rawVal) ? stat.fmt(rawVal) : '—';
-  const rankDisplay = view==='conf'
-    ? `Conf #${row[stat.key+'_conf_rank']||'—'}`
-    : `#${row[stat.key+'_rank']||'—'}`;
-
-  return `<div class="stat-row">
-    <div class="stat-name">${stat.label}${makeInfoIcon(stat.key)}</div>
-    <div class="stat-val">${fmtVal}</div>
+function statRowHtml(row,stat,view){
+  const pct=getPct(row,stat.key,view);
+  const cls=pctCls(pct,stat.isTempo,false);
+  const bw=pct!==null?Math.round(pct*100):0;
+  const dp=pct!==null?Math.round(pct*100)+'%':'—';
+  const rawV=parseFloat(row[stat.key]);
+  const fv=!isNaN(rawV)?stat.fmt(rawV):'—';
+  const rd=view==='conf'?`Conf #${row[stat.key+'_conf_rank']||'—'}`:`#${row[stat.key+'_rank']||'—'}`;
+  return`<div class="stat-row">
+    <div class="stat-name">${stat.label}${tip(stat.key)}</div>
+    <div class="stat-val">${fv}</div>
     <div class="stat-bar-wrap"><div class="stat-bar ${cls.bar}" style="width:${bw}%"></div></div>
-    <div class="stat-pct-val ${cls.color}">${displayPct}</div>
-    <div class="stat-rank-val">${rankDisplay}</div>
+    <div class="stat-pct-val ${cls.color}">${dp}</div>
+    <div class="stat-rank-val">${rd}</div>
     <div class="descriptor-badge ${cls.badge}">${cls.label}</div>
   </div>`;
 }
 
-function renderShotProfileCard(row, view) {
-  const isOffSide = true;
-  let html = `<div class="shot-grid-wrap"><table class="shot-grid-table">
-    <thead>
-      <tr>
-        <th class="cat-col">Shot Type</th>
-        <th colspan="2">Offense</th>
-        <th colspan="2">Defense</th>
-      </tr>
-      <tr>
-        <th class="cat-col"></th>
-        <th>Rate</th><th>FG%</th>
-        <th>Rate Allowed</th><th>FG% Allowed</th>
-      </tr>
-    </thead>
-    <tbody>`;
+function shotMetricCell(row,key,isFreq,view){
+  const rawV=parseFloat(row[key]);
+  const fv=!isNaN(rawV)?(rawV<1?(rawV*100).toFixed(1)+'%':rawV.toFixed(1)):'—';
+  let pct;
+  if(view==='conf'){const r=parseInt(row[key+'_conf_rank']);const sz=cYearData.filter(d=>d.conference===row.conference).length;pct=isNaN(r)?null:1-(r-1)/sz;}
+  else if(view==='sub'){const v=parseFloat(row[key+'_sub_pct']);pct=isNaN(v)?null:v;}
+  else{const v=parseFloat(row[key+'_pct']);pct=isNaN(v)?null:v;}
+  const cls=pctCls(pct,false,isFreq);
+  const bw=pct!==null?Math.round(pct*100):0;
+  const rd=view==='conf'?`Conf #${row[key+'_conf_rank']||'—'}`:`#${row[key+'_rank']||'—'}`;
+  return`<div class="shot-metric-cell">
+    <span class="shot-val">${fv}</span>
+    <div class="shot-bar-wrap"><div class="shot-bar ${cls.bar}" style="width:${bw}%"></div></div>
+    <span class="shot-pct ${cls.color}">${pct!==null?Math.round(pct*100)+'%':'—'}</span>
+    <span class="shot-rank">${rd}</span>
+    <span class="shot-badge ${cls.badge}">${cls.label}</span>
+  </div>`;
+}
 
-  SHOT_CATEGORIES.forEach(cat => {
-    html += `<tr><td class="cat-name">${cat.name}</td>`;
-    // Offense rate
-    html += makeShotCell(row, cat.rateKey, cat.offGood, view, true);
-    // Offense FG%
-    html += makeShotCell(row, cat.fgKey, cat.offGood, view, true);
-    // Defense rate
-    html += makeShotCell(row, cat.defRateKey, cat.defGood, view, false);
-    // Defense FG%
-    html += makeShotCell(row, cat.defFgKey, cat.defGood, view, false);
-    html += `</tr>`;
+function renderShotProfile(row,view){
+  let html=`<div class="shot-grid">
+    <div class="shot-header-cell cat-h">Shot Type</div>
+    <div class="shot-header-cell" style="grid-column:span 2">Offense</div>
+    <div class="shot-header-cell" style="grid-column:span 2">Defense</div>
+    <div class="shot-subheader-cell cat-sh"></div>
+    <div class="shot-subheader-cell">Rate (Freq)</div>
+    <div class="shot-subheader-cell">FG%</div>
+    <div class="shot-subheader-cell">Rate Allowed</div>
+    <div class="shot-subheader-cell">FG% Allowed</div>`;
+  SHOT_CATS.forEach(c=>{
+    html+=`<div class="shot-cat-cell">${c.name}</div>
+      ${shotMetricCell(row,c.rk,true,view)}
+      ${shotMetricCell(row,c.fk,false,view)}
+      ${shotMetricCell(row,c.drk,true,view)}
+      ${shotMetricCell(row,c.dfk,false,view)}`;
   });
-
-  html += `</tbody></table></div>`;
+  html+='</div>';
   return html;
 }
 
-function makeShotCell(row, key, higherIsGood, view, isOff) {
-  const rawVal = parseFloat(row[key]);
-  const fmtVal = !isNaN(rawVal) ? (rawVal < 1 ? (rawVal*100).toFixed(1)+'%' : rawVal.toFixed(1)) : '—';
-
-  let pct;
-  if (view==='conf') {
-    const r = parseInt(row[key+'_conf_rank']);
-    const sz = currentYearData.filter(d=>d.conference===row.conference).length;
-    pct = isNaN(r) ? null : 1-(r-1)/sz;
-  } else if (view==='sub') {
-    const v = parseFloat(row[key+'_sub_pct']); pct = isNaN(v)?null:v;
-  } else {
-    const v = parseFloat(row[key+'_pct']); pct = isNaN(v)?null:v;
-  }
-
-  const cls = pctClass(pct);
-  const bw = pct!==null ? Math.round(pct*100) : 0;
-  const rank = view==='conf' ? `Conf #${row[key+'_conf_rank']||'—'}` : `#${row[key+'_rank']||'—'}`;
-
-  return `<td class="shot-metric-cell">
-    <span class="shot-val">${fmtVal}</span>
-    <div class="shot-pct-bar-wrap"><div class="shot-pct-bar ${cls.bar}" style="width:${bw}%"></div></div>
-    <span class="shot-pct-label ${cls.color}">${pct!==null?Math.round(pct*100)+'%':'—'}</span>
-    <span class="shot-rank">${rank}</span>
-    <span class="shot-badge ${cls.badge}">${cls.label}</span>
-  </td>`;
-}
-
-function renderProfile() {
+function renderProfile(){
   document.getElementById('profile-loading').style.display='none';
   document.getElementById('profile-empty').style.display='none';
   document.getElementById('profile-content').style.display='block';
   updatePageDesc();
-
-  const grid = document.getElementById('profile-grid');
-  grid.innerHTML = '';
-
-  Object.entries(STAT_CATEGORIES).forEach(([catName, stats]) => {
-    const card = document.createElement('div');
-    card.className = 'stat-card';
-
-    if (catName === 'Shot Profile') {
-      card.innerHTML = `<div class="stat-card-title">Shot Profile</div>${renderShotProfileCard(currentRow, currentView)}`;
-      // Shot profile spans full width
-      card.style.gridColumn = '1 / -1';
-    } else {
-      card.innerHTML = `<div class="stat-card-title">${catName}</div>`;
-      stats.forEach(stat => { card.innerHTML += renderStatRow(currentRow, stat, currentView); });
-    }
+  const grid=document.getElementById('profile-grid');grid.innerHTML='';
+  Object.entries(STAT_CATS).forEach(([cat,stats])=>{
+    const card=document.createElement('div');card.className='stat-card';
+    card.innerHTML=`<div class="stat-card-title">${cat}</div>`;
+    stats.forEach(s=>{card.innerHTML+=statRowHtml(cRow,s,cView);});
     grid.appendChild(card);
   });
+  // Shot profile full width
+  const sp=document.createElement('div');sp.className='stat-card shot-profile-wrap';
+  sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div>${renderShotProfile(cRow,cView)}`;
+  grid.appendChild(sp);
 }
 
-// ── HISTORICAL TAB ────────────────────────────────────────────────────────────
-function setHistCat(cat, btn) {
-  currentHistCat = cat;
-  document.querySelectorAll('.hist-cat-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderHistorical();
+// ── CONFERENCE ────────────────────────────────────────────────────────────────
+function setTopN(n,btn){
+  cTopN=n;document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  renderConfStats();
 }
 
-function setHistComp(comp, btn) {
-  currentHistComp = comp;
-  document.querySelectorAll('.hist-comp-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderHistorical();
-}
-
-function initHistSelectors() {
-  const teamYears = Object.keys(INDEX).map(Number)
-    .filter(y => INDEX[String(y)].includes(currentTeam))
-    .sort((a,b)=>a-b);
-
-  const ss = document.getElementById('hist-start');
-  const se = document.getElementById('hist-end');
-  ss.innerHTML=''; se.innerHTML='';
-  teamYears.forEach(y => {
-    const l = yearLabel(y);
-    ss.innerHTML += `<option value="${y}">${l}</option>`;
-    se.innerHTML += `<option value="${y}">${l}</option>`;
+function renderConference(){
+  if(!cRow||!cYearData)return;
+  document.getElementById('conference-content').style.display='block';
+  updatePageDesc();
+  const conf=cRow.conference,year=cRow.year_stats;
+  document.getElementById('conf-standings-label').textContent=`${conf} — ${yLabel(year)}`;
+  const ct=cYearData.filter(d=>d.conference===conf).sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
+  const tbody=document.getElementById('conf-standings-body');tbody.innerHTML='';
+  ct.forEach((t,i)=>{
+    const em=parseFloat(t.adj_em),isMe=t.team_name===cRow.team_name,isComp=t.team_name===cCompTeam;
+    const tr=document.createElement('tr');
+    tr.className=isMe?'highlighted':isComp?'selected-compare':'';
+    tr.innerHTML=`<td style="font-family:var(--font-mono);font-size:10px;color:var(--text4)">${i+1}</td>
+      <td><div style="display:flex;align-items:center;gap:6px">
+        <img src="${TDIR}${sf(t.team_name)}.png" style="width:16px;height:16px;object-fit:contain" onerror="this.style.display='none'"/>
+        <span style="font-size:12px;color:${isMe?'var(--accent)':isComp?'var(--yellow)':'var(--text2)'}">${t.team_name}</span>
+      </div></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:${em>0?'var(--green)':'var(--red)'}">${em>0?'+':''}${em.toFixed(1)}</td>
+      <td style="font-size:11px;color:var(--text3)">${t.full_season_record}</td>`;
+    tr.onclick=()=>{
+      if(t.team_name===cRow.team_name)return;
+      cCompTeam=cCompTeam===t.team_name?null:t.team_name;renderConference();
+    };
+    tbody.appendChild(tr);
   });
-  se.value = currentYear;
-  ss.value = teamYears.includes(currentYear-1) ? currentYear-1 : teamYears[0];
+  renderConfStats();
 }
 
-async function renderHistorical() {
-  if (!currentTeam) return;
-  const startYr = parseInt(document.getElementById('hist-start').value);
-  const endYr = parseInt(document.getElementById('hist-end').value);
+function renderConfStats(){
+  if(!cRow||!cYearData)return;
+  const conf=cRow.conference;
+  const ct=cYearData.filter(d=>d.conference===conf).sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
 
-  if (startYr >= endYr) {
+  let compareTeams;
+  if(cCompTeam){
+    compareTeams=[cYearData.find(d=>d.team_name===cCompTeam)].filter(Boolean);
+  } else {
+    const pool=ct.filter(t=>t.team_name!==cRow.team_name);
+    compareTeams=cTopN===0?pool:pool.slice(0,cTopN);
+  }
+
+  const titleEl=document.getElementById('conf-detail-title');
+  if(cCompTeam)titleEl.textContent=`${cRow.team_name} vs. ${cCompTeam}`;
+  else if(cTopN===0)titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
+  else titleEl.textContent=`${cRow.team_name} vs. Top ${cTopN} in ${cRow.conference}`;
+
+  // Compute avg of compare teams
+  const allStats=Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat})));
+
+  // Build header
+  const isAvgMode=cTopN===0&&!cCompTeam;
+  let thead=`<thead><tr>
+    <th class="stat-col">Stat</th>
+    <th style="color:var(--accent)">${cRow.team_name.split(' ').slice(-1)}</th>`;
+  if(!isAvgMode&&!cCompTeam){
+    compareTeams.forEach(t=>{thead+=`<th style="color:var(--text3)">${t.team_name.split(' ').slice(-1)}</th>`;});
+  } else if(cCompTeam){
+    thead+=`<th style="color:var(--yellow)">${cCompTeam.split(' ').slice(-1)}</th>`;
+  }
+  thead+=`<th style="color:var(--text4);font-style:italic">Conf Avg</th></tr></thead>`;
+
+  let tbody='<tbody>';
+  let lastCat='';
+  allStats.forEach(stat=>{
+    const mv=parseFloat(cRow[stat.key]);if(isNaN(mv))return;
+    if(stat.cat!==lastCat){
+      const cols=2+(isAvgMode||cCompTeam?1:compareTeams.length)+1;
+      tbody+=`<tr class="cat-row"><td colspan="${cols}">${stat.cat}</td></tr>`;
+      lastCat=stat.cat;
+    }
+    const myRank=cRow[stat.key+'_conf_rank'];
+    // Conf avg
+    const confVals=cYearData.filter(d=>d.conference===cRow.conference).map(d=>parseFloat(d[stat.key])).filter(v=>!isNaN(v));
+    const confAvg=confVals.length?confVals.reduce((a,b)=>a+b,0)/confVals.length:null;
+
+    tbody+=`<tr class="my-row"><td class="stat-col">${stat.label}${tip(stat.key)}</td>
+      <td><div class="conf-cell">
+        <span class="conf-val" style="color:var(--accent)">${stat.fmt(mv)}</span>
+        <span class="conf-rank">Conf #${myRank||'—'}</span>
+      </div></td>`;
+
+    if(!isAvgMode&&!cCompTeam){
+      compareTeams.forEach(t=>{
+        const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
+        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text2)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;
+      });
+    } else if(cCompTeam){
+      const t=compareTeams[0];if(t){const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
+        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--yellow)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;}
+    }
+
+    tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text4);font-style:italic">${confAvg!==null?stat.fmt(confAvg):'—'}</span></div></td></tr>`;
+  });
+  tbody+='</tbody>';
+
+  document.getElementById('conf-stats-container').innerHTML=
+    `<div class="conf-stats-wrap"><table class="conf-stats-table">${thead}${tbody}</table></div>`;
+}
+
+// ── HISTORICAL ────────────────────────────────────────────────────────────────
+function setHistCat(cat,btn){cHistCat=cat;document.querySelectorAll('.hist-cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistorical();}
+function setHistComp(comp,btn){cHistComp=comp;document.querySelectorAll('.hist-comp-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistorical();}
+
+function initHistSelectors(){
+  const ty=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(cTeam)).sort((a,b)=>a-b);
+  const ss=document.getElementById('hist-start'),se=document.getElementById('hist-end');
+  ss.innerHTML='';se.innerHTML='';
+  ty.forEach(y=>{const l=yLabel(y);ss.innerHTML+=`<option value="${y}">${l}</option>`;se.innerHTML+=`<option value="${y}">${l}</option>`;});
+  se.value=cYear;ss.value=ty.includes(cYear-1)?cYear-1:ty[0];
+}
+
+async function renderHistorical(){
+  if(!cTeam)return;
+  const s=parseInt(document.getElementById('hist-start').value);
+  const e=parseInt(document.getElementById('hist-end').value);
+  if(s>=e){
     document.getElementById('historical-loading').style.display='none';
     document.getElementById('historical-empty').style.display='flex';
     document.getElementById('historical-empty').textContent='Start year must be before end year.';
-    document.getElementById('historical-content').style.display='none';
-    return;
+    document.getElementById('historical-content').style.display='none';return;
   }
-
   document.getElementById('historical-loading').style.display='flex';
   document.getElementById('historical-empty').style.display='none';
   document.getElementById('historical-content').style.display='none';
 
-  const yearsNeeded = [];
-  for (let y=startYr; y<=endYr; y++) {
-    if (INDEX[String(y)] && INDEX[String(y)].includes(currentTeam)) yearsNeeded.push(y);
-  }
-
-  if (yearsNeeded.length < 2) {
+  const yn=[];for(let y=s;y<=e;y++){if(INDEX[String(y)]&&INDEX[String(y)].includes(cTeam))yn.push(y);}
+  if(yn.length<2){
     document.getElementById('historical-loading').style.display='none';
     document.getElementById('historical-empty').style.display='flex';
-    document.getElementById('historical-empty').textContent='Not enough seasons in range.';
-    return;
+    document.getElementById('historical-empty').textContent='Not enough seasons in range.';return;
   }
-
-  await Promise.all(yearsNeeded.map(y=>loadYear(y)));
-  const teamData = yearsNeeded.map(y=>YEAR_CACHE[y].find(d=>d.team_name===currentTeam)).filter(Boolean);
-
+  await Promise.all(yn.map(y=>loadYear(y)));
+  const td=yn.map(y=>YCACHE[y].find(d=>d.team_name===cTeam)).filter(Boolean);
   document.getElementById('historical-loading').style.display='none';
   document.getElementById('historical-content').style.display='block';
   updatePageDesc();
 
-  const stats = currentHistCat === 'Shot Profile'
-    ? SHOT_CATEGORIES.flatMap(c=>[
-        {key:c.rateKey, label:`${c.name} Rate (Off)`, fmt:v=>(v*100).toFixed(1)+'%'},
-        {key:c.fgKey, label:`${c.name} FG% (Off)`, fmt:v=>(v*100).toFixed(1)+'%'},
-        {key:c.defRateKey, label:`${c.name} Rate (Def)`, fmt:v=>(v*100).toFixed(1)+'%'},
-        {key:c.defFgKey, label:`${c.name} FG% (Def)`, fmt:v=>(v*100).toFixed(1)+'%'},
-      ])
-    : STAT_CATEGORIES[currentHistCat];
+  let stats;
+  if(cHistCat==='Shot Profile'){
+    stats=SHOT_CATS.flatMap(c=>[
+      {key:c.rk,label:`${c.name} Rate (Off)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:true},
+      {key:c.fk,label:`${c.name} FG% (Off)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:false},
+      {key:c.drk,label:`${c.name} Rate (Def)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:true},
+      {key:c.dfk,label:`${c.name} FG% (Def)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:false},
+    ]);
+  } else {
+    stats=STAT_CATS[cHistCat]||[];
+  }
 
-  const container = document.getElementById('hist-table-container');
+  const years=td.map(d=>d.year_stats);
+  let thead=`<thead><tr><th class="stat-col">Stat</th>`;
+  years.forEach(y=>{thead+=`<th>${yLabel(y)}</th>`;});
+  thead+=`<th>Trend</th></tr></thead>`;
 
-  let thead = `<thead><tr><th class="stat-col">Stat</th>`;
-  yearsNeeded.forEach(y => { thead += `<th>${yearLabel(y)}</th>`; });
-  thead += `<th>Trend</th></tr></thead>`;
-
-  let tbody = '<tbody>';
-  stats.forEach(stat => {
-    const values = teamData.map(d => {
-      const raw = parseFloat(d[stat.key]);
-      let pct, rank;
-      if (currentHistComp==='conf') {
-        rank = d[stat.key+'_conf_rank'];
-        pct = null; // no conf pct
-      } else if (currentHistComp==='sub') {
-        pct = parseFloat(d[stat.key+'_sub_pct']); if(isNaN(pct)) pct=null;
-        rank = d[stat.key+'_rank'];
-      } else {
-        pct = parseFloat(d[stat.key+'_pct']); if(isNaN(pct)) pct=null;
-        rank = d[stat.key+'_rank'];
-      }
-      return {raw, pct, rank};
+  let tbody='<tbody>';
+  stats.forEach(stat=>{
+    const vals=td.map(d=>{
+      const raw=parseFloat(d[stat.key]);
+      let pct,rank;
+      if(cHistComp==='conf'){rank=d[stat.key+'_conf_rank'];pct=null;}
+      else if(cHistComp==='sub'){pct=parseFloat(d[stat.key+'_sub_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_sub_rank'];}
+      else{pct=parseFloat(d[stat.key+'_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_rank'];}
+      return{raw,pct,rank};
     });
-
-    const first = values[0]?.pct ?? values[0]?.raw;
-    const last = values[values.length-1]?.pct ?? values[values.length-1]?.raw;
-    let arrow = '';
-    if (first!==null && last!==null && first!==undefined && last!==undefined) {
-      const diff = last - first;
-      if (diff > 0.03) arrow = '<span class="hist-arrow arrow-up">↑</span>';
-      else if (diff < -0.03) arrow = '<span class="hist-arrow arrow-down">↓</span>';
-      else arrow = '<span class="hist-arrow arrow-flat">→</span>';
+    const f=vals[0]?.pct,l=vals[vals.length-1]?.pct;
+    let arrow='';
+    if(f!==null&&f!==undefined&&l!==null&&l!==undefined){
+      const diff=l-f;
+      if(diff>0.03)arrow=`<span class="hist-arrow arrow-up">↑</span>`;
+      else if(diff<-0.03)arrow=`<span class="hist-arrow arrow-down">↓</span>`;
+      else arrow=`<span class="hist-arrow arrow-flat">→</span>`;
     }
-
-    tbody += `<tr><td class="stat-col">${stat.label}${makeInfoIcon(stat.key)}</td>`;
-    values.forEach(v => {
-      const cls = pctClass(v.pct);
-      const fmtRaw = !isNaN(v.raw) ? stat.fmt(v.raw) : '—';
-      const fmtPct = v.pct!==null ? Math.round(v.pct*100)+'%' : '—';
-      const rankDisplay = currentHistComp==='conf'
-        ? `Conf #${v.rank||'—'}`
-        : `#${v.rank||'—'}`;
-      tbody += `<td><div class="hist-cell">
-        <span class="hist-val">${fmtRaw}</span>
-        ${currentHistComp!=='conf' ? `<span class="hist-pct ${cls.color}">${fmtPct}</span>` : ''}
-        <span class="hist-rank">${rankDisplay}</span>
+    tbody+=`<tr><td class="stat-col">${stat.label}${tip(stat.key)}</td>`;
+    vals.forEach(v=>{
+      const fv=!isNaN(v.raw)?stat.fmt(v.raw):'—';
+      const cls=pctCls(v.pct,stat.isTempo,stat.isFreq||false);
+      const rd=cHistComp==='conf'?`Conf #${v.rank||'—'}`:cHistComp==='sub'?`Sub #${v.rank||'—'}`:`#${v.rank||'—'}`;
+      tbody+=`<td><div class="hist-cell">
+        <span class="hist-val">${fv}</span>
+        ${v.pct!==null?`<span class="hist-pct ${cls.color}">${Math.round(v.pct*100)}%</span>`:''}
+        <span class="hist-rank">${rd}</span>
       </div></td>`;
     });
-    tbody += `<td>${arrow}</td></tr>`;
+    tbody+=`<td>${arrow}</td></tr>`;
   });
-  tbody += '</tbody>';
+  tbody+='</tbody>';
 
-  container.innerHTML = `<div class="hist-table-wrap"><table class="hist-table">${thead}${tbody}</table></div>`;
-}
-
-// ── CONFERENCE TAB ────────────────────────────────────────────────────────────
-function setTopN(n, btn) {
-  confTopN = n;
-  document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderConfStats();
-}
-
-function renderConference() {
-  if (!currentRow || !currentYearData) return;
-  document.getElementById('conference-content').style.display='block';
-  updatePageDesc();
-
-  const conf = currentRow.conference;
-  const year = currentRow.year_stats;
-  document.getElementById('conf-standings-label').textContent = `${conf} — ${yearLabel(year)}`;
-
-  const confTeams = currentYearData
-    .filter(d=>d.conference===conf)
-    .sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
-
-  const tbody = document.getElementById('conf-standings-body');
-  tbody.innerHTML = '';
-  confTeams.forEach((t,i) => {
-    const em = parseFloat(t.adj_em);
-    const isMe = t.team_name===currentRow.team_name;
-    const isComp = t.team_name===selectedCompareTeam;
-    const sn = safeFile(t.team_name);
-    const tr = document.createElement('tr');
-    tr.className = isMe?'highlighted':isComp?'selected-compare':'';
-    tr.innerHTML = `
-      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text4)">${i+1}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <img src="${TEAM_LOGO_DIR}${sn}.png" style="width:16px;height:16px;object-fit:contain" onerror="this.style.display='none'"/>
-          <span style="font-size:11px;color:${isMe?'var(--accent)':isComp?'var(--yellow)':'var(--text2)'}">${t.team_name}</span>
-        </div>
-      </td>
-      <td style="font-family:var(--font-mono);font-size:10px;color:${em>0?'var(--green)':'var(--red)'}">${em>0?'+':''}${em.toFixed(1)}</td>
-      <td style="font-size:10px;color:var(--text3)">${t.full_season_record}</td>`;
-    tr.onclick = () => {
-      if (t.team_name === currentRow.team_name) return;
-      selectedCompareTeam = selectedCompareTeam===t.team_name ? null : t.team_name;
-      renderConference();
-    };
-    tbody.appendChild(tr);
-  });
-
-  renderConfStats();
-
-  // Subgroup
-  const isPower = isPowerConf(conf, year);
-  document.getElementById('subgroup-section-label').textContent = isPower ? 'vs. Power Conference' : 'vs. Mid Major';
-  renderSubgroup();
-}
-
-function renderConfStats() {
-  if (!currentRow || !currentYearData) return;
-  const conf = currentRow.conference;
-  const confTeams = currentYearData
-    .filter(d=>d.conference===conf)
-    .sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
-
-  // Determine comparison teams
-  const compareTeams = selectedCompareTeam
-    ? [currentYearData.find(d=>d.team_name===selectedCompareTeam)].filter(Boolean)
-    : confTeams.slice(0, confTopN).filter(t=>t.team_name!==currentRow.team_name);
-
-  if (!compareTeams.length) compareTeams.push(...confTeams.slice(0,1).filter(t=>t.team_name!==currentRow.team_name));
-
-  const allCompareStats = Object.entries(STAT_CATEGORIES)
-    .filter(([k])=>k!=='Shot Profile')
-    .flatMap(([,stats])=>stats||[]);
-
-  const titleEl = document.getElementById('conf-detail-title');
-  titleEl.textContent = selectedCompareTeam
-    ? `${currentRow.team_name} vs. ${selectedCompareTeam}`
-    : `${currentRow.team_name} vs. Top ${confTopN} in ${currentRow.conference}`;
-
-  let thead = `<thead><tr>
-    <th class="stat-col">Stat</th>
-    <th style="color:var(--accent)">${currentRow.team_name.split(' ').slice(-1)}</th>`;
-  compareTeams.forEach(t => { thead += `<th style="color:${selectedCompareTeam?'var(--yellow)':'var(--text3)'}">${t.team_name.split(' ').slice(-1)}</th>`; });
-  thead += `</tr></thead>`;
-
-  let tbody = '<tbody>';
-  allCompareStats.forEach(stat => {
-    const myVal = parseFloat(currentRow[stat.key]);
-    const myRank = currentRow[stat.key+'_conf_rank'];
-    if (isNaN(myVal)) return;
-
-    tbody += `<tr class="my-team"><td class="stat-col">${stat.label}${makeInfoIcon(stat.key)}</td>`;
-    tbody += `<td><div style="font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--accent)">${stat.fmt(myVal)}</div><div style="font-size:8px;color:var(--text4)">Conf #${myRank||'—'}</div></td>`;
-
-    compareTeams.forEach(t => {
-      const v = parseFloat(t[stat.key]);
-      const vRank = t[stat.key+'_conf_rank'];
-      if (isNaN(v)) { tbody += `<td>—</td>`; return; }
-      const color = selectedCompareTeam ? 'var(--yellow)' : 'var(--text2)';
-      tbody += `<td><div style="font-family:var(--font-mono);font-size:11px;color:${color}">${stat.fmt(v)}</div><div style="font-size:8px;color:var(--text4)">Conf #${vRank||'—'}</div></td>`;
-    });
-
-    tbody += `</tr>`;
-  });
-  tbody += '</tbody>';
-
-  document.getElementById('conf-stats-container').innerHTML =
-    `<div class="conf-stats-table-wrap"><table class="conf-stats-table">${thead}${tbody}</table></div>`;
-}
-
-function renderSubgroup() {
-  if (!currentRow || !currentYearData) return;
-  const conf = currentRow.conference;
-  const year = currentRow.year_stats;
-  const isPower = isPowerConf(conf, year);
-  const subTeams = currentYearData.filter(d=>isPowerConf(d.conference,year)===isPower)
-    .sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
-
-  const keyStats = [
-    {key:'adj_em',label:'Adj EM',fmt:v=>(v>0?'+':'')+v.toFixed(1)},
-    {key:'adj_oe',label:'Off Eff',fmt:v=>v.toFixed(1)},
-    {key:'adj_de',label:'Def Eff',fmt:v=>v.toFixed(1)},
-    {key:'efg_rate_off',label:'eFG% Off',fmt:v=>(v*100).toFixed(1)+'%'},
-    {key:'efg_rate_def',label:'eFG% Def',fmt:v=>(v*100).toFixed(1)+'%'},
-    {key:'off_threes_rate_total',label:'3PT Rate',fmt:v=>(v*100).toFixed(1)+'%'},
-    {key:'talent',label:'Talent',fmt:v=>v.toFixed(1)},
-  ];
-
-  let html = `<div class="subgroup-table-wrap"><table class="conf-stats-table">
-    <thead><tr><th class="stat-col">Stat</th><th style="color:var(--accent)">${currentRow.team_name.split(' ').slice(-1)}</th>
-    <th>Sub Rank</th><th>Sub Median</th><th>Sub Top 5 Avg</th></tr></thead><tbody>`;
-
-  keyStats.forEach(stat => {
-    const myVal = parseFloat(currentRow[stat.key]);
-    if (isNaN(myVal)) return;
-    const subRank = currentRow[stat.key+'_sub_rank'] || '—';
-    const subPct = parseFloat(currentRow[stat.key+'_sub_pct']);
-    const cls = pctClass(isNaN(subPct)?null:subPct);
-
-    const subVals = subTeams.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v)).sort((a,b)=>a-b);
-    const median = subVals.length ? subVals[Math.floor(subVals.length/2)] : null;
-    const top5 = subTeams.slice(0,5).map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
-    const top5avg = top5.length ? top5.reduce((a,b)=>a+b,0)/top5.length : null;
-
-    html += `<tr>
-      <td class="stat-col">${stat.label}</td>
-      <td><span style="font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--accent)">${stat.fmt(myVal)}</span>
-          <span class="descriptor-badge ${cls.badge}" style="margin-left:4px">${cls.label}</span></td>
-      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">#${subRank}</td>
-      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${median!==null?stat.fmt(median):'—'}</td>
-      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${top5avg!==null?stat.fmt(top5avg):'—'}</td>
-    </tr>`;
-  });
-
-  html += '</tbody></table></div>';
-  document.getElementById('subgroup-container').innerHTML = html;
+  document.getElementById('hist-table-container').innerHTML=
+    `<div class="hist-table-wrap"><table class="hist-table">${thead}${tbody}</table></div>`;
 }
 
 // ── HEAD TO HEAD ──────────────────────────────────────────────────────────────
-async function renderH2H() {
-  const teamA = document.getElementById('h2h-team-a').value;
-  const yearA = parseInt(document.getElementById('h2h-year-a').value);
-  const teamB = document.getElementById('h2h-team-b').value;
-  const yearB = parseInt(document.getElementById('h2h-year-b').value);
-
-  if (!teamA || !yearA || !teamB || !yearB) return;
-
+async function renderH2H(){
+  const tA=document.getElementById('h2h-team-a').value;
+  const yA=parseInt(document.getElementById('h2h-year-a').value);
+  const tB=document.getElementById('h2h-team-b').value;
+  const yB=parseInt(document.getElementById('h2h-year-b').value);
+  if(!tA||!yA||!tB||!yB)return;
   document.getElementById('h2h-empty').style.display='none';
   document.getElementById('h2h-loading').style.display='flex';
   document.getElementById('h2h-content').style.display='none';
-
-  try {
-    await Promise.all([loadYear(yearA), loadYear(yearB)]);
-    const rowA = YEAR_CACHE[yearA].find(d=>d.team_name===teamA);
-    const rowB = YEAR_CACHE[yearB].find(d=>d.team_name===teamB);
-
-    if (!rowA || !rowB) {
-      document.getElementById('h2h-loading').style.display='none';
-      document.getElementById('h2h-empty').style.display='flex';
-      document.getElementById('h2h-empty').textContent='Could not find data for one or both selections.';
-      return;
-    }
-
+  try{
+    await Promise.all([loadYear(yA),loadYear(yB)]);
+    const rA=YCACHE[yA].find(d=>d.team_name===tA),rB=YCACHE[yB].find(d=>d.team_name===tB);
+    if(!rA||!rB){document.getElementById('h2h-loading').style.display='none';document.getElementById('h2h-empty').style.display='flex';document.getElementById('h2h-empty').textContent='Data not found.';return;}
     document.getElementById('h2h-loading').style.display='none';
     document.getElementById('h2h-content').style.display='block';
-
-    const allStats = Object.entries(STAT_CATEGORIES)
-      .filter(([k])=>k!=='Shot Profile')
-      .flatMap(([catName,stats]) => stats.map(s=>({...s,cat:catName})));
-
-    const snA = safeFile(teamA), snB = safeFile(teamB);
-    const sameYear = yearA===yearB;
-
-    let html = `
-      <div class="h2h-year-note">
-        Percentiles shown within each team's own season (${yearLabel(yearA)} for ${teamA}, ${yearLabel(yearB)} for ${teamB}).
-        ${sameYear ? 'Both teams are from the same season.' : 'Comparing across different seasons — use raw values for direct comparison.'}
-      </div>
-      <div class="h2h-table-wrap">
-      <table class="h2h-table">
-        <thead><tr>
-          <th class="stat-col">Stat</th>
-          <th class="team-col" style="color:var(--accent)">
-            <div style="display:flex;align-items:center;justify-content:center;gap:6px">
-              <img src="${TEAM_LOGO_DIR}${snA}.png" style="width:18px;height:18px;object-fit:contain" onerror="this.style.display='none'"/>
-              ${teamA} <span style="font-size:9px;color:var(--text4)">${yearLabel(yearA)}</span>
-            </div>
-          </th>
-          <th class="team-col" style="color:var(--yellow)">
-            <div style="display:flex;align-items:center;justify-content:center;gap:6px">
-              <img src="${TEAM_LOGO_DIR}${snB}.png" style="width:18px;height:18px;object-fit:contain" onerror="this.style.display='none'"/>
-              ${teamB} <span style="font-size:9px;color:var(--text4)">${yearLabel(yearB)}</span>
-            </div>
-          </th>
-        </tr></thead>
-        <tbody>`;
-
-    let lastCat = '';
-    allStats.forEach(stat => {
-      const vA = parseFloat(rowA[stat.key]);
-      const vB = parseFloat(rowB[stat.key]);
-      if (isNaN(vA) && isNaN(vB)) return;
-
-      const pctA = parseFloat(rowA[stat.key+'_pct']); const clsA = pctClass(isNaN(pctA)?null:pctA);
-      const pctB = parseFloat(rowB[stat.key+'_pct']); const clsB = pctClass(isNaN(pctB)?null:pctB);
-
-      if (stat.cat !== lastCat) {
-        html += `<tr><td colspan="3" style="background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:5px 12px">${stat.cat}</td></tr>`;
-        lastCat = stat.cat;
-      }
-
-      html += `<tr>
-        <td class="stat-col">${stat.label}${makeInfoIcon(stat.key)}</td>
+    const allStats=Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat})));
+    const sameYear=yA===yB;
+    let html=`<div style="font-size:11px;color:var(--text4);font-style:italic;margin-bottom:14px;text-align:center">
+      Percentiles reflect each team's standing within their own season (${yLabel(yA)} for ${tA}${sameYear?'':', '+yLabel(yB)+' for '+tB}).
+      ${sameYear?'Both teams from the same season.':'Different seasons — use raw values for direct comparison.'}
+    </div>
+    <div class="h2h-table-wrap"><table class="h2h-table">
+      <thead><tr>
+        <th class="stat-col">Stat</th>
+        <th class="team-col" style="color:var(--accent)">
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px">
+            <img src="${TDIR}${sf(tA)}.png" style="width:18px;height:18px;object-fit:contain" onerror="this.style.display='none'"/>
+            ${tA} <span style="font-size:9px;color:var(--text4)">${yLabel(yA)}</span>
+          </div>
+        </th>
+        <th class="team-col" style="color:var(--yellow)">
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px">
+            <img src="${TDIR}${sf(tB)}.png" style="width:18px;height:18px;object-fit:contain" onerror="this.style.display='none'"/>
+            ${tB} <span style="font-size:9px;color:var(--text4)">${yLabel(yB)}</span>
+          </div>
+        </th>
+      </tr></thead><tbody>`;
+    let lastCat='';
+    allStats.forEach(stat=>{
+      const vA=parseFloat(rA[stat.key]),vB=parseFloat(rB[stat.key]);
+      if(isNaN(vA)&&isNaN(vB))return;
+      if(stat.cat!==lastCat){html+=`<tr class="cat-row"><td colspan="3">${stat.cat}</td></tr>`;lastCat=stat.cat;}
+      const pA=parseFloat(rA[stat.key+'_pct']),pB=parseFloat(rB[stat.key+'_pct']);
+      const clsA=pctCls(isNaN(pA)?null:pA,stat.isTempo,false);
+      const clsB=pctCls(isNaN(pB)?null:pB,stat.isTempo,false);
+      html+=`<tr>
+        <td class="stat-col">${stat.label}${tip(stat.key)}</td>
         <td><div class="h2h-cell">
           <span class="h2h-val ${clsA.color}">${!isNaN(vA)?stat.fmt(vA):'—'}</span>
-          <span class="h2h-pct ${clsA.color}">${!isNaN(pctA)?Math.round(pctA*100)+'%':''}</span>
-          <span class="h2h-rank">#${rowA[stat.key+'_rank']||'—'}</span>
+          ${!isNaN(pA)?`<span class="h2h-pct ${clsA.color}">${Math.round(pA*100)}%</span>`:''}
+          <span class="h2h-rank">#${rA[stat.key+'_rank']||'—'}</span>
         </div></td>
         <td><div class="h2h-cell">
           <span class="h2h-val ${clsB.color}">${!isNaN(vB)?stat.fmt(vB):'—'}</span>
-          <span class="h2h-pct ${clsB.color}">${!isNaN(pctB)?Math.round(pctB*100)+'%':''}</span>
-          <span class="h2h-rank">#${rowB[stat.key+'_rank']||'—'}</span>
+          ${!isNaN(pB)?`<span class="h2h-pct ${clsB.color}">${Math.round(pB*100)}%</span>`:''}
+          <span class="h2h-rank">#${rB[stat.key+'_rank']||'—'}</span>
         </div></td>
       </tr>`;
     });
+    html+='</tbody></table></div>';
+    document.getElementById('h2h-content').innerHTML=html;
+  }catch(e){document.getElementById('h2h-loading').style.display='none';document.getElementById('h2h-empty').style.display='flex';document.getElementById('h2h-empty').textContent='Error loading data.';}
+}
 
-    html += '</tbody></table></div>';
-    document.getElementById('h2h-content').innerHTML = html;
-  } catch(e) {
-    document.getElementById('h2h-loading').style.display='none';
-    document.getElementById('h2h-empty').style.display='flex';
-    document.getElementById('h2h-empty').textContent='Error loading data.';
+// Pre-populate H2H Team A with current selection
+function syncH2HTeamA(){
+  if(cTeam&&cYear){
+    const ta=document.getElementById('h2h-team-a');
+    const ya=document.getElementById('h2h-year-a');
+    if(ta)ta.value=cTeam;
+    if(ya)ya.value=cYear;
   }
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
-function switchTab(tab, btn) {
-  currentTab = tab;
+function switchTab(tab,btn){
+  cTab=tab;
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
-  if (btn) btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   updatePageDesc();
-
-  if (currentRow) {
-    if (tab==='historical') { initHistSelectors(); renderHistorical(); }
-    else if (tab==='conference') renderConference();
-    else if (tab==='profile') renderProfile();
+  if(tab==='h2h')syncH2HTeamA();
+  if(cRow){
+    if(tab==='profile')renderProfile();
+    else if(tab==='conference')renderConference();
+    else if(tab==='historical'){initHistSelectors();renderHistorical();}
   }
 }
 
