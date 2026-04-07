@@ -98,15 +98,15 @@ select:focus{border-color:var(--accent);}
 .shot-subheader-cell{background:var(--surface2);padding:5px 10px;font-size:9px;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
 .shot-subheader-cell.cat-sh{border-right:1px solid var(--border);}
 .shot-row{display:contents;}
-.shot-cat-cell{padding:10px 12px;font-size:12px;color:var(--text2);font-weight:500;border-bottom:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;}
+.shot-cat-cell{padding:14px 16px;font-size:13px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;}
 .shot-row:last-child .shot-cat-cell,.shot-row:last-child .shot-metric-cell{border-bottom:none;}
-.shot-metric-cell{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
-.shot-val{font-family:var(--font-mono);font-size:11px;color:var(--text2);display:block;margin-bottom:3px;}
-.shot-bar-wrap{height:3px;background:var(--surface3);border-radius:2px;width:70px;margin:0 auto 2px;}
+.shot-metric-cell{padding:14px 16px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.shot-val{font-family:var(--font-mono);font-size:13px;color:var(--text2);display:block;margin-bottom:5px;font-weight:500;}
+.shot-bar-wrap{height:4px;background:var(--surface3);border-radius:2px;width:90px;margin:0 auto 4px;}
 .shot-bar{height:100%;border-radius:2px;}
-.shot-pct{font-family:var(--font-mono);font-size:10px;display:block;margin-bottom:1px;}
-.shot-rank{font-size:8px;color:var(--text4);display:block;margin-bottom:2px;}
-.shot-badge{font-size:7px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;display:inline-block;}
+.shot-pct{font-family:var(--font-mono);font-size:12px;display:block;margin-bottom:3px;}
+.shot-rank{font-size:10px;color:var(--text4);display:block;margin-bottom:3px;}
+.shot-badge{font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 6px;border-radius:2px;display:inline-block;}
 
 /* HISTORICAL */
 .hist-controls{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
@@ -121,9 +121,9 @@ select:focus{border-color:var(--accent);}
 .hist-table{width:100%;border-collapse:collapse;font-size:12px;}
 .hist-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);padding:9px 14px;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;}
 .hist-table th.stat-col{text-align:left;min-width:160px;}
-.hist-table td{padding:8px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;}
 .hist-table tr:last-child td{border-bottom:none;}
-.hist-table td.stat-col{text-align:left;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);}
+.hist-table td.stat-col{text-align:left;display:flex;align-items:flex-start;gap:4px;font-size:12px;color:var(--text2);padding-top:12px;}
 .hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:6px 14px;}
 .hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
 .hist-val{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
@@ -447,9 +447,9 @@ const TIPS={
   ppp_off_full:'Actual points scored per possession (calculated independently, not from Torvik).',
   xPPP_off:'Expected points per possession on offense: shot profile frequencies multiplied by league-wide season averages by shot type for each year.',
   ppp_residual_off:'Shotmaking above expectation on offense: actual PPP minus expected PPP. Positive = team scores more than its shot profile would predict.',
-  ppp_diff:'Efficiency differential: actual offensive PPP minus actual defensive PPP. Higher = outscoring opponents per possession.',
-  xPPP_diff:'Expected efficiency differential: expected offensive PPP minus expected defensive PPP based on shot profiles.',
-  residual_diff:'Shotmaking differential: offensive shotmaking residual minus defensive shotmaking residual. Higher = outperforming expectation on both ends.',
+  ppp_diff:'How many points per possession we beat teams by — actual scoring margin per possession.',
+  xPPP_diff:'The difference between the shots we generate and the shots we allow — comparing shot profiles with our opponent.',
+  residual_diff:'Performance Over Expectation — how much we outperform (or underperform) the shot quality on both ends.',
   efg_rate_def:'Effective Field Goal % allowed on defense.',
   tov_rate_def:'Turnover rate forced on defense: opponent turnovers per possession.',
   orb_rate_def:'Defensive rebound rate: % of available defensive rebounds captured (1 minus opponent offensive rebound rate).',
@@ -466,6 +466,9 @@ const TIPS={
 const STAT_CATS={
   Overview:[
     {key:'adj_em',label:'Adj. Efficiency Margin',fmt:v=>(v>0?'+':'')+v.toFixed(1)},
+    {key:'ppp_diff',label:'PPP Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'xPPP_diff',label:'Expected PPP Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'residual_diff',label:'Residual Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
     {key:'barthag',label:'Barthag',fmt:v=>v.toFixed(3)},
     {key:'elite_sos_rate',label:'Elite SOS Rating',fmt:v=>(v*100).toFixed(1)+'%'},
     {key:'talent',label:'Talent Rating',fmt:v=>v.toFixed(1)},
@@ -474,9 +477,6 @@ const STAT_CATS={
     {key:'eff._hgt.',label:'Effective Height',fmt:v=>v.toFixed(1)+'"'},
     {key:'adj._t',label:'Adjusted Tempo',fmt:v=>v.toFixed(1),isTempo:true},
     {key:'raw_t',label:'Raw Tempo',fmt:v=>v.toFixed(1),isTempo:true},
-    {key:'ppp_diff',label:'PPP Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
-    {key:'xPPP_diff',label:'Expected PPP Diff',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
-    {key:'residual_diff',label:'Shotmaking Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
   ],
   Offense:[
     {key:'adj_oe',label:'Adj. Off. Efficiency',fmt:v=>v.toFixed(1)},
@@ -518,7 +518,7 @@ const SUMMARY_LABELS={
   efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',
   efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',
   ppp_off_full:'Scoring Efficiency',ppp_def_full:'Defensive Efficiency',
-  ppp_residual_off:'Shotmaking (Off)',ppp_residual_def:'Shotmaking (Def)',
+  ppp_residual_off:'Shotmaking (Off)',ppp_residual_def:'Shotmaking (Def)',residual_diff:'Residual Differential',
   blk_pct_def:'Blocking Shots',blk_pct_off:'Getting Blocked',ast_pct_off:'Ball Movement',
 };
 
@@ -590,10 +590,14 @@ function showEmpty(msg){
 function updateBanner(row){
   document.getElementById('banner-team').style.display='flex';
   document.getElementById('banner-summary').style.display='flex';
-  document.getElementById('banner-team-logo').src=`${TDIR}${sf(row.team_name)}.png`;
+  const tlogo=document.getElementById('banner-team-logo');
+  tlogo.style.display='block';
+  tlogo.src=`${TDIR}${sf(row.team_name)}.png`;
   document.getElementById('banner-team-name').textContent=row.team_name;
   const cs=row.conference.replace(/ /g,'_').replace(/-/g,'_').replace(/\//g,'_');
-  document.getElementById('banner-conf-logo').src=`${CDIR}${cs}.png`;
+  const clogo=document.getElementById('banner-conf-logo');
+  clogo.style.display='block';
+  clogo.src=`${CDIR}${cs}.png`;
   document.getElementById('banner-conf-name').textContent=row.conference;
   document.getElementById('banner-record').textContent=row.full_season_record;
   const em=parseFloat(row.adj_em);
@@ -692,6 +696,21 @@ function statRowHtml(row,stat,view){
   const rawV=parseFloat(row[stat.key]);
   const fv=!isNaN(rawV)?stat.fmt(rawV):'—';
   const rd=view==='conf'?`Conf #${row[stat.key+'_conf_rank']||'—'}`:`#${row[stat.key+'_rank']||'—'}`;
+  // Conference rank view: show value + rank + descriptor only, no percentile bar or pct
+  if(view==='conf'){
+    const confRank=row[stat.key+'_conf_rank'];
+    const confSz=cYearData?cYearData.filter(d=>d.conference===row.conference).length:20;
+    const confPct=confRank?1-(parseInt(confRank)-1)/confSz:null;
+    const confCls=pctCls(confPct,stat.isTempo,false);
+    return`<div class="stat-row">
+      <div class="stat-name">${stat.label}${tip(stat.key)}</div>
+      <div class="stat-val">${fv}</div>
+      <div class="stat-bar-wrap" style="opacity:0"></div>
+      <div class="stat-pct-val" style="width:30px"></div>
+      <div class="stat-rank-val">Conf #${confRank||'—'}</div>
+      <div class="descriptor-badge ${confCls.badge}">${confCls.label}</div>
+    </div>`;
+  }
   return`<div class="stat-row">
     <div class="stat-name">${stat.label}${tip(stat.key)}</div>
     <div class="stat-val">${fv}</div>
@@ -841,23 +860,32 @@ function renderConfStats(){
     const confVals=cYearData.filter(d=>d.conference===cRow.conference).map(d=>parseFloat(d[stat.key])).filter(v=>!isNaN(v));
     const confAvg=confVals.length?confVals.reduce((a,b)=>a+b,0)/confVals.length:null;
 
+    const myD1Pct=parseFloat(cRow[stat.key+'_pct']);
+    const myD1Cls=pctCls(isNaN(myD1Pct)?null:myD1Pct,stat.isTempo,false);
     tbody+=`<tr class="my-row"><td class="stat-col">${stat.label}${tip(stat.key)}</td>
       <td><div class="conf-cell">
         <span class="conf-val" style="color:var(--accent)">${stat.fmt(mv)}</span>
+        <span class="conf-pct ${myD1Cls.color}">${!isNaN(myD1Pct)?Math.round(myD1Pct*100)+'%':''}</span>
         <span class="conf-rank">Conf #${myRank||'—'}</span>
       </div></td>`;
 
     if(!isAvgMode&&!cCompTeam){
       compareTeams.forEach(t=>{
         const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
-        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text2)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;
+        const vD1Pct=parseFloat(t[stat.key+'_pct']);const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
+        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text2)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;
       });
     } else if(cCompTeam){
       const t=compareTeams[0];if(t){const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
-        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--yellow)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;}
+        const vD1Pct=parseFloat(t[stat.key+'_pct']);const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
+        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--yellow)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;}
     }
 
-    tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text4);font-style:italic">${confAvg!==null?stat.fmt(confAvg):'—'}</span></div></td></tr>`;
+    // Dynamic avg: avg of compareTeams if selected, otherwise full conf avg
+    const avgSource = (cCompTeam||cTopN>0) ? compareTeams : cYearData.filter(d=>d.conference===cRow.conference);
+    const avgVals = avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
+    const dynamicAvg = avgVals.length ? avgVals.reduce((a,b)=>a+b,0)/avgVals.length : null;
+    tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text4);font-style:italic">${dynamicAvg!==null?stat.fmt(dynamicAvg):'—'}</span></div></td></tr>`;
   });
   tbody+='</tbody>';
 
