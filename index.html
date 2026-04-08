@@ -82,6 +82,10 @@ select:focus{border-color:var(--accent);}
 .pct-fast{color:var(--accent);} .pct-slow{color:var(--text3);}
 .badge-hifreq{background:rgba(61,214,140,0.12);color:var(--green);}
 .badge-lofreq{background:rgba(240,97,74,0.12);color:var(--red);}
+.badge-abvavg{background:rgba(125,216,138,0.12);color:#7dd88a;}
+.badge-blwavg{background:rgba(240,154,74,0.12);color:var(--orange);}
+.badge-abvfreq{background:rgba(125,216,138,0.12);color:#7dd88a;}
+.badge-blwfreq{background:rgba(240,154,74,0.12);color:var(--orange);}
 
 /* INFO ICON */
 .info-icon{width:13px;height:13px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--text4);font-size:8px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;font-style:normal;}
@@ -121,11 +125,11 @@ select:focus{border-color:var(--accent);}
 .hist-table{width:100%;border-collapse:collapse;font-size:12px;}
 .hist-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);padding:9px 14px;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;}
 .hist-table th.stat-col{text-align:left;min-width:160px;}
-.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;}
+.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;min-width:120px;}
 .hist-table tr:last-child td{border-bottom:none;}
 .hist-table td.stat-col{text-align:left;display:flex;align-items:flex-start;gap:4px;font-size:12px;color:var(--text2);padding-top:12px;}
 .hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:6px 14px;}
-.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;justify-content:flex-start;}
 .hist-val{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
 .hist-pct{font-family:var(--font-mono);font-size:11px;font-weight:500;}
 .hist-rank{font-size:9px;color:var(--text4);}
@@ -206,12 +210,41 @@ select:focus{border-color:var(--accent);}
 .contact-links{display:flex;gap:10px;flex-wrap:wrap;}
 .contact-link{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;font-size:12px;color:var(--text3);text-decoration:none;transition:all 0.15s;}
 .contact-link:hover{border-color:var(--accent);color:var(--accent);}
+.dict-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:0;}
+.dict-table{width:100%;border-collapse:collapse;font-size:12px;}
+.dict-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);}
+.dict-table td{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--text2);font-size:12px;line-height:1.5;vertical-align:top;}
+.dict-table td:first-child{font-family:var(--font-mono);font-size:11px;color:var(--accent);white-space:nowrap;width:180px;}
+.dict-table tr:last-child td{border-bottom:none;}
 
 .empty-state{display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;color:var(--text4);}
 .loading-state{display:flex;align-items:center;justify-content:center;min-height:180px;font-family:var(--font-display);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:768px){
+  nav{padding:0 14px;height:auto;flex-direction:column;align-items:flex-start;gap:0;}
+  .nav-brand{padding:10px 0 6px;}
+  .nav-tabs{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:6px;flex-wrap:nowrap;}
+  .nav-tabs::-webkit-scrollbar{display:none;}
+  .nav-tab{white-space:nowrap;padding:5px 12px;font-size:11px;}
+  #banner{padding:10px 14px;}
+  .banner-top{flex-direction:column;align-items:flex-start;gap:10px;}
+  .banner-team{margin-left:0;width:100%;}
+  .banner-stats{margin-left:auto;}
+  .selector-group{width:100%;}
+  select{min-width:0;width:100%;}
+  .profile-grid{grid-template-columns:1fr;}
+  .shot-profile-wrap{grid-column:1;}
+  .conf-layout{grid-template-columns:1fr;}
+  .tab-content{padding:14px;}
+  .page-desc{padding:8px 14px;}
+  .h2h-selectors{flex-direction:column;gap:12px;}
+  .h2h-vs{display:none;}
+  .banner-summary{flex-direction:column;gap:8px;}
+  .shot-grid{grid-template-columns:120px repeat(4,1fr);}
+  .info-icon .tooltip{left:auto;right:0;top:20px;width:180px;}
+}
 </style>
 </head>
 <body>
@@ -292,7 +325,7 @@ select:focus{border-color:var(--accent);}
             <tbody id="conf-standings-body"></tbody>
           </table>
         </div>
-        <div style="margin-top:6px;font-size:10px;color:var(--text4);font-style:italic">Click any team to compare</div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text4);font-style:italic" id="conf-click-hint">Click teams to build a custom comparison</div>
       </div>
       <div class="conf-right">
         <div class="conf-right-header">
@@ -373,57 +406,141 @@ select:focus{border-color:var(--accent);}
 <!-- ABOUT TAB -->
 <div id="tab-about" class="tab-content">
   <div class="about-wrap">
-    <div class="about-hero">
-      <div class="about-avatar">BS</div>
-      <div class="about-headline">
-        <h1>Benj Stern</h1>
-        <div class="title">Corporate Strategy · Harris Blitzer Sports & Entertainment</div>
-        <div class="tagline">Strategy professional with a front office background and a genuine obsession with college basketball — building analytics tools to bridge the gap between the two.</div>
+
+    <!-- Sub-nav -->
+    <div class="view-toggle" style="margin-bottom:24px">
+      <button class="view-btn active" onclick="setAboutSection('creator',this)">About the Creator</button>
+      <button class="view-btn" onclick="setAboutSection('sources',this)">Data Sources</button>
+      <button class="view-btn" onclick="setAboutSection('dictionary',this)">Data Dictionary</button>
+    </div>
+
+    <!-- About the Creator -->
+    <div id="about-creator">
+      <div class="about-hero">
+        <div class="about-avatar">BS</div>
+        <div class="about-headline">
+          <h1>Benj Stern</h1>
+          <div class="title">Corporate Strategy · Harris Blitzer Sports & Entertainment</div>
+          <div class="tagline">Strategy professional with a front office background and a genuine obsession with college basketball — building analytics tools to bridge the gap between the two.</div>
+        </div>
+      </div>
+      <div class="about-section">
+        <h2>Background</h2>
+        <p>I grew up loving college basketball and have spent years watching as many games as I can — not just as a fan, but as someone trying to understand the game at a deeper level. That obsession met my professional background in strategy and analytics, and this project was born.</p>
+        <p>By day I work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers and New Jersey Devils. Before that I was a strategy consultant at Deloitte. The through line: take complex data, find the signal, and make it actionable for decision-makers.</p>
+        <p>I am actively pursuing Graduate Assistant roles and positions in recruiting, scouting, NIL, and roster construction at D1 programs.</p>
+      </div>
+      <div class="about-section">
+        <h2>Career</h2>
+        <div class="career-timeline">
+          <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Corporate Strategy</div><div class="career-org">Harris Blitzer Sports & Entertainment (76ers / Devils)</div><div class="career-dates">2022 — Present · Philadelphia, PA</div></div></div>
+          <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Strategy Consultant</div><div class="career-org">Deloitte</div><div class="career-dates">2020 — 2022</div></div></div>
+          <div class="career-item"><div class="career-dot"></div><div><div class="career-role">B.S. Economics & Data Analytics — Highest Distinction</div><div class="career-org">Indiana University, Kelley School of Business</div><div class="career-dates">Class of 2020</div></div></div>
+        </div>
+      </div>
+      <div class="about-section">
+        <h2>Skills & Tools</h2>
+        <div class="skills-grid">
+          <div class="skill-chip">Python (pandas, sklearn)</div><div class="skill-chip">Web Scraping</div><div class="skill-chip">K-Means Clustering</div>
+          <div class="skill-chip">Data Visualization</div><div class="skill-chip">Strategic Analysis</div><div class="skill-chip">Front Office Operations</div>
+          <div class="skill-chip">Bart Torvik / KenPom</div><div class="skill-chip">Roster Construction</div><div class="skill-chip">NIL & Recruiting</div>
+        </div>
+      </div>
+      <div class="about-section">
+        <h2>Get In Touch</h2>
+        <div class="contact-links">
+          <a class="contact-link" href="https://www.linkedin.com/in/benjamin-stern-b73a27151/" target="_blank">LinkedIn</a>
+          <a class="contact-link" href="mailto:benjstern@gmail.com">Email</a>
+        </div>
       </div>
     </div>
-    <div class="about-section">
-      <h2>Background</h2>
-      <p>I grew up loving college basketball and have spent the last several years watching as many games as I can — not just as a fan, but as someone trying to understand the game at a deeper level. Somewhere along the way, that obsession met my professional background in strategy and analytics, and this project was born.</p>
-      <p>By day I work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers and New Jersey Devils. Before that I was a strategy consultant at Deloitte. The through line: take complex data, find the signal, and make it useful for decision-makers.</p>
-      <p>I am actively pursuing Graduate Assistant roles and positions in recruiting, scouting, NIL, and roster construction at D1 programs.</p>
-    </div>
-    <div class="about-section">
-      <h2>Career</h2>
-      <div class="career-timeline">
-        <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Corporate Strategy</div><div class="career-org">Harris Blitzer Sports & Entertainment (76ers / Devils)</div><div class="career-dates">2022 — Present · Philadelphia, PA</div></div></div>
-        <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Strategy Consultant</div><div class="career-org">Deloitte</div><div class="career-dates">2020 — 2022</div></div></div>
-        <div class="career-item"><div class="career-dot"></div><div><div class="career-role">B.S. Economics & Data Analytics — Highest Distinction</div><div class="career-org">Indiana University, Kelley School of Business</div><div class="career-dates">Class of 2020</div></div></div>
+
+    <!-- Data Sources -->
+    <div id="about-sources" style="display:none">
+      <div class="about-section">
+        <h2>Data Sources & Citation</h2>
+        <p>Raw team statistics, adjusted efficiencies, roster metrics, and shooting splits were sourced from Bart Torvik's T-Rank database (<a href="https://barttorvik.com" target="_blank" style="color:var(--accent)">barttorvik.com</a>). All feature engineering — including shot profile construction, per-possession estimates, expected PPP (xPPP), shotmaking residuals, and descriptive layers (z-scores, percentiles, ranks) — was developed independently as part of this analytics pipeline.</p>
+        <p style="margin-top:12px;font-style:italic;color:var(--text4)">Torvik, Bart. T-Rank College Basketball Statistics. barttorvik.com.</p>
+      </div>
+      <div class="about-section">
+        <h2>What Comes from Torvik</h2>
+        <p>Adjusted efficiencies (adj_oe, adj_de, adj_em), tempo (adj._t, raw_t), Four Factors, roster metrics (height, experience, talent, SOS), and raw shooting splits are sourced directly from T-Rank.</p>
+      </div>
+      <div class="about-section">
+        <h2>What Was Engineered Independently</h2>
+        <p>Shot profile construction (parsing made-attempt strings, computing FGA totals, shot distribution rates, and FG% by location), the full-season PPP system (estimated FTA/FTM, total points, offensive and defensive PPP), expected PPP (xPPP) based on shot distribution multiplied by league-average shot values by year, shotmaking residuals, residual differentials, and all descriptive layers (z-scores, percentiles, D1 ranks, conference ranks, power/mid-major ranks) were built independently.</p>
+      </div>
+      <div class="about-section">
+        <h2>Dataset Scope</h2>
+        <p>11 seasons of D1 college basketball (2016–2026). Approximately 3,900 team-season records. 398 columns per record including raw stats, engineered features, and descriptive layers. Updated through the 2025–26 full season.</p>
       </div>
     </div>
-    <div class="about-section">
-      <h2>About This Project</h2>
-      <p>This dashboard is built on 11 years of D1 college basketball data (2016–2026), combining Bart Torvik efficiency metrics with shot quality and profile data scraped, engineered, and assembled from scratch using Python. Every team, every season has ~50 variables with D1-wide percentiles, conference ranks, and power vs. mid-major context.</p>
-      <p>The goal: answer real basketball questions. How does this team score? Where are they vulnerable? Are they improving? How do they compare to conference peers? Clustering work is ongoing as Phase 2.</p>
-    </div>
-    <div class="about-section">
-      <h2>Skills & Tools</h2>
-      <div class="skills-grid">
-        <div class="skill-chip">Python (pandas, sklearn)</div><div class="skill-chip">Web Scraping</div><div class="skill-chip">K-Means Clustering</div>
-        <div class="skill-chip">Data Visualization</div><div class="skill-chip">Strategic Analysis</div><div class="skill-chip">Front Office Operations</div>
-        <div class="skill-chip">Bart Torvik / KenPom</div><div class="skill-chip">Roster Construction</div><div class="skill-chip">NIL & Recruiting</div>
+
+    <!-- Data Dictionary -->
+    <div id="about-dictionary" style="display:none">
+      <div class="about-section">
+        <h2>Torvik-Sourced Variables</h2>
+        <div class="dict-table-wrap">
+          <table class="dict-table">
+            <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>adj_em</td><td>Adjusted Efficiency Margin — offensive efficiency minus defensive efficiency, adjusted for opponent strength.</td></tr>
+              <tr><td>adj_oe</td><td>Adjusted Offensive Efficiency — points scored per 100 possessions, adjusted for opponent defense.</td></tr>
+              <tr><td>adj_de</td><td>Adjusted Defensive Efficiency — points allowed per 100 possessions, adjusted for opponent offense.</td></tr>
+              <tr><td>barthag</td><td>Estimated probability of beating an average D1 team on a neutral court.</td></tr>
+              <tr><td>adj._t</td><td>Adjusted tempo — possessions per 40 minutes, adjusted for opponent pace.</td></tr>
+              <tr><td>raw_t</td><td>Raw tempo — actual possessions per 40 minutes.</td></tr>
+              <tr><td>efg_rate_off/def</td><td>Effective Field Goal % — accounts for three-pointers being worth more than two-pointers.</td></tr>
+              <tr><td>tov_rate_off/def</td><td>Turnover rate — turnovers per possession on offense; turnovers forced per possession on defense.</td></tr>
+              <tr><td>orb_rate_off/def</td><td>Offensive and defensive rebounding rate.</td></tr>
+              <tr><td>ft_rate_off/def</td><td>Free throw rate — free throw attempts per field goal attempt.</td></tr>
+              <tr><td>avg_hgt. / eff._hgt.</td><td>Average and effective height of the rotation, weighted by minutes.</td></tr>
+              <tr><td>exp.</td><td>Composite roster experience, weighted by minutes played.</td></tr>
+              <tr><td>talent</td><td>Composite talent rating based on recruiting rankings.</td></tr>
+              <tr><td>elite_sos_rate</td><td>Share of games an elite team would be expected to lose against this team's schedule. Higher = tougher schedule.</td></tr>
+              <tr><td>blk_pct_off/def</td><td>Percentage of field goal attempts blocked on offense; percentage of opponent attempts blocked on defense.</td></tr>
+              <tr><td>ast_pct_off/def</td><td>Percentage of made field goals that were assisted on offense and defense.</td></tr>
+              <tr><td>off/def_*_rate_total</td><td>Shot distribution rates by location (dunks, close 2s, long 2s, 3-pointers) as a share of total FGA.</td></tr>
+              <tr><td>off/def_*_fg</td><td>Field goal percentage by shot location.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="about-section">
+        <h2>Custom-Engineered Variables</h2>
+        <div class="dict-table-wrap">
+          <table class="dict-table">
+            <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>ppp_off_full</td><td>Actual points scored per possession — estimated from shot distribution and FG%, calculated independently.</td></tr>
+              <tr><td>ppp_def_full</td><td>Actual points allowed per possession — estimated from opponent shot distribution and FG%, calculated independently.</td></tr>
+              <tr><td>xPPP_off</td><td>Expected offensive PPP — shot profile frequencies multiplied by league-wide average shot values for each season.</td></tr>
+              <tr><td>xPPP_def</td><td>Expected defensive PPP allowed — opponent shot profile frequencies multiplied by league-wide averages.</td></tr>
+              <tr><td>ppp_residual_off</td><td>Shotmaking above expectation on offense — actual PPP minus expected PPP. Positive = scoring more than shot profile predicts.</td></tr>
+              <tr><td>ppp_residual_def</td><td>Shotmaking above expectation allowed on defense — actual PPP allowed minus expected PPP allowed. Negative = holding opponents below expectation.</td></tr>
+              <tr><td>ppp_diff</td><td>PPP Differential — how many points per possession this team outscores opponents. Actual offensive PPP minus defensive PPP.</td></tr>
+              <tr><td>xPPP_diff</td><td>Expected PPP Differential — the difference between shots generated and shots allowed, based on shot profiles vs. opponents.</td></tr>
+              <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms (or underperforms) shot quality on both ends combined.</td></tr>
+              <tr><td>ft_pct_off</td><td>Free throw percentage on offense.</td></tr>
+              <tr><td>power_mid</td><td>"Power" or "Mid-Major" classification based on conference affiliation.</td></tr>
+              <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and rank vs. all D1 teams for each variable.</td></tr>
+              <tr><td>_conf_rank</td><td>Rank within conference for each variable.</td></tr>
+              <tr><td>_sub_z / _sub_pct / _sub_rank</td><td>Z-score, percentile, and rank within power conference or mid-major subgroup.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div class="about-section">
-      <h2>Get In Touch</h2>
-      <div class="contact-links">
-        <a class="contact-link" href="https://www.linkedin.com/in/benjamin-stern-b73a27151/" target="_blank">LinkedIn</a>
-        <a class="contact-link" href="mailto:benjstern@gmail.com">Email</a>
-      </div>
-    </div>
+
   </div>
 </div>
 
 <script>
 const TDIR='logos/teams/', CDIR='logos/conferences/';
 let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
-let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=1, cCompTeam=null, cTab='profile';
+let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=1, cCompTeams=[], cCustomMode=false, cTab='profile';
 
-function isPower(conf,year){const p=['ACC','Big Ten','Big 12','SEC','Big East'];if(year<=2024)p.push('Pac-12');return p.includes(conf);}
+function isPower(row){return row&&row.power_mid==='Power';}
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
 function sf(n){return n.replace(/ /g,'_').replace(/\./g,'').replace(/'/g,'').replace(/&/g,'').replace(/\//g,'_');}
 
@@ -562,7 +679,7 @@ async function onSelectionChange(){
   const team=document.getElementById('team-select').value;
   const year=parseInt(document.getElementById('year-select').value);
   if(!team||!year)return;
-  cTeam=team;cYear=year;cCompTeam=null;
+  cTeam=team;cYear=year;cCompTeams=[];cCustomMode=false;
   showLoading();
   try{
     const yd=await loadYear(year);cYearData=yd;
@@ -604,13 +721,41 @@ function updateBanner(row){
   document.getElementById('banner-adjem').textContent=(em>0?'+':'')+em.toFixed(1);
   document.getElementById('banner-rank').textContent='#'+row.adj_em_rank;
 
-  // Strengths / weaknesses from D1 pct — focused stats only
+  // ── Strengths / weaknesses ─────────────────────────────────────────────────
   const strs=[],wks=[];
+
+  // Four factors + PPP/residual (single threshold: top/bottom 25%)
   SUMMARY_KEYS.forEach(k=>{
     const p=parseFloat(row[k+'_pct']);if(isNaN(p))return;
     if(p>=0.75&&strs.length<3)strs.push(SUMMARY_LABELS[k]);
     else if(p<=0.25&&wks.length<3)wks.push(SUMMARY_LABELS[k]);
   });
+
+  // Shot FG% with two-condition logic
+  const shotChecks=[
+    {rateKey:'off_threes_rate_total_pct',fgKey:'off_threes_fg_pct',label:'3-Point Shooting',off:true},
+    {rateKey:'off_close_twos_rate_total_pct',fgKey:'off_close_twos_fg_pct',label:'Paint Finishing',off:true},
+    {rateKey:'off_dunks_rate_total_pct',fgKey:'off_dunks_fg_pct',label:'Dunk Rate',off:true},
+    {rateKey:'def_threes_rate_total_pct',fgKey:'def_threes_fg_pct',label:'3PT Defense',off:false},
+    {rateKey:'def_close_twos_rate_total_pct',fgKey:'def_close_twos_fg_pct',label:'Paint Defense',off:false},
+    {rateKey:'def_dunks_rate_total_pct',fgKey:'def_dunks_fg_pct',label:'Rim Protection',off:false},
+  ];
+  shotChecks.forEach(sc=>{
+    if(strs.length>=3&&wks.length>=3)return;
+    const rate=parseFloat(row[sc.rateKey]);
+    const fg=parseFloat(row[sc.fgKey]);
+    if(isNaN(rate)||isNaN(fg))return;
+    // For offense: high rate+fg = strength; for defense: high rate allowed + high fg allowed = weakness
+    const isStr=sc.off
+      ?((rate>=0.75&&fg>=0.60)||(fg>=0.75&&rate>=0.50))
+      :((rate>=0.75&&fg<=0.40)||(fg<=0.25&&rate>=0.50));
+    const isWk=sc.off
+      ?((rate>=0.75&&fg<=0.40)||(fg<=0.25&&rate>=0.50))
+      :((rate>=0.75&&fg>=0.60)||(fg>=0.75&&rate>=0.50));
+    if(isStr&&strs.length<3)strs.push(sc.label);
+    else if(isWk&&wks.length<3)wks.push(sc.label);
+  });
+
   const sEl=document.getElementById('summary-strengths');
   sEl.innerHTML=`<span class="summary-label">Strengths</span>`+
     (strs.length?strs.map(s=>`<span class="strength-tag">${s}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
@@ -620,21 +765,49 @@ function updateBanner(row){
     (wks.length?wks.map(s=>`<span class="weakness-tag">${s}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
 
-  // Shot profile blurb
-  const tR=parseFloat(row.off_threes_rate_total_pct),dR=parseFloat(row.off_dunks_rate_total_pct),lR=parseFloat(row.off_long_twos_rate_total_pct);
+  // ── Shot profile sentence ────────────────────────────────────────────────
+  const offThreeR=parseFloat(row.off_threes_rate_total_pct);
+  const offDunkR=parseFloat(row.off_dunks_rate_total_pct);
+  const offLongR=parseFloat(row.off_long_twos_rate_total_pct);
+  const defDunkR=parseFloat(row.def_dunks_rate_total_pct);
+  const defThreeR=parseFloat(row.def_threes_rate_total_pct);
+  const defLongR=parseFloat(row.def_long_twos_rate_total_pct);
+  const nm=row.team_name.split(' ').slice(-1)[0];
   let blurb='';
-  if(!isNaN(tR)&&!isNaN(dR)){
-    const t3=tR>=0.65?'perimeter-heavy offense':tR<=0.35?'low three-point volume':'balanced perimeter attack';
-    const rim=dR>=0.65?'strong at the rim':dR<=0.35?'limited rim attacks':'average rim presence';
-    const l2=!isNaN(lR)&&lR>=0.65?' and relies heavily on long twos (an inefficient shot type)':!isNaN(lR)&&lR<=0.35?' and avoids the long two':'';
-    blurb=`${row.team_name.split(' ').slice(-1)} runs a ${t3}, is ${rim}${l2}.`;
+  if(!isNaN(offThreeR)&&!isNaN(offDunkR)){
+    // Offense shot diet
+    let offDesc='';
+    if(offThreeR>=0.65&&offDunkR<=0.35)offDesc='generates most of their attempts from three with limited paint attacks';
+    else if(offThreeR>=0.65&&offDunkR>=0.65)offDesc='attacks from both the perimeter and the rim';
+    else if(offThreeR<=0.35&&offDunkR>=0.65)offDesc='prioritizes paint scoring over perimeter shooting';
+    else if(offThreeR<=0.35&&offDunkR<=0.35)offDesc='takes a balanced, mid-range-heavy approach';
+    else if(offThreeR>=0.65)offDesc='leans heavily on the three-point line';
+    else if(offDunkR>=0.65)offDesc='attacks the rim at a high rate';
+    else offDesc='takes a balanced offensive approach';
+    if(!isNaN(offLongR)&&offLongR>=0.65)offDesc+=' and relies on long twos';
+    else if(!isNaN(offLongR)&&offLongR<=0.25)offDesc+=' while avoiding the long two';
+    // Defense
+    let defDesc='';
+    if(!isNaN(defDunkR)&&!isNaN(defThreeR)){
+      if(defDunkR<=0.35&&defThreeR<=0.35)defDesc='protects the rim and contests the perimeter';
+      else if(defDunkR<=0.35)defDesc='protects the rim';
+      else if(defThreeR<=0.35)defDesc='contests perimeter shots effectively';
+      else if(defDunkR>=0.65&&defThreeR>=0.65)defDesc='allows both rim and perimeter attempts at high rates';
+      else if(defDunkR>=0.65)defDesc='struggles to protect the paint';
+      else if(defThreeR>=0.65)defDesc='concedes a high volume of three-point attempts';
+      else if(!isNaN(defLongR)&&defLongR>=0.65)defDesc='forces opponents into long twos';
+      else defDesc='plays a conventional defensive scheme';
+    }
+    blurb=defDesc
+      ?`${nm} ${offDesc}; defensively, they ${defDesc}.`
+      :`${nm} ${offDesc}.`;
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
 }
 
 function updateSubLabels(row){
   if(!row)return;
-  const lbl=isPower(row.conference,row.year_stats)?'vs. Power Conf':'vs. Mid Major';
+  const lbl=isPower(row)?'vs. Power Conf':'vs. Mid Major';
   document.getElementById('sub-view-btn').textContent=lbl;
   document.getElementById('hist-sub-btn').textContent=lbl;
 }
@@ -666,17 +839,20 @@ function getPct(row,key,view){
 
 function pctCls(pct,isTempo,isFreq){
   if(pct===null||pct===undefined){
-    if(isTempo)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'N/A'};
     return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'N/A'};
   }
   if(isTempo){
-    if(pct>=0.75)return{color:'pct-fast',bar:'bar-elite',badge:'badge-fast',label:'Fast'};
-    if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Mid'};
-    return{color:'pct-slow',bar:'bar-poor',badge:'badge-slow',label:'Slow'};
+    if(pct>=0.80)return{color:'pct-fast',bar:'bar-elite',badge:'badge-fast',label:'Very Fast'};
+    if(pct>=0.60)return{color:'pct-good',bar:'bar-good',badge:'badge-abvavg',label:'Above Avg'};
+    if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
+    if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-blwavg',label:'Below Avg'};
+    return{color:'pct-slow',bar:'bar-poor',badge:'badge-slow',label:'Very Slow'};
   }
   if(isFreq){
-    if(pct>=0.65)return{color:'pct-elite',bar:'bar-elite',badge:'badge-hifreq',label:'High Freq'};
-    if(pct>=0.35)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Mid Freq'};
+    if(pct>=0.80)return{color:'pct-elite',bar:'bar-elite',badge:'badge-hifreq',label:'High Freq'};
+    if(pct>=0.60)return{color:'pct-good',bar:'bar-good',badge:'badge-abvfreq',label:'Above Avg'};
+    if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
+    if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-blwfreq',label:'Below Avg'};
     return{color:'pct-poor',bar:'bar-poor',badge:'badge-lofreq',label:'Low Freq'};
   }
   if(pct>=0.85)return{color:'pct-elite',bar:'bar-elite',badge:'badge-elite',label:'Elite'};
@@ -686,7 +862,18 @@ function pctCls(pct,isTempo,isFreq){
   return{color:'pct-poor',bar:'bar-poor',badge:'badge-poor',label:'Poor'};
 }
 
-function tip(key){const t=TIPS[key];if(!t)return'';return`<span class="info-icon">i<span class="tooltip">${t}</span></span>`;}
+function tip(key){
+  const t=TIPS[key];if(!t)return'';
+  return`<span class="info-icon" onclick="toggleTip(event,this)">i<span class="tooltip">${t}</span></span>`;
+}
+function toggleTip(e,el){
+  e.stopPropagation();
+  const tip=el.querySelector('.tooltip');
+  const wasOpen=tip.style.display==='block';
+  document.querySelectorAll('.tooltip').forEach(t=>t.style.display='none');
+  tip.style.display=wasOpen?'none':'block';
+}
+document.addEventListener('click',()=>document.querySelectorAll('.tooltip').forEach(t=>t.style.display='none'));
 
 function statRowHtml(row,stat,view){
   const pct=getPct(row,stat.key,view);
@@ -695,7 +882,7 @@ function statRowHtml(row,stat,view){
   const dp=pct!==null?Math.round(pct*100)+'%':'—';
   const rawV=parseFloat(row[stat.key]);
   const fv=!isNaN(rawV)?stat.fmt(rawV):'—';
-  const rd=view==='conf'?`Conf #${row[stat.key+'_conf_rank']||'—'}`:`#${row[stat.key+'_rank']||'—'}`;
+  const rd=view==='conf'?`Conf #${row[stat.key+'_conf_rank']||'—'}`:view==='sub'?`Sub #${row[stat.key+'_sub_rank']||'—'}`:`#${row[stat.key+'_rank']||'—'}`;
   // Conference rank view: show value + rank + descriptor only, no percentile bar or pct
   if(view==='conf'){
     const confRank=row[stat.key+'_conf_rank'];
@@ -709,6 +896,22 @@ function statRowHtml(row,stat,view){
       <div class="stat-pct-val" style="width:30px"></div>
       <div class="stat-rank-val">Conf #${confRank||'—'}</div>
       <div class="descriptor-badge ${confCls.badge}">${confCls.label}</div>
+    </div>`;
+  }
+  // Sub view: show sub rank
+  if(view==='sub'){
+    const subRank=row[stat.key+'_sub_rank'];
+    const subPct=parseFloat(row[stat.key+'_sub_pct']);
+    const subCls=pctCls(isNaN(subPct)?null:subPct,stat.isTempo,false);
+    const bwS=!isNaN(subPct)?Math.round(subPct*100):0;
+    const dpS=!isNaN(subPct)?Math.round(subPct*100)+'%':'—';
+    return`<div class="stat-row">
+      <div class="stat-name">${stat.label}${tip(stat.key)}</div>
+      <div class="stat-val">${fv}</div>
+      <div class="stat-bar-wrap"><div class="stat-bar ${subCls.bar}" style="width:${bwS}%"></div></div>
+      <div class="stat-pct-val ${subCls.color}">${dpS}</div>
+      <div class="stat-rank-val">Sub #${subRank||'—'}</div>
+      <div class="descriptor-badge ${subCls.badge}">${subCls.label}</div>
     </div>`;
   }
   return`<div class="stat-row">
@@ -781,7 +984,8 @@ function renderProfile(){
 
 // ── CONFERENCE ────────────────────────────────────────────────────────────────
 function setTopN(n,btn){
-  cTopN=n;document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  cTopN=n;cCustomMode=false;cCompTeams=[];
+  document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   renderConfStats();
 }
 
@@ -789,24 +993,33 @@ function renderConference(){
   if(!cRow||!cYearData)return;
   document.getElementById('conference-content').style.display='block';
   updatePageDesc();
-  const conf=cRow.conference,year=cRow.year_stats;
+  const conf=cRow.conference,year=cRow.year;
   document.getElementById('conf-standings-label').textContent=`${conf} — ${yLabel(year)}`;
   const ct=cYearData.filter(d=>d.conference===conf).sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
   const tbody=document.getElementById('conf-standings-body');tbody.innerHTML='';
   ct.forEach((t,i)=>{
-    const em=parseFloat(t.adj_em),isMe=t.team_name===cRow.team_name,isComp=t.team_name===cCompTeam;
+    const em=parseFloat(t.adj_em),isMe=t.team_name===cRow.team_name;
+    const isComp=cCompTeams.includes(t.team_name);
     const tr=document.createElement('tr');
     tr.className=isMe?'highlighted':isComp?'selected-compare':'';
     tr.innerHTML=`<td style="font-family:var(--font-mono);font-size:10px;color:var(--text4)">${i+1}</td>
       <td><div style="display:flex;align-items:center;gap:6px">
         <img src="${TDIR}${sf(t.team_name)}.png" style="width:16px;height:16px;object-fit:contain" onerror="this.style.display='none'"/>
         <span style="font-size:12px;color:${isMe?'var(--accent)':isComp?'var(--yellow)':'var(--text2)'}">${t.team_name}</span>
+        ${isComp?'<span style="font-size:9px;color:var(--yellow);margin-left:auto">✓</span>':''}
       </div></td>
       <td style="font-family:var(--font-mono);font-size:11px;color:${em>0?'var(--green)':'var(--red)'}">${em>0?'+':''}${em.toFixed(1)}</td>
       <td style="font-size:11px;color:var(--text3)">${t.full_season_record}</td>`;
     tr.onclick=()=>{
       if(t.team_name===cRow.team_name)return;
-      cCompTeam=cCompTeam===t.team_name?null:t.team_name;renderConference();
+      cCustomMode=true;
+      const idx=cCompTeams.indexOf(t.team_name);
+      if(idx>=0)cCompTeams.splice(idx,1);
+      else cCompTeams.push(t.team_name);
+      if(cCompTeams.length===0)cCustomMode=false;
+      // Deactivate top N buttons when in custom mode
+      document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.toggle('active',!cCustomMode&&parseInt(b.textContent)==cTopN||(b.textContent==='All'&&cTopN===0)));
+      renderConference();
     };
     tbody.appendChild(tr);
   });
@@ -819,32 +1032,39 @@ function renderConfStats(){
   const ct=cYearData.filter(d=>d.conference===conf).sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
 
   let compareTeams;
-  if(cCompTeam){
-    compareTeams=[cYearData.find(d=>d.team_name===cCompTeam)].filter(Boolean);
+  if(cCustomMode&&cCompTeams.length>0){
+    compareTeams=cCompTeams.map(n=>cYearData.find(d=>d.team_name===n)).filter(Boolean);
   } else {
     const pool=ct.filter(t=>t.team_name!==cRow.team_name);
     compareTeams=cTopN===0?pool:pool.slice(0,cTopN);
   }
 
   const titleEl=document.getElementById('conf-detail-title');
-  if(cCompTeam)titleEl.textContent=`${cRow.team_name} vs. ${cCompTeam}`;
-  else if(cTopN===0)titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
+  if(cCustomMode&&cCompTeams.length>0){
+    const names=cCompTeams.map(n=>n.split(' ').slice(-1)[0]).join(', ');
+    titleEl.textContent=`${cRow.team_name} vs. ${names}`;
+  } else if(cTopN===0)titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
   else titleEl.textContent=`${cRow.team_name} vs. Top ${cTopN} in ${cRow.conference}`;
 
   // Compute avg of compare teams
-  const allStats=Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat})));
+  const shotStats=SHOT_CATS.flatMap(c=>[
+    {key:c.rk,label:`${c.name} Rate (Off)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+    {key:c.fk,label:`${c.name} FG% (Off)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+    {key:c.drk,label:`${c.name} Rate Allowed`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+    {key:c.dfk,label:`${c.name} FG% Allowed`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+  ]);
+  const allStats=[...Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat}))), ...shotStats];
 
   // Build header
-  const isAvgMode=cTopN===0&&!cCompTeam;
+  const isAvgMode=cTopN===0&&!cCustomMode;
   let thead=`<thead><tr>
     <th class="stat-col">Stat</th>
     <th style="color:var(--accent)">${cRow.team_name.split(' ').slice(-1)}</th>`;
-  if(!isAvgMode&&!cCompTeam){
-    compareTeams.forEach(t=>{thead+=`<th style="color:var(--text3)">${t.team_name.split(' ').slice(-1)}</th>`;});
-  } else if(cCompTeam){
-    thead+=`<th style="color:var(--yellow)">${cCompTeam.split(' ').slice(-1)}</th>`;
-  }
-  thead+=`<th style="color:var(--text4);font-style:italic">Conf Avg</th></tr></thead>`;
+  compareTeams.forEach(t=>{
+    const col=cCustomMode?'var(--yellow)':'var(--text3)';
+    thead+=`<th style="color:${col}">${t.team_name.split(' ').slice(-1)}</th>`;
+  });
+  thead+=`<th style="color:var(--text4);font-style:italic">Avg</th></tr></thead>`;
 
   let tbody='<tbody>';
   let lastCat='';
@@ -869,20 +1089,15 @@ function renderConfStats(){
         <span class="conf-rank">Conf #${myRank||'—'}</span>
       </div></td>`;
 
-    if(!isAvgMode&&!cCompTeam){
-      compareTeams.forEach(t=>{
-        const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
-        const vD1Pct=parseFloat(t[stat.key+'_pct']);const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
-        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text2)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;
-      });
-    } else if(cCompTeam){
-      const t=compareTeams[0];if(t){const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
-        const vD1Pct=parseFloat(t[stat.key+'_pct']);const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
-        tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--yellow)">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;}
-    }
+    compareTeams.forEach(t=>{
+      const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
+      const vD1Pct=parseFloat(t[stat.key+'_pct']);const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
+      const col=cCustomMode?'var(--yellow)':'var(--text2)';
+      tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:${col}">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;
+    });
 
-    // Dynamic avg: avg of compareTeams if selected, otherwise full conf avg
-    const avgSource = (cCompTeam||cTopN>0) ? compareTeams : cYearData.filter(d=>d.conference===cRow.conference);
+    // Dynamic avg: avg of compareTeams if any selected, otherwise full conf avg
+    const avgSource = (cCustomMode&&cCompTeams.length>0)||cTopN>0 ? compareTeams : cYearData.filter(d=>d.conference===cRow.conference);
     const avgVals = avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
     const dynamicAvg = avgVals.length ? avgVals.reduce((a,b)=>a+b,0)/avgVals.length : null;
     tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text4);font-style:italic">${dynamicAvg!==null?stat.fmt(dynamicAvg):'—'}</span></div></td></tr>`;
@@ -943,7 +1158,7 @@ async function renderHistorical(){
     stats=STAT_CATS[cHistCat]||[];
   }
 
-  const years=td.map(d=>d.year_stats);
+  const years=td.map(d=>d.year);
   let thead=`<thead><tr><th class="stat-col">Stat</th>`;
   years.forEach(y=>{thead+=`<th>${yLabel(y)}</th>`;});
   thead+=`<th>Trend</th></tr></thead>`;
@@ -959,8 +1174,18 @@ async function renderHistorical(){
       return{raw,pct,rank};
     });
     const f=vals[0]?.pct,l=vals[vals.length-1]?.pct;
+    const fRank=vals[0]?.rank,lRank=vals[vals.length-1]?.rank;
     let arrow='';
-    if(f!==null&&f!==undefined&&l!==null&&l!==undefined){
+    if(cHistComp==='conf'){
+      // For conference view use rank: lower rank number = better
+      const fr=parseInt(fRank),lr=parseInt(lRank);
+      if(!isNaN(fr)&&!isNaN(lr)){
+        const diff=fr-lr; // positive = rank improved (got lower)
+        if(diff>=2)arrow=`<span class="hist-arrow arrow-up">↑</span>`;
+        else if(diff<=-2)arrow=`<span class="hist-arrow arrow-down">↓</span>`;
+        else arrow=`<span class="hist-arrow arrow-flat">→</span>`;
+      }
+    } else if(f!==null&&f!==undefined&&l!==null&&l!==undefined){
       const diff=l-f;
       if(diff>0.03)arrow=`<span class="hist-arrow arrow-up">↑</span>`;
       else if(diff<-0.03)arrow=`<span class="hist-arrow arrow-down">↓</span>`;
@@ -1076,6 +1301,13 @@ function switchTab(tab,btn){
   }
 }
 
+function setAboutSection(section,btn){
+  document.querySelectorAll('#tab-about .view-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('about-creator').style.display=section==='creator'?'block':'none';
+  document.getElementById('about-sources').style.display=section==='sources'?'block':'none';
+  document.getElementById('about-dictionary').style.display=section==='dictionary'?'block':'none';
+}
 loadIndex();
 </script>
 </body>
