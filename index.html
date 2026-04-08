@@ -972,8 +972,9 @@ function renderShotProfile(row,view){
     <div class="shot-subheader-cell">FG% Allowed</div>`;
   SHOT_CATS.forEach(c=>{
     const isExp=expandedShotRows.has(c.name);
-    const arrow=c.expandable?`<span class="shot-expand-arrow" onclick="toggleShotRow('${c.name}',this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">${isExp?'▾':'▸'}</span>`:'';
-    html+=`<div class="shot-cat-cell" style="font-weight:${c.expandable?'600':'500'}">${c.name}${arrow}</div>
+    const arrow=c.expandable?`<span class="shot-expand-arrow" data-cat="${c.name}" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">${isExp?'▾':'▸'}</span>`:'';
+    const fw=c.expandable?'600':'500';
+    html+=`<div class="shot-cat-cell" style="font-weight:${fw}">${c.name}${arrow}</div>
       ${shotMetricCell(row,c.rk,true,view)}
       ${shotMetricCell(row,c.fk,false,view)}
       ${shotMetricCell(row,c.drk,true,view)}
@@ -995,6 +996,10 @@ function toggleShotRow(name,el){
   if(expandedShotRows.has(name))expandedShotRows.delete(name);
   else expandedShotRows.add(name);
   if(cRow)renderProfile();
+}
+function toggleShotRowByName(el){
+  const name=el.getAttribute('data-cat');
+  toggleShotRow(name,el);
 }
 
 function renderProfile(){
