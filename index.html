@@ -658,7 +658,7 @@ const PAGE_DESCS={
 
 async function loadIndex(){
   try{const r=await fetch('data/index.json');INDEX=await r.json();initSelectors();}
-  catch(e){document.getElementById('profile-empty').textContent='Error loading data.';}
+  catch(e){document.getElementById('profile-empty').textContent='Error: '+e.message;console.error(e);}
 }
 
 async function loadYear(y){
@@ -696,7 +696,7 @@ async function onSelectionChange(){
     if(!row){showEmpty(`No data for ${team} in ${year}`);return;}
     cRow=row;
     updateBanner(row);updateSubLabels(row);renderTab();
-  }catch(e){showEmpty('Error loading data.');}
+  }catch(e){showEmpty('Error: '+e.message);console.error(e);}
 }
 
 function showLoading(){
@@ -934,6 +934,7 @@ function statRowHtml(row,stat,view){
 }
 
 function shotMetricCell(row,key,isFreq,view){
+  if(!row||!key)return'<div class="shot-metric-cell"><span class="shot-val">—</span></div>';
   const rawV=parseFloat(row[key]);
   const fv=!isNaN(rawV)?(rawV<1?(rawV*100).toFixed(1)+'%':rawV.toFixed(1)):'—';
   let pct;
@@ -976,7 +977,8 @@ function renderShotProfile(row,view){
     <div class="shot-subheader-cell">FG% Allowed</div>`;
   SHOT_CATS.forEach(c=>{
     const isExp=expandedShotRows.has(c.name);
-    const arrow=c.expandable?`<span class="shot-expand-arrow" data-cat="${c.name}" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">${isExp?'▾':'▸'}</span>`:'';
+    const arrowChar=isExp?'▾':'▸';
+    const arrow=c.expandable?('<span class="shot-expand-arrow" data-cat="'+c.name+'" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">'+arrowChar+'</span>'):'';
     const fw=c.expandable?'600':'500';
     html+=`<div class="shot-cat-cell" style="font-weight:${fw}">${c.name}${arrow}</div>
       ${shotMetricCell(row,c.rk,true,view)}
@@ -1020,7 +1022,12 @@ function renderProfile(){
   });
   // Shot profile full width
   const sp=document.createElement('div');sp.className='stat-card shot-profile-wrap';
-  sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div>${renderShotProfile(cRow,cView)}`;
+  try{
+    sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div>${renderShotProfile(cRow,cView)}`;
+  }catch(e){
+    sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div><div style="padding:20px;color:var(--text4);font-size:12px">Shot profile error: ${e.message}</div>`;
+    console.error('Shot profile error:',e);
+  }
   grid.appendChild(sp);
 }
 
