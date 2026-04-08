@@ -122,14 +122,15 @@ select:focus{border-color:var(--accent);}
 .hist-comp-btn.active{background:rgba(74,158,255,0.15);color:var(--accent);border-color:var(--accent);}
 
 .hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;overflow-x:auto;}
+.hist-table{table-layout:fixed;}
 .hist-table{width:100%;border-collapse:collapse;font-size:12px;}
 .hist-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);padding:9px 14px;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;}
 .hist-table th.stat-col{text-align:left;min-width:160px;}
-.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;min-width:120px;}
+.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;width:120px;}
 .hist-table tr:last-child td{border-bottom:none;}
 .hist-table td.stat-col{text-align:left;display:flex;align-items:flex-start;gap:4px;font-size:12px;color:var(--text2);padding-top:12px;}
 .hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:6px 14px;}
-.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;justify-content:flex-start;}
+.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;height:56px;justify-content:flex-start;}
 .hist-val{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
 .hist-pct{font-family:var(--font-mono);font-size:11px;font-weight:500;}
 .hist-rank{font-size:9px;color:var(--text4);}
@@ -333,12 +334,12 @@ select:focus{border-color:var(--accent);}
           <div style="display:flex;align-items:center;gap:6px">
             <span class="selector-label">Compare vs. top</span>
             <div class="top-n-btns">
-              <button class="top-n-btn active" onclick="setTopN(1,this)">1</button>
+              <button class="top-n-btn" onclick="setTopN(1,this)">1</button>
               <button class="top-n-btn" onclick="setTopN(2,this)">2</button>
               <button class="top-n-btn" onclick="setTopN(3,this)">3</button>
               <button class="top-n-btn" onclick="setTopN(4,this)">4</button>
               <button class="top-n-btn" onclick="setTopN(5,this)">5</button>
-              <button class="top-n-btn" onclick="setTopN(0,this)">All</button>
+              <button class="top-n-btn active" onclick="setTopN(0,this)">All</button>
             </div>
           </div>
         </div>
@@ -538,7 +539,7 @@ select:focus{border-color:var(--accent);}
 <script>
 const TDIR='logos/teams/', CDIR='logos/conferences/';
 let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
-let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=1, cCompTeams=[], cCustomMode=false, cTab='profile';
+let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile';
 
 function isPower(row){return row&&row.power_mid==='Power';}
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
@@ -574,6 +575,10 @@ const TIPS={
   ppp_def_full:'Actual points allowed per possession (calculated independently, not from Torvik).',
   xPPP_def:'Expected points per possession allowed: opponent shot profile frequencies multiplied by league-wide season averages.',
   ppp_residual_def:'Shotmaking above expectation allowed on defense: actual PPP allowed minus expected PPP allowed. Negative = defense holds opponents below their expected efficiency.',
+  off_rim_rate_total:'Rim rate on offense: percentage of total field goal attempts that are rim shots (dunks + close 2s combined).',
+  off_rim_fg:'FG% on rim attempts on offense (dunks + close 2s combined).',
+  def_rim_rate_total:'Rim rate allowed on defense: percentage of opponent field goal attempts that are rim shots.',
+  def_rim_fg:'FG% allowed on rim attempts on defense. Lower is better — high percentile means strong rim protection.',
   blk_pct_off:'Percentage of offensive field goal attempts that were blocked. Lower is better.',
   blk_pct_def:'Percentage of opponent field goal attempts blocked by this team. Higher is better.',
   ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
@@ -625,7 +630,7 @@ const STAT_CATS={
 const SHOT_CATS=[
   {name:'Dunks',rk:'off_dunks_rate_total',fk:'off_dunks_fg',drk:'def_dunks_rate_total',dfk:'def_dunks_fg',offRateGood:true},
   {name:'Close 2s',rk:'off_close_twos_rate_total',fk:'off_close_twos_fg',drk:'def_close_twos_rate_total',dfk:'def_close_twos_fg',offRateGood:true},
-  {name:'Long 2s',rk:'off_long_twos_rate_total',fk:'off_long_twos_fg',drk:'def_long_twos_rate_total',dfk:'def_long_twos_fg',offRateGood:false},
+  {name:'Midrange',rk:'off_long_twos_rate_total',fk:'off_long_twos_fg',drk:'def_long_twos_rate_total',dfk:'def_long_twos_fg',offRateGood:false},
   {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true},
 ];
 
@@ -734,11 +739,11 @@ function updateBanner(row){
   // Shot FG% with two-condition logic
   const shotChecks=[
     {rateKey:'off_threes_rate_total_pct',fgKey:'off_threes_fg_pct',label:'3-Point Shooting',off:true},
-    {rateKey:'off_close_twos_rate_total_pct',fgKey:'off_close_twos_fg_pct',label:'Paint Finishing',off:true},
-    {rateKey:'off_dunks_rate_total_pct',fgKey:'off_dunks_fg_pct',label:'Dunk Rate',off:true},
+    {rateKey:'off_rim_rate_total_pct',fgKey:'off_rim_fg_pct',label:'Rim Finishing',off:true},
+    {rateKey:'off_long_twos_rate_total_pct',fgKey:'off_long_twos_fg_pct',label:'Midrange',off:true},
     {rateKey:'def_threes_rate_total_pct',fgKey:'def_threes_fg_pct',label:'3PT Defense',off:false},
-    {rateKey:'def_close_twos_rate_total_pct',fgKey:'def_close_twos_fg_pct',label:'Paint Defense',off:false},
-    {rateKey:'def_dunks_rate_total_pct',fgKey:'def_dunks_fg_pct',label:'Rim Protection',off:false},
+    {rateKey:'def_rim_rate_total_pct',fgKey:'def_rim_fg_pct',label:'Rim Protection',off:false},
+    {rateKey:'def_long_twos_rate_total_pct',fgKey:'def_long_twos_fg_pct',label:'Midrange Defense',off:false},
   ];
   shotChecks.forEach(sc=>{
     if(strs.length>=3&&wks.length>=3)return;
@@ -767,35 +772,35 @@ function updateBanner(row){
 
   // ── Shot profile sentence ────────────────────────────────────────────────
   const offThreeR=parseFloat(row.off_threes_rate_total_pct);
-  const offDunkR=parseFloat(row.off_dunks_rate_total_pct);
+  const offRimR=parseFloat(row.off_rim_rate_total_pct);
   const offLongR=parseFloat(row.off_long_twos_rate_total_pct);
-  const defDunkR=parseFloat(row.def_dunks_rate_total_pct);
+  const defRimR=parseFloat(row.def_rim_rate_total_pct);
   const defThreeR=parseFloat(row.def_threes_rate_total_pct);
   const defLongR=parseFloat(row.def_long_twos_rate_total_pct);
   const nm=row.team_name.split(' ').slice(-1)[0];
   let blurb='';
-  if(!isNaN(offThreeR)&&!isNaN(offDunkR)){
+  if(!isNaN(offThreeR)&&!isNaN(offRimR)){
     // Offense shot diet
     let offDesc='';
-    if(offThreeR>=0.65&&offDunkR<=0.35)offDesc='generates most of their attempts from three with limited paint attacks';
-    else if(offThreeR>=0.65&&offDunkR>=0.65)offDesc='attacks from both the perimeter and the rim';
-    else if(offThreeR<=0.35&&offDunkR>=0.65)offDesc='prioritizes paint scoring over perimeter shooting';
-    else if(offThreeR<=0.35&&offDunkR<=0.35)offDesc='takes a balanced, mid-range-heavy approach';
+    if(offThreeR>=0.65&&offRimR<=0.35)offDesc='generates most of their attempts from three with limited paint attacks';
+    else if(offThreeR>=0.65&&offRimR>=0.65)offDesc='attacks from both the perimeter and the rim at high rates';
+    else if(offThreeR<=0.35&&offRimR>=0.65)offDesc='prioritizes paint scoring over perimeter shooting';
+    else if(offThreeR<=0.35&&offRimR<=0.35)offDesc='takes a midrange-heavy approach';
     else if(offThreeR>=0.65)offDesc='leans heavily on the three-point line';
-    else if(offDunkR>=0.65)offDesc='attacks the rim at a high rate';
+    else if(offRimR>=0.65)offDesc='attacks the rim at a high rate';
     else offDesc='takes a balanced offensive approach';
-    if(!isNaN(offLongR)&&offLongR>=0.65)offDesc+=' and relies on long twos';
-    else if(!isNaN(offLongR)&&offLongR<=0.25)offDesc+=' while avoiding the long two';
+    if(!isNaN(offLongR)&&offLongR>=0.65)offDesc+=' with heavy midrange usage';
+    else if(!isNaN(offLongR)&&offLongR<=0.25)offDesc+=' while avoiding the midrange';
     // Defense
     let defDesc='';
-    if(!isNaN(defDunkR)&&!isNaN(defThreeR)){
-      if(defDunkR<=0.35&&defThreeR<=0.35)defDesc='protects the rim and contests the perimeter';
-      else if(defDunkR<=0.35)defDesc='protects the rim';
+    if(!isNaN(defRimR)&&!isNaN(defThreeR)){
+      if(defRimR<=0.35&&defThreeR<=0.35)defDesc='protects the rim and contests the perimeter';
+      else if(defRimR<=0.35)defDesc='protects the rim effectively';
       else if(defThreeR<=0.35)defDesc='contests perimeter shots effectively';
-      else if(defDunkR>=0.65&&defThreeR>=0.65)defDesc='allows both rim and perimeter attempts at high rates';
-      else if(defDunkR>=0.65)defDesc='struggles to protect the paint';
+      else if(defRimR>=0.65&&defThreeR>=0.65)defDesc='allows high volumes of both rim and perimeter attempts';
+      else if(defRimR>=0.65)defDesc='struggles to protect the paint';
       else if(defThreeR>=0.65)defDesc='concedes a high volume of three-point attempts';
-      else if(!isNaN(defLongR)&&defLongR>=0.65)defDesc='forces opponents into long twos';
+      else if(!isNaN(defLongR)&&defLongR>=0.65)defDesc='forces opponents into midrange shots';
       else defDesc='plays a conventional defensive scheme';
     }
     blurb=defDesc
@@ -849,11 +854,11 @@ function pctCls(pct,isTempo,isFreq){
     return{color:'pct-slow',bar:'bar-poor',badge:'badge-slow',label:'Very Slow'};
   }
   if(isFreq){
-    if(pct>=0.80)return{color:'pct-elite',bar:'bar-elite',badge:'badge-hifreq',label:'High Freq'};
-    if(pct>=0.60)return{color:'pct-good',bar:'bar-good',badge:'badge-abvfreq',label:'Above Avg'};
+    if(pct>=0.80)return{color:'pct-elite',bar:'bar-elite',badge:'badge-hifreq',label:'Very High Freq'};
+    if(pct>=0.60)return{color:'pct-good',bar:'bar-good',badge:'badge-abvfreq',label:'Higher Freq'};
     if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
-    if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-blwfreq',label:'Below Avg'};
-    return{color:'pct-poor',bar:'bar-poor',badge:'badge-lofreq',label:'Low Freq'};
+    if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-blwfreq',label:'Lower Freq'};
+    return{color:'pct-poor',bar:'bar-poor',badge:'badge-lofreq',label:'Very Low Freq'};
   }
   if(pct>=0.85)return{color:'pct-elite',bar:'bar-elite',badge:'badge-elite',label:'Elite'};
   if(pct>=0.65)return{color:'pct-good',bar:'bar-good',badge:'badge-good',label:'Above Avg'};
@@ -933,7 +938,19 @@ function shotMetricCell(row,key,isFreq,view){
   else{const v=parseFloat(row[key+'_pct']);pct=isNaN(v)?null:v;}
   const cls=pctCls(pct,false,isFreq);
   const bw=pct!==null?Math.round(pct*100):0;
-  const rd=view==='conf'?`Conf #${row[key+'_conf_rank']||'—'}`:`#${row[key+'_rank']||'—'}`;
+  const rd=view==='conf'?`Conf #${row[key+'_conf_rank']||'—'}`:view==='sub'?`Sub #${row[key+'_sub_rank']||'—'}`:`#${row[key+'_rank']||'—'}`;
+  // Conference rank view: no percentile bar or pct number
+  if(view==='conf'){
+    const confR=row[key+'_conf_rank'];
+    const confSz=cYearData?cYearData.filter(d=>d.conference===row.conference).length:20;
+    const confPct=confR?1-(parseInt(confR)-1)/confSz:null;
+    const confCls=pctCls(confPct,false,isFreq);
+    return`<div class="shot-metric-cell">
+      <span class="shot-val">${fv}</span>
+      <span class="shot-rank">Conf #${confR||'—'}</span>
+      <span class="shot-badge ${confCls.badge}">${confCls.label}</span>
+    </div>`;
+  }
   return`<div class="shot-metric-cell">
     <span class="shot-val">${fv}</span>
     <div class="shot-bar-wrap"><div class="shot-bar ${cls.bar}" style="width:${bw}%"></div></div>
@@ -954,14 +971,30 @@ function renderShotProfile(row,view){
     <div class="shot-subheader-cell">Rate Allowed</div>
     <div class="shot-subheader-cell">FG% Allowed</div>`;
   SHOT_CATS.forEach(c=>{
-    html+=`<div class="shot-cat-cell">${c.name}</div>
+    const isExp=expandedShotRows.has(c.name);
+    const arrow=c.expandable?`<span class="shot-expand-arrow" onclick="toggleShotRow('${c.name}',this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">${isExp?'▾':'▸'}</span>`:'';
+    html+=`<div class="shot-cat-cell" style="font-weight:${c.expandable?'600':'500'}">${c.name}${arrow}</div>
       ${shotMetricCell(row,c.rk,true,view)}
       ${shotMetricCell(row,c.fk,false,view)}
       ${shotMetricCell(row,c.drk,true,view)}
       ${shotMetricCell(row,c.dfk,false,view)}`;
+    if(c.expandable&&isExp&&c.children){
+      c.children.forEach(ch=>{
+        html+=`<div class="shot-cat-cell" style="padding-left:28px;font-size:11px;color:var(--text3)">${ch.name}</div>
+          ${shotMetricCell(row,ch.rk,true,view)}
+          ${shotMetricCell(row,ch.fk,false,view)}
+          ${shotMetricCell(row,ch.drk,true,view)}
+          ${shotMetricCell(row,ch.dfk,false,view)}`;
+      });
+    }
   });
   html+='</div>';
   return html;
+}
+function toggleShotRow(name,el){
+  if(expandedShotRows.has(name))expandedShotRows.delete(name);
+  else expandedShotRows.add(name);
+  if(cRow)renderProfile();
 }
 
 function renderProfile(){
@@ -1034,15 +1067,17 @@ function renderConfStats(){
   let compareTeams;
   if(cCustomMode&&cCompTeams.length>0){
     compareTeams=cCompTeams.map(n=>cYearData.find(d=>d.team_name===n)).filter(Boolean);
+  } else if(cTopN===0){
+    compareTeams=[]; // All mode = show conf avg only, no individual teams
   } else {
     const pool=ct.filter(t=>t.team_name!==cRow.team_name);
-    compareTeams=cTopN===0?pool:pool.slice(0,cTopN);
+    compareTeams=pool.slice(0,cTopN);
   }
 
   const titleEl=document.getElementById('conf-detail-title');
   if(cCustomMode&&cCompTeams.length>0){
     const names=cCompTeams.map(n=>n.split(' ').slice(-1)[0]).join(', ');
-    titleEl.textContent=`${cRow.team_name} vs. ${names}`;
+    titleEl.textContent=`${cRow.team_name} vs. ${names} (Custom)`;
   } else if(cTopN===0)titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
   else titleEl.textContent=`${cRow.team_name} vs. Top ${cTopN} in ${cRow.conference}`;
 
@@ -1056,7 +1091,7 @@ function renderConfStats(){
   const allStats=[...Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat}))), ...shotStats];
 
   // Build header
-  const isAvgMode=cTopN===0&&!cCustomMode;
+  const isAvgMode=(cTopN===0&&!cCustomMode)||compareTeams.length===0;
   let thead=`<thead><tr>
     <th class="stat-col">Stat</th>
     <th style="color:var(--accent)">${cRow.team_name.split(' ').slice(-1)}</th>`;
@@ -1064,7 +1099,7 @@ function renderConfStats(){
     const col=cCustomMode?'var(--yellow)':'var(--text3)';
     thead+=`<th style="color:${col}">${t.team_name.split(' ').slice(-1)}</th>`;
   });
-  thead+=`<th style="color:var(--text4);font-style:italic">Avg</th></tr></thead>`;
+  thead+=`<th style="color:var(--text4);font-style:italic">Conf Avg</th></tr></thead>`;
 
   let tbody='<tbody>';
   let lastCat='';
