@@ -14,7 +14,7 @@
   --font-display:'Barlow Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text2);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text2);font-family:var(--font-body);min-height:100vh;overflow-x:auto;}
 nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
 .nav-brand{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;}
 .nav-tabs{display:flex;gap:2px;}
@@ -122,15 +122,15 @@ select:focus{border-color:var(--accent);}
 .hist-comp-btn.active{background:rgba(74,158,255,0.15);color:var(--accent);border-color:var(--accent);}
 
 .hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;overflow-x:auto;}
-.hist-table{table-layout:fixed;}
+.hist-table{table-layout:auto;width:100%;}
 .hist-table{width:100%;border-collapse:collapse;font-size:12px;}
 .hist-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);padding:9px 14px;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;}
 .hist-table th.stat-col{text-align:left;min-width:160px;}
-.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;width:120px;}
+.hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;min-width:110px;}
 .hist-table tr:last-child td{border-bottom:none;}
-.hist-table td.stat-col{text-align:left;display:flex;align-items:flex-start;gap:4px;font-size:12px;color:var(--text2);padding-top:12px;}
+.hist-table td.stat-col{text-align:left;font-size:12px;color:var(--text2);min-width:160px;}
 .hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:6px 14px;}
-.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;height:56px;justify-content:flex-start;}
+.hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;}
 .hist-val{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
 .hist-pct{font-family:var(--font-mono);font-size:11px;font-weight:500;}
 .hist-rank{font-size:9px;color:var(--text4);}
@@ -293,6 +293,7 @@ select:focus{border-color:var(--accent);}
   <div class="banner-summary" id="banner-summary" style="display:none">
     <div id="summary-strengths" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
     <div id="summary-weaknesses" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
+    <div id="shot-profile-label" style="display:flex;align-items:center;gap:6px"><span class="summary-label">Shot Profile</span></div>
     <div class="shot-profile-blurb" id="shot-profile-blurb"></div>
   </div>
 </div>
@@ -639,10 +640,10 @@ const SHOT_CATS=[
   {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true},
 ];
 
-const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','efg_rate_def','tov_rate_def','orb_rate_def',
+const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def',
   'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
 const SUMMARY_LABELS={
-  efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',
+  efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',ft_pct_off:'FT%',
   efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',
   ppp_off_full:'Scoring Efficiency',ppp_def_full:'Defensive Efficiency',
   ppp_residual_off:'Shotmaking (Off)',ppp_residual_def:'Shotmaking (Def)',residual_diff:'Residual Differential',
@@ -774,6 +775,7 @@ function updateBanner(row){
   wEl.innerHTML=`<span class="summary-label">Weaknesses</span>`+
     (wks.length?wks.map(s=>`<span class="weakness-tag">${s}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
+  document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
 
   // ── Shot profile sentence ────────────────────────────────────────────────
   const offThreeR=parseFloat(row.off_threes_rate_total_pct);
@@ -811,6 +813,8 @@ function updateBanner(row){
     blurb=defDesc
       ?`${nm} ${offDesc}; defensively, they ${defDesc}.`
       :`${nm} ${offDesc}.`;
+    // ensure grammar: no 'concedes' (should be 'concede')
+    blurb=blurb.replace('concedes','concede').replace('struggles','struggle').replace('allows','allow').replace('prioritizes','prioritize').replace('attacks','attack').replace('generates','generate').replace('leans','lean').replace('takes','take').replace('forces','force').replace('protects','protect').replace('contests','contest');
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
 }
@@ -1081,24 +1085,25 @@ function renderConfStats(){
   const conf=cRow.conference;
   const ct=cYearData.filter(d=>d.conference===conf).sort((a,b)=>parseFloat(b.adj_em)-parseFloat(a.adj_em));
 
-  let compareTeams;
+  // Determine compare teams
+  let compareTeams=[];
   if(cCustomMode&&cCompTeams.length>0){
     compareTeams=cCompTeams.map(n=>cYearData.find(d=>d.team_name===n)).filter(Boolean);
-  } else if(cTopN===0){
-    compareTeams=[]; // All mode = show conf avg only, no individual teams
-  } else {
-    const pool=ct.filter(t=>t.team_name!==cRow.team_name);
-    compareTeams=pool.slice(0,cTopN);
+  } else if(cTopN>0){
+    compareTeams=ct.filter(t=>t.team_name!==cRow.team_name).slice(0,cTopN);
   }
+  // cTopN===0 and no custom = All mode = just show conf avg, no compare columns
 
+  // Title
   const titleEl=document.getElementById('conf-detail-title');
   if(cCustomMode&&cCompTeams.length>0){
-    const names=cCompTeams.map(n=>n.split(' ').slice(-1)[0]).join(', ');
-    titleEl.textContent=`${cRow.team_name} vs. ${names} (Custom)`;
-  } else if(cTopN===0)titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
-  else titleEl.textContent=`${cRow.team_name} vs. Top ${cTopN} in ${cRow.conference}`;
+    titleEl.textContent=`${cRow.team_name} vs. ${cCompTeams.map(n=>n.split(' ').slice(-1)[0]).join(', ')} (Custom)`;
+  } else if(cTopN===0){
+    titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
+  } else {
+    titleEl.textContent=`${cRow.team_name} vs. Top ${cTopN} in ${cRow.conference}`;
+  }
 
-  // Compute avg of compare teams
   const shotStats=SHOT_CATS.flatMap(c=>[
     {key:c.rk,label:`${c.name} Rate (Off)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
     {key:c.fk,label:`${c.name} FG% (Off)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
@@ -1107,8 +1112,10 @@ function renderConfStats(){
   ]);
   const allStats=[...Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat}))), ...shotStats];
 
+  // Avg source: compare teams if any, otherwise full conference
+  const avgSource=compareTeams.length>0?compareTeams:cYearData.filter(d=>d.conference===conf);
+
   // Build header
-  const isAvgMode=(cTopN===0&&!cCustomMode)||compareTeams.length===0;
   let thead=`<thead><tr>
     <th class="stat-col">Stat</th>
     <th style="color:var(--accent)">${cRow.team_name.split(' ').slice(-1)}</th>`;
@@ -1121,19 +1128,17 @@ function renderConfStats(){
   let tbody='<tbody>';
   let lastCat='';
   allStats.forEach(stat=>{
-    const mv=parseFloat(cRow[stat.key]);if(isNaN(mv))return;
+    const mv=parseFloat(cRow[stat.key]);
+    if(isNaN(mv))return;
     if(stat.cat!==lastCat){
-      const cols=2+(isAvgMode||cCompTeam?1:compareTeams.length)+1;
+      const cols=2+compareTeams.length+1;
       tbody+=`<tr class="cat-row"><td colspan="${cols}">${stat.cat}</td></tr>`;
       lastCat=stat.cat;
     }
     const myRank=cRow[stat.key+'_conf_rank'];
-    // Conf avg
-    const confVals=cYearData.filter(d=>d.conference===cRow.conference).map(d=>parseFloat(d[stat.key])).filter(v=>!isNaN(v));
-    const confAvg=confVals.length?confVals.reduce((a,b)=>a+b,0)/confVals.length:null;
-
     const myD1Pct=parseFloat(cRow[stat.key+'_pct']);
     const myD1Cls=pctCls(isNaN(myD1Pct)?null:myD1Pct,stat.isTempo,false);
+
     tbody+=`<tr class="my-row"><td class="stat-col">${stat.label}${tip(stat.key)}</td>
       <td><div class="conf-cell">
         <span class="conf-val" style="color:var(--accent)">${stat.fmt(mv)}</span>
@@ -1142,17 +1147,24 @@ function renderConfStats(){
       </div></td>`;
 
     compareTeams.forEach(t=>{
-      const v=parseFloat(t[stat.key]);const r=t[stat.key+'_conf_rank'];
-      const vD1Pct=parseFloat(t[stat.key+'_pct']);const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
+      const v=parseFloat(t[stat.key]);
+      const r=t[stat.key+'_conf_rank'];
+      const vD1Pct=parseFloat(t[stat.key+'_pct']);
+      const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
       const col=cCustomMode?'var(--yellow)':'var(--text2)';
-      tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:${col}">${!isNaN(v)?stat.fmt(v):'—'}</span><span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span><span class="conf-rank">Conf #${r||'—'}</span></div></td>`;
+      tbody+=`<td><div class="conf-cell">
+        <span class="conf-val" style="color:${col}">${!isNaN(v)?stat.fmt(v):'—'}</span>
+        <span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span>
+        <span class="conf-rank">Conf #${r||'—'}</span>
+      </div></td>`;
     });
 
-    // Dynamic avg: avg of compareTeams if any selected, otherwise full conf avg
-    const avgSource = (cCustomMode&&cCompTeams.length>0)||cTopN>0 ? compareTeams : cYearData.filter(d=>d.conference===cRow.conference);
-    const avgVals = avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
-    const dynamicAvg = avgVals.length ? avgVals.reduce((a,b)=>a+b,0)/avgVals.length : null;
-    tbody+=`<td><div class="conf-cell"><span class="conf-val" style="color:var(--text4);font-style:italic">${dynamicAvg!==null?stat.fmt(dynamicAvg):'—'}</span></div></td></tr>`;
+    // Conf avg column
+    const avgVals=avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
+    const avg=avgVals.length?avgVals.reduce((a,b)=>a+b,0)/avgVals.length:null;
+    tbody+=`<td><div class="conf-cell">
+      <span class="conf-val" style="color:var(--text4);font-style:italic">${avg!==null?stat.fmt(avg):'—'}</span>
+    </div></td></tr>`;
   });
   tbody+='</tbody>';
 
@@ -1243,7 +1255,7 @@ async function renderHistorical(){
       else if(diff<-0.03)arrow=`<span class="hist-arrow arrow-down">↓</span>`;
       else arrow=`<span class="hist-arrow arrow-flat">→</span>`;
     }
-    tbody+=`<tr><td class="stat-col">${stat.label}${tip(stat.key)}</td>`;
+    tbody+=`<tr><td class="stat-col" style="padding:10px 14px;text-align:left">${stat.label}${tip(stat.key)}</td>`;
     vals.forEach(v=>{
       const fv=!isNaN(v.raw)?stat.fmt(v.raw):'—';
       const cls=pctCls(v.pct,stat.isTempo,stat.isFreq||false);
