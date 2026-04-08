@@ -501,7 +501,7 @@ select:focus{border-color:var(--accent);}
               <tr><td>elite_sos_rate</td><td>Share of games an elite team would be expected to lose against this team's schedule. Higher = tougher schedule.</td></tr>
               <tr><td>blk_pct_off/def</td><td>Percentage of field goal attempts blocked on offense; percentage of opponent attempts blocked on defense.</td></tr>
               <tr><td>ast_pct_off/def</td><td>Percentage of made field goals that were assisted on offense and defense.</td></tr>
-              <tr><td>off/def_*_rate_total</td><td>Shot distribution rates by location (dunks, close 2s, long 2s, 3-pointers) as a share of total FGA.</td></tr>
+              <tr><td>off/def_*_rate_total</td><td>Shot distribution rates by location as a share of total FGA. Rim = dunks + close 2s combined. Close 2s = non-dunk rim attempts only (layups, floaters, putbacks).</td></tr>
               <tr><td>off/def_*_fg</td><td>Field goal percentage by shot location.</td></tr>
             </tbody>
           </table>
@@ -522,6 +522,10 @@ select:focus{border-color:var(--accent);}
               <tr><td>ppp_diff</td><td>PPP Differential — how many points per possession this team outscores opponents. Actual offensive PPP minus defensive PPP.</td></tr>
               <tr><td>xPPP_diff</td><td>Expected PPP Differential — the difference between shots generated and shots allowed, based on shot profiles vs. opponents.</td></tr>
               <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms (or underperforms) shot quality on both ends combined.</td></tr>
+              <tr><td>off_rim_rate_total</td><td>% of FGA at the rim (dunks + close 2s combined). Style indicator reflecting rim pressure — not directionally good or bad.</td></tr>
+              <tr><td>off_rim_fg</td><td>Weighted FG% at the rim on offense. Higher = better finishing.</td></tr>
+              <tr><td>def_rim_rate_total</td><td>% of opponent FGA at the rim allowed. Style indicator.</td></tr>
+              <tr><td>def_rim_fg</td><td>Weighted FG% allowed at the rim on defense. Lower = better rim protection. High percentile = elite.</td></tr>
               <tr><td>ft_pct_off</td><td>Free throw percentage on offense.</td></tr>
               <tr><td>power_mid</td><td>"Power" or "Mid-Major" classification based on conference affiliation.</td></tr>
               <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and rank vs. all D1 teams for each variable.</td></tr>
@@ -575,10 +579,10 @@ const TIPS={
   ppp_def_full:'Actual points allowed per possession (calculated independently, not from Torvik).',
   xPPP_def:'Expected points per possession allowed: opponent shot profile frequencies multiplied by league-wide season averages.',
   ppp_residual_def:'Shotmaking above expectation allowed on defense: actual PPP allowed minus expected PPP allowed. Negative = defense holds opponents below their expected efficiency.',
-  off_rim_rate_total:'Rim rate on offense: percentage of total field goal attempts that are rim shots (dunks + close 2s combined).',
-  off_rim_fg:'FG% on rim attempts on offense (dunks + close 2s combined).',
-  def_rim_rate_total:'Rim rate allowed on defense: percentage of opponent field goal attempts that are rim shots.',
-  def_rim_fg:'FG% allowed on rim attempts on defense. Lower is better — high percentile means strong rim protection.',
+  off_rim_rate_total:'Rim attempt rate on offense: percentage of total FGA at the rim (dunks + close 2s combined). Reflects rim pressure and paint presence — style indicator, not a quality metric.',
+  off_rim_fg:'Weighted FG% at the rim on offense (dunks + close 2s, weighted by attempts). Higher = better finishing at the rim.',
+  def_rim_rate_total:'Rim attempt rate allowed on defense: percentage of opponent FGA at the rim. Style indicator — neither inherently good nor bad.',
+  def_rim_fg:'Weighted FG% allowed at the rim on defense (dunks + close 2s, weighted by attempts). Lower FG% allowed = better rim protection. High percentile = elite rim defense.',
   blk_pct_off:'Percentage of offensive field goal attempts that were blocked. Lower is better.',
   blk_pct_def:'Percentage of opponent field goal attempts blocked by this team. Higher is better.',
   ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
