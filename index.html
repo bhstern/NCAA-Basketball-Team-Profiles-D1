@@ -544,6 +544,7 @@ select:focus{border-color:var(--accent);}
 const TDIR='logos/teams/', CDIR='logos/conferences/';
 let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
 let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile';
+let expandedShotRows=new Set();
 
 function isPower(row){return row&&row.power_mid==='Power';}
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
