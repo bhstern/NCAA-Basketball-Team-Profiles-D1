@@ -1426,14 +1426,15 @@ async function renderH2H(){
       const clsB=pctCls(isNaN(pB)?null:pB,stat.isTempo,false);
       // H2H descriptor
       let h2hDesc='',h2hCls='pct-avg';
-      if(!isNaN(pA)&&!isNaN(pB)){
-        const diff=(pA-pB)*100;
+      const zA=parseFloat(rA[stat.key+'_z']),zB=parseFloat(rB[stat.key+'_z']);
+      if(!isNaN(zA)&&!isNaN(zB)){
+        const diff=zA-zB;
         const nmA=tA.split(' ').slice(-1)[0];
         const nmB=tB.split(' ').slice(-1)[0];
-        if(diff>=25){h2hDesc=nmA+' Much Better';h2hCls='pct-elite';}
-        else if(diff>=10){h2hDesc=nmA+' Better';h2hCls='pct-good';}
-        else if(diff>=-10){h2hDesc='Similar';h2hCls='pct-avg';}
-        else if(diff>=-25){h2hDesc=nmB+' Better';h2hCls='pct-below';}
+        if(diff>=1.0){h2hDesc=nmA+' Much Better';h2hCls='pct-elite';}
+        else if(diff>=0.5){h2hDesc=nmA+' Better';h2hCls='pct-good';}
+        else if(diff>=-0.5){h2hDesc='Similar';h2hCls='pct-avg';}
+        else if(diff>=-1.0){h2hDesc=nmB+' Better';h2hCls='pct-below';}
         else{h2hDesc=nmB+' Much Better';h2hCls='pct-poor';}
       }
       html+=`<tr>
