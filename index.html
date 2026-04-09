@@ -134,7 +134,7 @@ select:focus{border-color:var(--accent);}
 .hist-val{font-family:var(--font-mono);font-size:11px;color:var(--text3);}
 .hist-pct{font-family:var(--font-mono);font-size:11px;font-weight:500;}
 .hist-rank{font-size:9px;color:var(--text4);}
-.hist-arrow{font-size:13px;}
+.hist-arrow{font-size:12px;font-weight:600;white-space:nowrap;}
 .arrow-up{color:var(--green);} .arrow-down{color:var(--red);} .arrow-flat{color:var(--text4);}
 
 /* CONFERENCE */
@@ -381,6 +381,14 @@ select:focus{border-color:var(--accent);}
           <button class="hist-comp-btn active" onclick="setHistComp('d1',this)">All D1</button>
           <button class="hist-comp-btn" onclick="setHistComp('conf',this)">Conference</button>
           <button class="hist-comp-btn" onclick="setHistComp('sub',this)" id="hist-sub-btn">Power Conf</button>
+        </div>
+      </div>
+      <div class="hist-filter-group">
+        <span class="selector-label">Trend Based On</span>
+        <div class="hist-btn-row">
+          <button class="hist-comp-btn" onclick="setTrendWindow(1,this)">Last 1 yr</button>
+          <button class="hist-comp-btn active" onclick="setTrendWindow(2,this)">Last 2 yrs</button>
+          <button class="hist-comp-btn" onclick="setTrendWindow(3,this)">Last 3 yrs</button>
         </div>
       </div>
     </div>
@@ -670,6 +678,7 @@ const SHOT_CATS=[
 let expandedShotRows=new Set();
 let cH2HCat='All';
 let cConfCat='All';
+let cTrendWindow=2;
 
 const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def',
   'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
@@ -1041,6 +1050,14 @@ function toggleShotRow(name,el){
   else expandedShotRows.add(name);
   if(cRow)renderProfile();
 }
+function setTrendWindow(n,btn){
+  cTrendWindow=n;
+  document.querySelectorAll('.hist-btn-row .hist-comp-btn').forEach(b=>{
+    if(b.textContent.includes('yr'))b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  renderHistorical();
+}
 function setH2HCat(cat,btn){
   cH2HCat=cat;
   document.querySelectorAll('#h2h-cat-filter .hist-cat-btn').forEach(b=>b.classList.remove('active'));
@@ -1205,11 +1222,24 @@ function renderConfStats(){
       </div></td>`;
     });
 
-    // Conf avg column
+    // Conf avg column with descriptor
     const avgVals=avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
     const avg=avgVals.length?avgVals.reduce((a,b)=>a+b,0)/avgVals.length:null;
+    let avgDesc='',avgDescCls='';
+    if(avg!==null&&!isNaN(mv)&&avgVals.length>1){
+      const sd=Math.sqrt(avgVals.reduce((s,v)=>s+(v-avg)**2,0)/avgVals.length)||0;
+      if(sd>0){
+        const diff=(mv-avg)/sd;
+        if(diff>1){avgDesc='Well Above';avgDescCls='pct-elite';}
+        else if(diff>0.5){avgDesc='Above Avg';avgDescCls='pct-good';}
+        else if(diff>-0.5){avgDesc='On Par';avgDescCls='pct-avg';}
+        else if(diff>-1){avgDesc='Below Avg';avgDescCls='pct-below';}
+        else{avgDesc='Well Below';avgDescCls='pct-poor';}
+      }
+    }
     tbody+=`<td><div class="conf-cell">
       <span class="conf-val" style="color:var(--text4);font-style:italic">${avg!==null?stat.fmt(avg):'—'}</span>
+      ${avgDesc?`<span style="font-size:9px;font-weight:700;letter-spacing:0.04em" class="${avgDescCls}">${avgDesc}</span>`:''}
     </div></td></tr>`;
   });
   tbody+='</tbody>';
@@ -1291,23 +1321,31 @@ async function renderHistorical(){
       else{pct=parseFloat(d[stat.key+'_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_rank'];}
       return{raw,pct,rank};
     });
-    const f=vals[0]?.pct,l=vals[vals.length-1]?.pct;
-    const fRank=vals[0]?.rank,lRank=vals[vals.length-1]?.rank;
+    // Trend: use last cTrendWindow years only
+    const trendVals=vals.slice(-Math.min(cTrendWindow+1,vals.length));
+    const tFirst=trendVals[0],tLast=trendVals[trendVals.length-1];
     let arrow='';
     if(cHistComp==='conf'){
-      // For conference view use rank: lower rank number = better
-      const fr=parseInt(fRank),lr=parseInt(lRank);
-      if(!isNaN(fr)&&!isNaN(lr)){
-        const diff=fr-lr; // positive = rank improved (got lower)
-        if(diff>=2)arrow=`<span class="hist-arrow arrow-up">↑</span>`;
-        else if(diff<=-2)arrow=`<span class="hist-arrow arrow-down">↓</span>`;
-        else arrow=`<span class="hist-arrow arrow-flat">→</span>`;
+      const fr=parseInt(tFirst?.rank),lr=parseInt(tLast?.rank);
+      if(!isNaN(fr)&&!isNaN(lr)&&tFirst!==tLast){
+        const diff=fr-lr;
+        if(diff>=4)arrow=`<span class="hist-arrow arrow-up">↑↑ Strong Improvement</span>`;
+        else if(diff>=2)arrow=`<span class="hist-arrow arrow-up">↑ Rising</span>`;
+        else if(diff<=-4)arrow=`<span class="hist-arrow arrow-down">↓↓ Sharp Decline</span>`;
+        else if(diff<=-2)arrow=`<span class="hist-arrow arrow-down">↓ Falling</span>`;
+        else arrow=`<span class="hist-arrow arrow-flat">→ Stable</span>`;
       }
-    } else if(f!==null&&f!==undefined&&l!==null&&l!==undefined){
-      const diff=l-f;
-      if(diff>0.03)arrow=`<span class="hist-arrow arrow-up">↑</span>`;
-      else if(diff<-0.03)arrow=`<span class="hist-arrow arrow-down">↓</span>`;
-      else arrow=`<span class="hist-arrow arrow-flat">→</span>`;
+    } else {
+      const fp=tFirst?.pct,lp=tLast?.pct;
+      if(fp!==null&&fp!==undefined&&lp!==null&&lp!==undefined&&tFirst!==tLast){
+        const diff=lp-fp;
+        const label=cHistComp==='sub'?'in subgroup':'in D1';
+        if(diff>=0.20)arrow=`<span class="hist-arrow arrow-up">↑↑ Strong Improvement</span>`;
+        else if(diff>=0.07)arrow=`<span class="hist-arrow arrow-up">↑ Improving</span>`;
+        else if(diff<=-0.20)arrow=`<span class="hist-arrow arrow-down">↓↓ Sharp Decline</span>`;
+        else if(diff<=-0.07)arrow=`<span class="hist-arrow arrow-down">↓ Declining</span>`;
+        else arrow=`<span class="hist-arrow arrow-flat">→ Stable</span>`;
+      }
     }
     tbody+=`<tr><td class="stat-col" style="padding:10px 14px;text-align:left">${stat.label}${tip(stat.key)}</td>`;
     vals.forEach(v=>{
