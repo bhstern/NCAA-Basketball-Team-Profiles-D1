@@ -330,6 +330,13 @@ select:focus{border-color:var(--accent);}
         <div style="margin-top:6px;font-size:10px;color:var(--text4);font-style:italic" id="conf-click-hint">Click teams to build a custom comparison</div>
       </div>
       <div class="conf-right">
+        <div style="display:flex;gap:4px;margin-bottom:10px" id="conf-cat-filter">
+          <button class="hist-cat-btn active" onclick="setConfCat('All',this)">All</button>
+          <button class="hist-cat-btn" onclick="setConfCat('Overview',this)">Overview</button>
+          <button class="hist-cat-btn" onclick="setConfCat('Offense',this)">Offense</button>
+          <button class="hist-cat-btn" onclick="setConfCat('Defense',this)">Defense</button>
+          <button class="hist-cat-btn" onclick="setConfCat('Shot Profile',this)">Shot Profile</button>
+        </div>
         <div class="conf-right-header">
           <div class="section-header" style="margin-bottom:0;border:none;padding:0" id="conf-detail-title">Statistical Comparison</div>
           <div style="display:flex;align-items:center;gap:6px">
@@ -399,6 +406,13 @@ select:focus{border-color:var(--accent);}
         <select id="h2h-year-b" onchange="renderH2H()" style="min-width:105px"><option value="">— Year —</option></select>
       </div>
     </div>
+  </div>
+  <div style="display:flex;gap:4px;margin-bottom:14px" id="h2h-cat-filter">
+    <button class="hist-cat-btn active" onclick="setH2HCat('All',this)">All</button>
+    <button class="hist-cat-btn" onclick="setH2HCat('Overview',this)">Overview</button>
+    <button class="hist-cat-btn" onclick="setH2HCat('Offense',this)">Offense</button>
+    <button class="hist-cat-btn" onclick="setH2HCat('Defense',this)">Defense</button>
+    <button class="hist-cat-btn" onclick="setH2HCat('Shot Profile',this)">Shot Profile</button>
   </div>
   <div id="h2h-empty" class="empty-state">Select two teams above to compare</div>
   <div id="h2h-loading" class="loading-state" style="display:none">Loading...</div>
@@ -654,6 +668,8 @@ const SHOT_CATS=[
   {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true,expandable:false},
 ];
 let expandedShotRows=new Set();
+let cH2HCat='All';
+let cConfCat='All';
 
 const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def',
   'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
@@ -693,7 +709,7 @@ function initSelectors(){
   ['h2h-team-a','h2h-team-b'].forEach(id=>{const s=document.getElementById(id);teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});});
   ['h2h-year-a','h2h-year-b'].forEach(id=>{const s=document.getElementById(id);years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);s.appendChild(o);});});
   const cf=document.getElementById('hist-cat-filter');
-  ['Overview','Offense','Defense','Shot Profile'].forEach((c,i)=>{
+  ['All','Overview','Offense','Defense','Shot Profile'].forEach((c,i)=>{
     const b=document.createElement('button');b.className='hist-cat-btn'+(i===0?' active':'');
     b.textContent=c;b.onclick=()=>setHistCat(c,b);cf.appendChild(b);
   });
@@ -712,7 +728,8 @@ async function onSelectionChange(){
     const row=yd.find(d=>d.team_name===team);
     if(!row){showEmpty(`No data for ${team} in ${year}`);return;}
     cRow=row;
-    updateBanner(row);updateSubLabels(row);renderTab();
+    updateBanner(row);updateSubLabels(row);
+    renderTab();
   }catch(e){showEmpty('Error: '+e.message);console.error(e);}
 }
 
@@ -790,7 +807,6 @@ function updateBanner(row){
   wEl.innerHTML=`<span class="summary-label">Weaknesses</span>`+
     (wks.length?wks.map(s=>`<span class="weakness-tag">${s}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
-  document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
 
   // ── Shot profile sentence ────────────────────────────────────────────────
   const offThreeR=parseFloat(row.off_threes_rate_total_pct);
@@ -832,6 +848,7 @@ function updateBanner(row){
     blurb=blurb.replace('concedes','concede').replace('struggles','struggle').replace('allows','allow').replace('prioritizes','prioritize').replace('attacks','attack').replace('generates','generate').replace('leans','lean').replace('takes','take').replace('forces','force').replace('protects','protect').replace('contests','contest');
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
+  document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
 }
 
 function updateSubLabels(row){
@@ -999,8 +1016,9 @@ function renderShotProfile(row,view){
     const isExp=expandedShotRows.has(c.name);
     const arrowChar=isExp?'▾':'▸';
     const arrow=c.expandable?('<span class="shot-expand-arrow" data-cat="'+c.name+'" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">'+arrowChar+'</span>'):'';
+    const hint=c.expandable&&!isExp?'<div style="font-size:9px;color:var(--text4);margin-top:2px">click ▸ for breakdown</div>':'';
     const fw=c.expandable?'600':'500';
-    html+=`<div class="shot-cat-cell" style="font-weight:${fw}">${c.name}${arrow}</div>
+    html+=`<div class="shot-cat-cell" style="font-weight:${fw};flex-direction:column;align-items:flex-start">${c.name}${arrow}${hint}</div>
       ${shotMetricCell(row,c.rk,true,view)}
       ${shotMetricCell(row,c.fk,false,view)}
       ${shotMetricCell(row,c.drk,true,view)}
@@ -1022,6 +1040,18 @@ function toggleShotRow(name,el){
   if(expandedShotRows.has(name))expandedShotRows.delete(name);
   else expandedShotRows.add(name);
   if(cRow)renderProfile();
+}
+function setH2HCat(cat,btn){
+  cH2HCat=cat;
+  document.querySelectorAll('#h2h-cat-filter .hist-cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderH2H();
+}
+function setConfCat(cat,btn){
+  cConfCat=cat;
+  document.querySelectorAll('#conf-cat-filter .hist-cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderConfStats();
 }
 function toggleShotRowByName(el){
   const name=el.getAttribute('data-cat');
@@ -1125,7 +1155,8 @@ function renderConfStats(){
     {key:c.drk,label:`${c.name} Rate Allowed`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
     {key:c.dfk,label:`${c.name} FG% Allowed`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
   ]);
-  const allStats=[...Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat}))), ...shotStats];
+  const allStatsAll=[...Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat}))), ...shotStats];
+  const allStats=cConfCat==='All'?allStatsAll:allStatsAll.filter(s=>s.cat===cConfCat);
 
   // Avg source: compare teams if any, otherwise full conference
   const avgSource=compareTeams.length>0?compareTeams:cYearData.filter(d=>d.conference===conf);
@@ -1226,7 +1257,15 @@ async function renderHistorical(){
   updatePageDesc();
 
   let stats;
-  if(cHistCat==='Shot Profile'){
+  if(cHistCat==='All'){
+    const shotFlat=SHOT_CATS.flatMap(c=>[
+      {key:c.rk,label:`${c.name} Rate (Off)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:true,cat:'Shot Profile'},
+      {key:c.fk,label:`${c.name} FG% (Off)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:false,cat:'Shot Profile'},
+      {key:c.drk,label:`${c.name} Rate (Def)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:true,cat:'Shot Profile'},
+      {key:c.dfk,label:`${c.name} FG% (Def)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:false,cat:'Shot Profile'},
+    ]);
+    stats=[...Object.entries(STAT_CATS).flatMap(([cat,ss])=>ss.map(s=>({...s,cat}))), ...shotFlat];
+  } else if(cHistCat==='Shot Profile'){
     stats=SHOT_CATS.flatMap(c=>[
       {key:c.rk,label:`${c.name} Rate (Off)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:true},
       {key:c.fk,label:`${c.name} FG% (Off)`,fmt:v=>(v*100).toFixed(1)+'%',isTempo:false,isFreq:false},
@@ -1305,7 +1344,14 @@ async function renderH2H(){
     if(!rA||!rB){document.getElementById('h2h-loading').style.display='none';document.getElementById('h2h-empty').style.display='flex';document.getElementById('h2h-empty').textContent='Data not found.';return;}
     document.getElementById('h2h-loading').style.display='none';
     document.getElementById('h2h-content').style.display='block';
-    const allStats=Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat})));
+    const shotFlat=SHOT_CATS.flatMap(c=>[
+      {key:c.rk,label:`${c.name} Rate (Off)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+      {key:c.fk,label:`${c.name} FG% (Off)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+      {key:c.drk,label:`${c.name} Rate (Def)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+      {key:c.dfk,label:`${c.name} FG% (Def)`,fmt:v=>(v*100).toFixed(1)+'%',cat:'Shot Profile',isTempo:false},
+    ]);
+    const allStatsAll=[...Object.entries(STAT_CATS).flatMap(([cat,stats])=>stats.map(s=>({...s,cat}))), ...shotFlat];
+    const allStats=cH2HCat==='All'?allStatsAll:allStatsAll.filter(s=>s.cat===cH2HCat);
     const sameYear=yA===yB;
     let html=`<div style="font-size:11px;color:var(--text4);font-style:italic;margin-bottom:14px;text-align:center">
       Percentiles reflect each team's standing within their own season (${yLabel(yA)} for ${tA}${sameYear?'':', '+yLabel(yB)+' for '+tB}).
