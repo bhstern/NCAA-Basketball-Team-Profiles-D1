@@ -798,12 +798,14 @@ function updateBanner(row){
     const fg=parseFloat(row[sc.fgKey]);
     if(isNaN(rate)||isNaN(fg))return;
     // For offense: high rate+fg = strength; for defense: high rate allowed + high fg allowed = weakness
+    // offense: high rate + good FG% = strength; high rate + bad FG% = weakness
+    // defense: high rate allowed + good FG% suppression = strength; high rate allowed + bad FG% suppression = weakness
     const isStr=sc.off
       ?((rate>=0.75&&fg>=0.60)||(fg>=0.75&&rate>=0.50))
-      :((rate>=0.75&&fg<=0.40)||(fg<=0.25&&rate>=0.50));
+      :((rate>=0.75&&fg>=0.60)||(fg>=0.75&&rate>=0.50));
     const isWk=sc.off
       ?((rate>=0.75&&fg<=0.40)||(fg<=0.25&&rate>=0.50))
-      :((rate>=0.75&&fg>=0.60)||(fg>=0.75&&rate>=0.50));
+      :((rate>=0.75&&fg<=0.40)||(fg<=0.25&&rate>=0.50));
     if(isStr&&strs.length<3)strs.push(sc.label);
     else if(isWk&&wks.length<3)wks.push(sc.label);
   });
