@@ -481,62 +481,70 @@ select:focus{border-color:var(--accent);}
     <!-- Data Dictionary -->
     <div id="about-dictionary" style="display:none">
       <div class="about-section">
+        <h2>Identity & Context</h2>
+        <div class="dict-table-wrap"><table class="dict-table">
+          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>year</td><td>Season year (e.g., 2026 = 2025-26 season).</td></tr>
+            <tr><td>team_name</td><td>Clean team name without year suffix.</td></tr>
+            <tr><td>conference</td><td>Standardized conference name.</td></tr>
+            <tr><td>full_season_record</td><td>Wins-losses for the full season.</td></tr>
+            <tr><td>power_mid</td><td>"Power" or "Mid-Major" classification based on conference affiliation.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="about-section">
         <h2>Torvik-Sourced Variables</h2>
-        <div class="dict-table-wrap">
-          <table class="dict-table">
-            <thead><tr><th>Variable</th><th>Description</th></tr></thead>
-            <tbody>
-              <tr><td>adj_em</td><td>Adjusted Efficiency Margin — offensive efficiency minus defensive efficiency, adjusted for opponent strength.</td></tr>
-              <tr><td>adj_oe</td><td>Adjusted Offensive Efficiency — points scored per 100 possessions, adjusted for opponent defense.</td></tr>
-              <tr><td>adj_de</td><td>Adjusted Defensive Efficiency — points allowed per 100 possessions, adjusted for opponent offense.</td></tr>
-              <tr><td>barthag</td><td>Estimated probability of beating an average D1 team on a neutral court.</td></tr>
-              <tr><td>adj._t</td><td>Adjusted tempo — possessions per 40 minutes, adjusted for opponent pace.</td></tr>
-              <tr><td>raw_t</td><td>Raw tempo — actual possessions per 40 minutes.</td></tr>
-              <tr><td>efg_rate_off/def</td><td>Effective Field Goal % — accounts for three-pointers being worth more than two-pointers.</td></tr>
-              <tr><td>tov_rate_off/def</td><td>Turnover rate — turnovers per possession on offense; turnovers forced per possession on defense.</td></tr>
-              <tr><td>orb_rate_off/def</td><td>Offensive and defensive rebounding rate.</td></tr>
-              <tr><td>ft_rate_off/def</td><td>Free throw rate — free throw attempts per field goal attempt.</td></tr>
-              <tr><td>avg_hgt. / eff._hgt.</td><td>Average and effective height of the rotation, weighted by minutes.</td></tr>
-              <tr><td>exp.</td><td>Composite roster experience, weighted by minutes played.</td></tr>
-              <tr><td>talent</td><td>Composite talent rating based on recruiting rankings.</td></tr>
-              <tr><td>elite_sos_rate</td><td>Share of games an elite team would be expected to lose against this team's schedule. Higher = tougher schedule.</td></tr>
-              <tr><td>blk_pct_off/def</td><td>Percentage of field goal attempts blocked on offense; percentage of opponent attempts blocked on defense.</td></tr>
-              <tr><td>ast_pct_off/def</td><td>Percentage of made field goals that were assisted on offense and defense.</td></tr>
-              <tr><td>off/def_*_rate_total</td><td>Shot distribution rates by location as a share of total FGA. Rim = dunks + close 2s combined. Close 2s = non-dunk rim attempts only (layups, floaters, putbacks).</td></tr>
-              <tr><td>off/def_*_fg</td><td>Field goal percentage by shot location.</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="dict-table-wrap"><table class="dict-table">
+          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>adj_em</td><td>Adjusted Efficiency Margin — offensive minus defensive efficiency, adjusted for opponent strength.</td></tr>
+            <tr><td>adj_oe</td><td>Adjusted Offensive Efficiency — points scored per 100 possessions, adjusted for opponent defense.</td></tr>
+            <tr><td>adj_de</td><td>Adjusted Defensive Efficiency — points allowed per 100 possessions, adjusted for opponent offense.</td></tr>
+            <tr><td>barthag</td><td>Estimated probability of beating an average D1 team on a neutral court.</td></tr>
+            <tr><td>elite_sos_rate</td><td>Share of games an elite team would be expected to lose against this schedule. Higher = tougher schedule.</td></tr>
+            <tr><td>adj._t / raw_t</td><td>Adjusted and raw tempo — possessions per 40 minutes.</td></tr>
+            <tr><td>avg_hgt. / eff._hgt.</td><td>Average and effective height of the rotation, weighted by minutes.</td></tr>
+            <tr><td>exp.</td><td>Composite roster experience, weighted by minutes played.</td></tr>
+            <tr><td>talent</td><td>Composite talent rating based on recruiting rankings.</td></tr>
+            <tr><td>efg_rate_off/def</td><td>Effective Field Goal % — accounts for 3-pointers being worth more than 2s.</td></tr>
+            <tr><td>tov_rate_off/def</td><td>Turnover rate on offense; turnovers forced per possession on defense.</td></tr>
+            <tr><td>orb_rate_off/def</td><td>Offensive and defensive rebounding rate.</td></tr>
+            <tr><td>ft_rate_off/def</td><td>Free throw rate — free throw attempts per field goal attempt.</td></tr>
+            <tr><td>blk_pct_off/def</td><td>Block rate on offense (shots blocked); block rate on defense (blocks generated).</td></tr>
+            <tr><td>ast_pct_off/def</td><td>Assist rate on offense; assist rate allowed on defense.</td></tr>
+            <tr><td>off/def_dunks_*</td><td>Dunk rate and FG% on offense and defense.</td></tr>
+            <tr><td>off/def_close_twos_*</td><td>Non-dunk rim attempt rate and FG% — layups, floaters, putbacks. Exclusive of dunks.</td></tr>
+            <tr><td>off/def_long_twos_*</td><td>Midrange (long two) attempt rate and FG% on offense and defense.</td></tr>
+            <tr><td>off/def_threes_*</td><td>Three-point attempt rate and FG% on offense and defense.</td></tr>
+          </tbody>
+        </table></div>
       </div>
       <div class="about-section">
         <h2>Custom-Engineered Variables</h2>
-        <div class="dict-table-wrap">
-          <table class="dict-table">
-            <thead><tr><th>Variable</th><th>Description</th></tr></thead>
-            <tbody>
-              <tr><td>ppp_off_full</td><td>Actual points scored per possession — estimated from shot distribution and FG%, calculated independently.</td></tr>
-              <tr><td>ppp_def_full</td><td>Actual points allowed per possession — estimated from opponent shot distribution and FG%, calculated independently.</td></tr>
-              <tr><td>xPPP_off</td><td>Expected offensive PPP — shot profile frequencies multiplied by league-wide average shot values for each season.</td></tr>
-              <tr><td>xPPP_def</td><td>Expected defensive PPP allowed — opponent shot profile frequencies multiplied by league-wide averages.</td></tr>
-              <tr><td>ppp_residual_off</td><td>Shotmaking above expectation on offense — actual PPP minus expected PPP. Positive = scoring more than shot profile predicts.</td></tr>
-              <tr><td>ppp_residual_def</td><td>Shotmaking above expectation allowed on defense — actual PPP allowed minus expected PPP allowed. Negative = holding opponents below expectation.</td></tr>
-              <tr><td>ppp_diff</td><td>PPP Differential — how many points per possession this team outscores opponents. Actual offensive PPP minus defensive PPP.</td></tr>
-              <tr><td>xPPP_diff</td><td>Expected PPP Differential — the difference between shots generated and shots allowed, based on shot profiles vs. opponents.</td></tr>
-              <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms (or underperforms) shot quality on both ends combined.</td></tr>
-              <tr><td>off_rim_rate_total</td><td>% of FGA at the rim (dunks + close 2s combined). Style indicator reflecting rim pressure — not directionally good or bad.</td></tr>
-              <tr><td>off_rim_fg</td><td>Weighted FG% at the rim on offense. Higher = better finishing.</td></tr>
-              <tr><td>def_rim_rate_total</td><td>% of opponent FGA at the rim allowed. Style indicator.</td></tr>
-              <tr><td>def_rim_fg</td><td>Weighted FG% allowed at the rim on defense. Lower = better rim protection. High percentile = elite.</td></tr>
-              <tr><td>ft_pct_off</td><td>Free throw percentage on offense.</td></tr>
-              <tr><td>power_mid</td><td>"Power" or "Mid-Major" classification based on conference affiliation.</td></tr>
-              <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and rank vs. all D1 teams for each variable.</td></tr>
-              <tr><td>_conf_rank</td><td>Rank within conference for each variable.</td></tr>
-              <tr><td>_sub_z / _sub_pct / _sub_rank</td><td>Z-score, percentile, and rank within power conference or mid-major subgroup.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        <div class="dict-table-wrap"><table class="dict-table">
+          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>off_rim_rate_total</td><td>Combined rim attempt rate on offense — dunks + close 2s as a share of total FGA. Reflects overall paint presence.</td></tr>
+            <tr><td>off_rim_fg</td><td>Weighted FG% at the rim on offense (dunks + close 2s). Higher = better finishing at the rim.</td></tr>
+            <tr><td>def_rim_rate_total</td><td>Combined rim attempt rate allowed on defense. Style indicator — not directionally good or bad on its own.</td></tr>
+            <tr><td>def_rim_fg</td><td>Weighted FG% allowed at the rim on defense. Lower = better rim protection. High percentile = elite rim defense.</td></tr>
+            <tr><td>ppp_off_full</td><td>Actual points scored per possession — estimated from shot distribution and FG%, calculated independently (not from Torvik).</td></tr>
+            <tr><td>ppp_def_full</td><td>Actual points allowed per possession — estimated independently.</td></tr>
+            <tr><td>xPPP_off</td><td>Expected offensive PPP — shot profile frequencies multiplied by league-wide average shot values by season.</td></tr>
+            <tr><td>xPPP_def</td><td>Expected PPP allowed — opponent shot frequencies multiplied by league-wide averages.</td></tr>
+            <tr><td>ppp_residual_off</td><td>Shotmaking above expectation on offense — actual PPP minus expected PPP. Positive = scoring more than shot profile predicts.</td></tr>
+            <tr><td>ppp_residual_def</td><td>Shotmaking above expectation allowed on defense. Negative = holding opponents below their expected efficiency.</td></tr>
+            <tr><td>ppp_diff</td><td>PPP Differential — actual offensive PPP minus defensive PPP. How many points per possession this team outscores opponents.</td></tr>
+            <tr><td>xPPP_diff</td><td>Expected PPP Differential — difference between expected offensive and defensive PPP based on shot profiles.</td></tr>
+            <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms shot quality on both ends combined.</td></tr>
+            <tr><td>ft_pct_off</td><td>Free throw percentage on offense.</td></tr>
+            <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and D1-wide rank for each variable. All normalized so higher = better.</td></tr>
+            <tr><td>_conf_rank</td><td>Rank within conference for each variable.</td></tr>
+            <tr><td>_sub_z / _sub_pct / _sub_rank</td><td>Z-score, percentile, and rank within power conference or mid-major subgroup.</td></tr>
+          </tbody>
+        </table></div>
+      </div></div>
 
   </div>
 </div>
@@ -545,7 +553,6 @@ select:focus{border-color:var(--accent);}
 const TDIR='logos/teams/', CDIR='logos/conferences/';
 let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
 let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile';
-let expandedShotRows=new Set();
 
 function isPower(row){return row&&row.power_mid==='Power';}
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
@@ -581,6 +588,10 @@ const TIPS={
   ppp_def_full:'Actual points allowed per possession (calculated independently, not from Torvik).',
   xPPP_def:'Expected points per possession allowed: opponent shot profile frequencies multiplied by league-wide season averages.',
   ppp_residual_def:'Shotmaking above expectation allowed on defense: actual PPP allowed minus expected PPP allowed. Negative = defense holds opponents below their expected efficiency.',
+  off_long_twos_rate_total:'Midrange rate on offense: percentage of total FGA that are long two-point attempts. Lower is generally preferred in modern basketball.',
+  off_long_twos_fg:'FG% on midrange shots (long 2s). Higher = better shooting efficiency from midrange.',
+  def_long_twos_rate_total:'Midrange rate allowed on defense: percentage of opponent FGA that are long twos. Higher = forcing opponents into inefficient shots.',
+  def_long_twos_fg:'Opponent FG% on midrange shots allowed. Lower = better defense on midrange attempts.',
   off_rim_rate_total:'Rim attempt rate on offense: percentage of total FGA at the rim (dunks + close 2s combined). Reflects rim pressure and paint presence — style indicator, not a quality metric.',
   off_rim_fg:'Weighted FG% at the rim on offense (dunks + close 2s, weighted by attempts). Higher = better finishing at the rim.',
   def_rim_rate_total:'Rim attempt rate allowed on defense: percentage of opponent FGA at the rim. Style indicator — neither inherently good nor bad.',
@@ -634,11 +645,15 @@ const STAT_CATS={
 };
 
 const SHOT_CATS=[
-  {name:'Dunks',rk:'off_dunks_rate_total',fk:'off_dunks_fg',drk:'def_dunks_rate_total',dfk:'def_dunks_fg',offRateGood:true},
-  {name:'Close 2s',rk:'off_close_twos_rate_total',fk:'off_close_twos_fg',drk:'def_close_twos_rate_total',dfk:'def_close_twos_fg',offRateGood:true},
-  {name:'Midrange',rk:'off_long_twos_rate_total',fk:'off_long_twos_fg',drk:'def_long_twos_rate_total',dfk:'def_long_twos_fg',offRateGood:false},
-  {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true},
+  {name:'Rim',rk:'off_rim_rate_total',fk:'off_rim_fg',drk:'def_rim_rate_total',dfk:'def_rim_fg',offRateGood:true,expandable:true,
+   children:[
+     {name:'Dunks',rk:'off_dunks_rate_total',fk:'off_dunks_fg',drk:'def_dunks_rate_total',dfk:'def_dunks_fg'},
+     {name:'Close 2s',rk:'off_close_twos_rate_total',fk:'off_close_twos_fg',drk:'def_close_twos_rate_total',dfk:'def_close_twos_fg'},
+   ]},
+  {name:'Midrange',rk:'off_long_twos_rate_total',fk:'off_long_twos_fg',drk:'def_long_twos_rate_total',dfk:'def_long_twos_fg',offRateGood:false,expandable:false},
+  {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true,expandable:false},
 ];
+let expandedShotRows=new Set();
 
 const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def',
   'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
