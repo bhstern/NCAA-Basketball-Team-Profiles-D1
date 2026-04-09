@@ -180,11 +180,11 @@ select:focus{border-color:var(--accent);}
 .h2h-table th{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);}
 .h2h-table th.stat-col{text-align:left;color:var(--text4);min-width:155px;}
 .h2h-table th.team-col{text-align:center;}
-.h2h-table td{padding:8px 14px;border-bottom:1px solid var(--border);}
+.h2h-table td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .h2h-table tr:last-child td{border-bottom:none;}
 .h2h-table td.stat-col{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;}
 .h2h-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:5px 14px;}
-.h2h-cell{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.h2h-cell{display:flex;flex-direction:column;align-items:center;gap:1px;min-height:52px;justify-content:center;}
 .h2h-val{font-family:var(--font-mono);font-size:12px;font-weight:500;}
 .h2h-pct{font-family:var(--font-mono);font-size:10px;}
 .h2h-rank{font-size:9px;color:var(--text4);}
@@ -1186,7 +1186,8 @@ function renderConfStats(){
     const col=cCustomMode?'var(--yellow)':'var(--text3)';
     thead+=`<th style="color:${col}">${t.team_name.split(' ').slice(-1)}</th>`;
   });
-  thead+=`<th style="color:var(--text4);font-style:italic">Conf Avg</th></tr></thead>`;
+  const avgLabel=(cCustomMode&&cCompTeams.length>0)||cTopN>0?'Selected Avg':'Conf Avg';
+  thead+=`<th style="color:var(--text4);font-style:italic">${avgLabel}</th></tr></thead>`;
 
   let tbody='<tbody>';
   let lastCat='';
@@ -1226,8 +1227,11 @@ function renderConfStats(){
     const avgVals=avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
     const avg=avgVals.length?avgVals.reduce((a,b)=>a+b,0)/avgVals.length:null;
     let avgDesc='',avgDescCls='';
-    if(avg!==null&&!isNaN(mv)&&avgVals.length>1){
-      const sd=Math.sqrt(avgVals.reduce((s,v)=>s+(v-avg)**2,0)/avgVals.length)||0;
+    if(avg!==null&&!isNaN(mv)){
+      // Use conf-wide SD for context even when comparing to a subset avg
+      const confAllVals=cYearData.filter(d=>d.conference===cRow.conference).map(d=>parseFloat(d[stat.key])).filter(v=>!isNaN(v));
+      const confMean=confAllVals.length?confAllVals.reduce((a,b)=>a+b,0)/confAllVals.length:avg;
+      const sd=confAllVals.length>1?Math.sqrt(confAllVals.reduce((s,v)=>s+(v-confMean)**2,0)/confAllVals.length):0;
       if(sd>0){
         const diff=(mv-avg)/sd;
         if(diff>1){avgDesc='Well Above';avgDescCls='pct-elite';}
@@ -1410,15 +1414,26 @@ async function renderH2H(){
             ${tB} <span style="font-size:9px;color:var(--text4)">${yLabel(yB)}</span>
           </div>
         </th>
+        <th style="color:var(--text4);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">Comparison</th>
       </tr></thead><tbody>`;
     let lastCat='';
     allStats.forEach(stat=>{
       const vA=parseFloat(rA[stat.key]),vB=parseFloat(rB[stat.key]);
       if(isNaN(vA)&&isNaN(vB))return;
-      if(stat.cat!==lastCat){html+=`<tr class="cat-row"><td colspan="3">${stat.cat}</td></tr>`;lastCat=stat.cat;}
+      if(stat.cat!==lastCat){html+=`<tr class="cat-row"><td colspan="4">${stat.cat}</td></tr>`;lastCat=stat.cat;}
       const pA=parseFloat(rA[stat.key+'_pct']),pB=parseFloat(rB[stat.key+'_pct']);
       const clsA=pctCls(isNaN(pA)?null:pA,stat.isTempo,false);
       const clsB=pctCls(isNaN(pB)?null:pB,stat.isTempo,false);
+      // H2H descriptor
+      let h2hDesc='',h2hCls='pct-avg';
+      if(!isNaN(pA)&&!isNaN(pB)){
+        const diff=(pA-pB)*100;
+        if(diff>=25){h2hDesc='Much Better';h2hCls='pct-elite';}
+        else if(diff>=10){h2hDesc='Better';h2hCls='pct-good';}
+        else if(diff>=-10){h2hDesc='Similar';h2hCls='pct-avg';}
+        else if(diff>=-25){h2hDesc='Worse';h2hCls='pct-below';}
+        else{h2hDesc='Much Worse';h2hCls='pct-poor';}
+      }
       html+=`<tr>
         <td class="stat-col">${stat.label}${tip(stat.key)}</td>
         <td><div class="h2h-cell">
@@ -1431,6 +1446,7 @@ async function renderH2H(){
           ${!isNaN(pB)?`<span class="h2h-pct ${clsB.color}">${Math.round(pB*100)}%</span>`:''}
           <span class="h2h-rank">#${rB[stat.key+'_rank']||'—'}</span>
         </div></td>
+        <td style="text-align:center"><span style="font-size:11px;font-weight:600" class="${h2hCls}">${h2hDesc}</span></td>
       </tr>`;
     });
     html+='</tbody></table></div>';
