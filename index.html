@@ -832,20 +832,20 @@ function updateBanner(row){
     // Defense
     let defDesc='';
     if(!isNaN(defRimR)&&!isNaN(defThreeR)){
-      if(defRimR<=0.35&&defThreeR<=0.35)defDesc='protects the rim and contests the perimeter';
-      else if(defRimR<=0.35)defDesc='protects the rim effectively';
-      else if(defThreeR<=0.35)defDesc='contests perimeter shots effectively';
-      else if(defRimR>=0.65&&defThreeR>=0.65)defDesc='allows high volumes of both rim and perimeter attempts';
-      else if(defRimR>=0.65)defDesc='struggles to protect the paint';
-      else if(defThreeR>=0.65)defDesc='concedes a high volume of three-point attempts';
-      else if(!isNaN(defLongR)&&defLongR>=0.65)defDesc='forces opponents into midrange shots';
-      else defDesc='plays a conventional defensive scheme';
+      if(defRimR<=0.35&&defThreeR<=0.35)defDesc='protect the rim and contest the perimeter';
+      else if(defRimR<=0.35)defDesc='protect the rim effectively';
+      else if(defThreeR<=0.35)defDesc='contest perimeter shots effectively';
+      else if(defRimR>=0.65&&defThreeR>=0.65)defDesc='allow high volumes of both rim and perimeter attempts';
+      else if(defRimR>=0.65)defDesc='struggle to protect the paint';
+      else if(defThreeR>=0.65)defDesc='concede a high volume of three-point attempts';
+      else if(!isNaN(defLongR)&&defLongR>=0.65)defDesc='force opponents into midrange shots';
+      else defDesc='play a conventional defensive scheme';
     }
     blurb=defDesc
       ?`${nm} ${offDesc}; defensively, they ${defDesc}.`
       :`${nm} ${offDesc}.`;
     // ensure grammar: no 'concedes' (should be 'concede')
-    blurb=blurb.replace('concedes','concede').replace('struggles','struggle').replace('allows','allow').replace('prioritizes','prioritize').replace('attacks','attack').replace('generates','generate').replace('leans','lean').replace('takes','take').replace('forces','force').replace('protects','protect').replace('contests','contest');
+
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
   document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
