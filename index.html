@@ -89,8 +89,8 @@ select:focus{border-color:var(--accent);}
 
 /* INFO ICON */
 .info-icon{width:13px;height:13px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--text4);font-size:8px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;font-style:normal;}
-@media(hover:hover){.info-icon:hover .tooltip{display:block;}
 .tooltip{display:none;position:absolute;left:16px;top:-4px;width:210px;background:#1a2640;border:1px solid var(--border2);border-radius:4px;padding:6px 8px;font-size:10px;color:var(--text2);line-height:1.5;z-index:999;pointer-events:none;}
+@media(hover:hover){.info-icon:hover .tooltip{display:block;}}
 
 /* SHOT PROFILE */
 .shot-profile-wrap{grid-column:1/-1;}
@@ -102,14 +102,14 @@ select:focus{border-color:var(--accent);}
 .shot-subheader-cell{background:var(--surface2);padding:6px 10px;font-size:10px;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
 .shot-subheader-cell.cat-sh{border-right:1px solid var(--border);}
 .shot-row{display:contents;}
-.shot-cat-cell{padding:14px 16px;font-size:13px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;}
+.shot-cat-cell{padding:14px 16px;font-size:15px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;}
 .shot-row:last-child .shot-cat-cell,.shot-row:last-child .shot-metric-cell{border-bottom:none;}
 .shot-metric-cell{padding:14px 16px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
 .shot-val{font-family:var(--font-mono);font-size:13px;color:var(--text2);display:block;margin-bottom:5px;font-weight:500;}
 .shot-bar-wrap{height:4px;background:var(--surface3);border-radius:2px;width:90px;margin:0 auto 4px;}
 .shot-bar{height:100%;border-radius:2px;}
 .shot-pct{font-family:var(--font-mono);font-size:12px;display:block;margin-bottom:3px;}
-.shot-rank{font-size:10px;color:var(--text4);display:block;margin-bottom:3px;}
+.shot-rank{font-size:12px;color:var(--text4);display:block;margin-bottom:3px;}
 .shot-badge{font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 6px;border-radius:2px;display:inline-block;}
 
 /* HISTORICAL */
@@ -603,7 +603,7 @@ const TIPS={
   xPPP_off:'Expected points per possession on offense — shot profile frequencies multiplied by league-average FG% by shot type and season.',
   ppp_residual_off:'How much this team scores above what their shot selection would predict — driven by shotmaking, ball security, free throw generation, offensive rebounding, transition, spacing, creation, and talent. Positive = outperforming what the shot profile predicts.',
   ppp_diff:'How many points per possession we beat teams by — actual scoring margin per possession.',
-  xPPP_diff:'The difference between expected offensive and defensive PPP, based on each team's shot distribution compared against league-average FG% by shot type and season.'s shot distribution compared against league-average FG% by shot type and season.',
+  xPPP_diff:'The difference between expected offensive and defensive PPP — based on each team\'s shot distribution compared against league-average FG% by shot type and season.',
   residual_diff:'Performance Over Expectation — how much we outperform (or underperform) the shot quality on both ends.',
   efg_rate_def:'Effective Field Goal % allowed on defense.',
   tov_rate_def:'Turnover rate forced on defense: opponent turnovers per possession.',
@@ -618,6 +618,18 @@ const TIPS={
   def_long_twos_fg:'Opponent FG% on midrange shots allowed. Lower = better defense on midrange attempts.',
   ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
   ast_pct_def:'Percentage of opponent made field goals that were assisted. Lower = forcing tougher, less structured shots.',
+  off_dunks_rate_total:'Dunk attempts as a share of total field goal attempts. Typically the highest-percentage shot in basketball.',
+  off_dunks_fg:'FG% on dunk attempts on offense.',
+  def_dunks_rate_total:'Opponent dunk attempts as a share of total field goal attempts allowed.',
+  def_dunks_fg:'FG% allowed on opponent dunk attempts.',
+  off_close_twos_rate_total:'Non-dunk rim attempts — layups, floaters, and putbacks — as a share of total FGA. Excludes dunks.',
+  off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
+  def_close_twos_rate_total:'Opponent non-dunk rim attempts allowed as a share of total FGA.',
+  def_close_twos_fg:'FG% allowed on opponent non-dunk rim attempts.',
+  off_long_twos_rate_total:'Midrange attempt rate — long two-point shots, all two-point attempts not taken at the rim.',
+  off_long_twos_fg:'FG% on midrange shots (long 2s).',
+  def_long_twos_rate_total:'Opponent midrange attempt rate allowed.',
+  def_long_twos_fg:'FG% allowed on opponent midrange shots.',
   off_rim_rate_total:'All shot attempts at the rim — dunks plus close two-point attempts (layups, floaters, putbacks) — as a share of total FGA.',
   off_rim_fg:'Weighted FG% on all rim attempts (dunks + close 2s combined).',
   def_rim_rate_total:'All opponent shot attempts at the rim allowed — dunks plus close two-point attempts — as a share of total FGA.',
@@ -642,6 +654,18 @@ const TIPS={
   off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
   def_close_twos_rate_total:'Opponent non-dunk rim attempts allowed — layups, floaters, and putbacks.',
   def_close_twos_fg:'Opponent FG% on non-dunk rim attempts allowed.',
+  off_dunks_rate_total:'Dunk attempts as a share of total field goal attempts. Typically the highest-percentage shot in basketball.',
+  off_dunks_fg:'FG% on dunk attempts on offense.',
+  def_dunks_rate_total:'Opponent dunk attempts as a share of total field goal attempts allowed.',
+  def_dunks_fg:'FG% allowed on opponent dunk attempts.',
+  off_close_twos_rate_total:'Non-dunk rim attempts — layups, floaters, and putbacks — as a share of total FGA. Excludes dunks.',
+  off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
+  def_close_twos_rate_total:'Opponent non-dunk rim attempts allowed as a share of total FGA.',
+  def_close_twos_fg:'FG% allowed on opponent non-dunk rim attempts.',
+  off_long_twos_rate_total:'Midrange attempt rate — long two-point shots, all two-point attempts not taken at the rim.',
+  off_long_twos_fg:'FG% on midrange shots (long 2s).',
+  def_long_twos_rate_total:'Opponent midrange attempt rate allowed.',
+  def_long_twos_fg:'FG% allowed on opponent midrange shots.',
   off_rim_rate_total:'All shot attempts at the rim — dunks plus close two-point attempts (layups, floaters, putbacks). Reflects overall paint presence.',
   off_rim_fg:'Weighted FG% at the rim on offense — dunks plus close twos, weighted by attempts.',
   def_rim_rate_total:'All opponent shot attempts at the rim allowed — dunks plus close two-point attempts. Reflects how much opponents attack the paint.',
@@ -650,6 +674,18 @@ const TIPS={
   blk_pct_def:'Percentage of opponent field goal attempts blocked by this team. Higher is better.',
   ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
   ast_pct_def:'Percentage of opponent made field goals that were assisted. Lower = forcing tougher, less structured shots.',
+  off_dunks_rate_total:'Dunk attempts as a share of total field goal attempts. Typically the highest-percentage shot in basketball.',
+  off_dunks_fg:'FG% on dunk attempts on offense.',
+  def_dunks_rate_total:'Opponent dunk attempts as a share of total field goal attempts allowed.',
+  def_dunks_fg:'FG% allowed on opponent dunk attempts.',
+  off_close_twos_rate_total:'Non-dunk rim attempts — layups, floaters, and putbacks — as a share of total FGA. Excludes dunks.',
+  off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
+  def_close_twos_rate_total:'Opponent non-dunk rim attempts allowed as a share of total FGA.',
+  def_close_twos_fg:'FG% allowed on opponent non-dunk rim attempts.',
+  off_long_twos_rate_total:'Midrange attempt rate — long two-point shots, all two-point attempts not taken at the rim.',
+  off_long_twos_fg:'FG% on midrange shots (long 2s).',
+  def_long_twos_rate_total:'Opponent midrange attempt rate allowed.',
+  def_long_twos_fg:'FG% allowed on opponent midrange shots.',
   off_rim_rate_total:'All shot attempts at the rim — dunks plus close two-point attempts (layups, floaters, putbacks) — as a share of total FGA.',
   off_rim_fg:'Weighted FG% on all rim attempts (dunks + close 2s combined).',
   def_rim_rate_total:'All opponent shot attempts at the rim allowed — dunks plus close two-point attempts — as a share of total FGA.',
@@ -1207,7 +1243,7 @@ function renderConfStats(){
   // Title
   const titleEl=document.getElementById('conf-detail-title');
   if(cCustomMode&&cCompTeams.length>0){
-    titleEl.textContent=`${cRow.team_name} vs. ${cCompTeams.map(n=>n.split(' ').slice(-1)[0]).join(', ')} (Custom)`;
+    titleEl.textContent=`${cRow.team_name} vs. ${cCompTeams.join(', ')} (Custom)`;
   } else if(cTopN===0){
     titleEl.textContent=`${cRow.team_name} vs. Conference Average`;
   } else {
