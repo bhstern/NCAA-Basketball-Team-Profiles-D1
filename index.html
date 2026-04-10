@@ -89,19 +89,17 @@ select:focus{border-color:var(--accent);}
 
 /* INFO ICON */
 .info-icon{width:13px;height:13px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--text4);font-size:8px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;font-style:normal;}
-.info-icon:hover .tooltip{display:block;}
-@media(hover:hover){.info-icon:hover .tooltip{display:block;}}
-@media(hover:none){.info-icon:hover .tooltip{display:none;}}
+@media(hover:hover){.info-icon:hover .tooltip{display:block;}
 .tooltip{display:none;position:absolute;left:16px;top:-4px;width:210px;background:#1a2640;border:1px solid var(--border2);border-radius:4px;padding:6px 8px;font-size:10px;color:var(--text2);line-height:1.5;z-index:999;pointer-events:none;}
 
 /* SHOT PROFILE */
 .shot-profile-wrap{grid-column:1/-1;}
 .shot-grid{display:grid;grid-template-columns:140px repeat(4,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
 .shot-header-row{display:contents;}
-.shot-header-cell{background:var(--surface2);padding:8px 10px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
+.shot-header-cell{background:var(--surface2);padding:8px 10px;font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
 .shot-header-cell.cat-h{text-align:left;border-right:1px solid var(--border);}
 .shot-subheader{display:contents;}
-.shot-subheader-cell{background:var(--surface2);padding:5px 10px;font-size:9px;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
+.shot-subheader-cell{background:var(--surface2);padding:6px 10px;font-size:10px;color:var(--text4);text-align:center;border-bottom:1px solid var(--border);}
 .shot-subheader-cell.cat-sh{border-right:1px solid var(--border);}
 .shot-row{display:contents;}
 .shot-cat-cell{padding:14px 16px;font-size:13px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);border-right:1px solid var(--border);display:flex;align-items:center;}
@@ -533,13 +531,15 @@ select:focus{border-color:var(--accent);}
             <tr><td>talent</td><td>Composite talent rating based on recruiting rankings.</td></tr>
             <tr><td>efg_rate_off/def</td><td>Effective Field Goal % — accounts for 3-pointers being worth more than 2s.</td></tr>
             <tr><td>tov_rate_off/def</td><td>Turnover rate on offense; turnovers forced per possession on defense.</td></tr>
-            <tr><td>orb_rate_off/def</td><td>Offensive and defensive rebounding rate.</td></tr>
-            <tr><td>ft_rate_off/def</td><td>Free throw rate — free throw attempts per field goal attempt.</td></tr>
+            <tr><td>orb_rate_off</td><td>Percentage of missed shots where this team secured the offensive rebound. Higher = more second-chance opportunities.</td></tr>
+              <tr><td>orb_rate_def</td><td>Percentage of opponent missed shots secured by this team. Higher = limits opponent second-chance opportunities.</td></tr>
+            <tr><td>ft_rate_off</td><td>Free throw attempts per field goal attempt on offense.</td></tr>
+              <tr><td>ft_rate_def</td><td>Free throw attempts allowed per field goal attempt on defense.</td></tr>
             <tr><td>blk_pct_off/def</td><td>Block rate on offense (shots blocked); block rate on defense (blocks generated).</td></tr>
             <tr><td>ast_pct_off/def</td><td>Assist rate on offense; assist rate allowed on defense.</td></tr>
-            <tr><td>off/def_dunks_*</td><td>Dunk rate and FG% on offense and defense.</td></tr>
-            <tr><td>off/def_close_twos_*</td><td>Non-dunk rim attempt rate and FG% — layups, floaters, putbacks. Exclusive of dunks.</td></tr>
-            <tr><td>off/def_long_twos_*</td><td>Midrange (long two) attempt rate and FG% on offense and defense.</td></tr>
+            <tr><td>off/def_dunks_*</td><td>Dunk attempts as a share of total FGA, and FG% on dunks. Typically the highest-percentage shot in basketball.</td></tr>
+            <tr><td>off/def_close_twos_*</td><td>Non-dunk rim attempts (layups, floaters, putbacks) as a share of total FGA, and FG% on those attempts. Excludes dunks.</td></tr>
+            <tr><td>off/def_long_twos_*</td><td>Long two-point attempts — all two-point shots not taken at the rim — as a share of total FGA, and FG% on those attempts.</td></tr>
             <tr><td>off/def_threes_*</td><td>Three-point attempt rate and FG% on offense and defense.</td></tr>
           </tbody>
         </table></div>
@@ -549,18 +549,18 @@ select:focus{border-color:var(--accent);}
         <div class="dict-table-wrap"><table class="dict-table">
           <thead><tr><th>Variable</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td>off_rim_rate_total</td><td>Combined rim attempt rate on offense — dunks + close 2s as a share of total FGA. Reflects overall paint presence.</td></tr>
+            <tr><td>off_rim_rate_total</td><td>All shot attempts at the rim (dunks + close 2s) as a share of total FGA.</td></tr>
             <tr><td>off_rim_fg</td><td>Weighted FG% at the rim on offense (dunks + close 2s). Higher = better finishing at the rim.</td></tr>
-            <tr><td>def_rim_rate_total</td><td>Combined rim attempt rate allowed on defense. Style indicator — not directionally good or bad on its own.</td></tr>
+            <tr><td>def_rim_rate_total</td><td>All opponent rim attempts (dunks + close 2s) allowed as a share of total FGA.</td></tr>
             <tr><td>def_rim_fg</td><td>Weighted FG% allowed at the rim on defense. Lower = better rim protection. High percentile = elite rim defense.</td></tr>
             <tr><td>ppp_off_full</td><td>Actual points scored per possession — estimated from shot distribution and FG%, calculated independently (not from Torvik).</td></tr>
             <tr><td>ppp_def_full</td><td>Actual points allowed per possession — estimated independently.</td></tr>
-            <tr><td>xPPP_off</td><td>Expected offensive PPP — shot profile frequencies multiplied by league-wide average shot values by season.</td></tr>
-            <tr><td>xPPP_def</td><td>Expected PPP allowed — opponent shot frequencies multiplied by league-wide averages.</td></tr>
-            <tr><td>ppp_residual_off</td><td>Shotmaking above expectation on offense — actual PPP minus expected PPP. Positive = scoring more than shot profile predicts.</td></tr>
-            <tr><td>ppp_residual_def</td><td>Shotmaking above expectation allowed on defense. Negative = holding opponents below their expected efficiency.</td></tr>
+            <tr><td>xPPP_off</td><td>Expected points per possession on offense — shot profile frequencies multiplied by league-average FG% by shot type and season.</td></tr>
+            <tr><td>xPPP_def</td><td>Expected PPP allowed on defense — opponent shot profile frequencies multiplied by league-average FG% by shot type and season.</td></tr>
+            <tr><td>ppp_residual_off</td><td>How much this team scores above what their shot selection would predict — driven by shotmaking, ball security, free throw generation, offensive rebounding, transition, spacing, creation, and talent. Positive = outperforming what the shot profile predicts.</td></tr>
+            <tr><td>ppp_residual_def</td><td>How much this team holds opponents below their expected efficiency — driven by contesting shots, forcing turnovers, defensive rebounding, limiting free throws, scheme, and athleticism. Higher = holding opponents further below their expected efficiency.</td></tr>
             <tr><td>ppp_diff</td><td>PPP Differential — actual offensive PPP minus defensive PPP. How many points per possession this team outscores opponents.</td></tr>
-            <tr><td>xPPP_diff</td><td>Expected PPP Differential — difference between expected offensive and defensive PPP based on shot profiles.</td></tr>
+            <tr><td>xPPP_diff</td><td>The difference between expected offensive and defensive PPP, based on each team's shot distribution compared against league-average FG% by shot type and season.</td></tr>
             <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms shot quality on both ends combined.</td></tr>
             <tr><td>ft_pct_off</td><td>Free throw percentage on offense.</td></tr>
             <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and D1-wide rank for each variable. All normalized so higher = better.</td></tr>
@@ -596,34 +596,76 @@ const TIPS={
   adj_de:'Adjusted Defensive Efficiency: points allowed per 100 possessions, adjusted for opponent offense.',
   efg_rate_off:'Effective Field Goal % on offense: accounts for 3-pointers being worth more than 2s.',
   tov_rate_off:'Turnover rate on offense: turnovers per possession. Lower is better.',
-  orb_rate_off:'Offensive rebound rate: % of available offensive rebounds captured.',
+  orb_rate_off:'Percentage of missed shots where this team secured the offensive rebound. Higher = more second-chance opportunities.',
   ft_rate_off:'Free throw rate on offense: free throw attempts per field goal attempt.',
   ft_pct_off:'Free throw percentage on offense.',
   ppp_off_full:'Actual points scored per possession (calculated independently, not from Torvik).',
-  xPPP_off:'Expected points per possession on offense: shot profile frequencies multiplied by league-wide season averages by shot type for each year.',
-  ppp_residual_off:'Shotmaking above expectation on offense: actual PPP minus expected PPP. Positive = team scores more than its shot profile would predict.',
+  xPPP_off:'Expected points per possession on offense — shot profile frequencies multiplied by league-average FG% by shot type and season.',
+  ppp_residual_off:'How much this team scores above what their shot selection would predict — driven by shotmaking, ball security, free throw generation, offensive rebounding, transition, spacing, creation, and talent. Positive = outperforming what the shot profile predicts.',
   ppp_diff:'How many points per possession we beat teams by — actual scoring margin per possession.',
-  xPPP_diff:'The difference between the shots we generate and the shots we allow — comparing shot profiles with our opponent.',
+  xPPP_diff:'The difference between expected offensive and defensive PPP, based on each team's shot distribution compared against league-average FG% by shot type and season.'s shot distribution compared against league-average FG% by shot type and season.',
   residual_diff:'Performance Over Expectation — how much we outperform (or underperform) the shot quality on both ends.',
   efg_rate_def:'Effective Field Goal % allowed on defense.',
   tov_rate_def:'Turnover rate forced on defense: opponent turnovers per possession.',
-  orb_rate_def:'Defensive rebound rate: % of available defensive rebounds captured (1 minus opponent offensive rebound rate).',
-  ft_rate_def:'Free throw rate allowed on defense.',
+  orb_rate_def:'Percentage of opponent missed shots secured by this team. Higher = limits opponent second-chance opportunities.',
+  ft_rate_def:'Free throw attempts allowed per field goal attempt on defense.',
   ppp_def_full:'Actual points allowed per possession (calculated independently, not from Torvik).',
-  xPPP_def:'Expected points per possession allowed: opponent shot profile frequencies multiplied by league-wide season averages.',
-  ppp_residual_def:'Shotmaking above expectation allowed on defense: actual PPP allowed minus expected PPP allowed. Negative = defense holds opponents below their expected efficiency.',
-  off_long_twos_rate_total:'Midrange rate on offense: percentage of total FGA that are long two-point attempts. Lower is generally preferred in modern basketball.',
+  xPPP_def:'Expected PPP allowed on defense — opponent shot profile frequencies multiplied by league-average FG% by shot type and season.',
+  ppp_residual_def:'How much this team holds opponents below their expected efficiency — driven by contesting shots, forcing turnovers, defensive rebounding, limiting free throws, scheme, and athleticism. Higher = holding opponents further below their expected efficiency.',
+  off_long_twos_rate_total:'Long two-point attempts — all two-point shots not taken at the rim.',
   off_long_twos_fg:'FG% on midrange shots (long 2s). Higher = better shooting efficiency from midrange.',
-  def_long_twos_rate_total:'Midrange rate allowed on defense: percentage of opponent FGA that are long twos. Higher = forcing opponents into inefficient shots.',
+  def_long_twos_rate_total:'Opponent long two-point attempts allowed — all two-point shots not at the rim.',
   def_long_twos_fg:'Opponent FG% on midrange shots allowed. Lower = better defense on midrange attempts.',
-  off_rim_rate_total:'Rim attempt rate on offense: percentage of total FGA at the rim (dunks + close 2s combined). Reflects rim pressure and paint presence — style indicator, not a quality metric.',
-  off_rim_fg:'Weighted FG% at the rim on offense (dunks + close 2s, weighted by attempts). Higher = better finishing at the rim.',
-  def_rim_rate_total:'Rim attempt rate allowed on defense: percentage of opponent FGA at the rim. Style indicator — neither inherently good nor bad.',
-  def_rim_fg:'Weighted FG% allowed at the rim on defense (dunks + close 2s, weighted by attempts). Lower FG% allowed = better rim protection. High percentile = elite rim defense.',
+  ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
+  ast_pct_def:'Percentage of opponent made field goals that were assisted. Lower = forcing tougher, less structured shots.',
+  off_rim_rate_total:'All shot attempts at the rim — dunks plus close two-point attempts (layups, floaters, putbacks) — as a share of total FGA.',
+  off_rim_fg:'Weighted FG% on all rim attempts (dunks + close 2s combined).',
+  def_rim_rate_total:'All opponent shot attempts at the rim allowed — dunks plus close two-point attempts — as a share of total FGA.',
+  def_rim_fg:'Weighted FG% allowed on all rim attempts on defense (dunks + close 2s combined).',
+  off_dunks_rate_total:'Dunk attempts as a share of total field goal attempts. Typically the highest-percentage shot in basketball.',
+  off_dunks_fg:'FG% on dunk attempts on offense.',
+  def_dunks_rate_total:'Opponent dunk attempts as a share of total field goal attempts.',
+  def_dunks_fg:'Opponent FG% on dunk attempts.',
+  off_close_twos_rate_total:'Non-dunk rim attempts as a share of total FGA — layups, floaters, and putbacks. Excludes dunks.',
+  off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
+  def_close_twos_rate_total:'Opponent non-dunk rim attempts as a share of total FGA.',
+  def_close_twos_fg:'Opponent FG% on non-dunk rim attempts.',
+  off_long_twos_rate_total:'Long two-point attempts as a share of total FGA — all two-point shots not taken at the rim.',
+  off_long_twos_fg:'FG% on long two-point (midrange) attempts.',
+  def_long_twos_rate_total:'Opponent long two-point attempts as a share of total FGA.',
+  def_long_twos_fg:'Opponent FG% on long two-point (midrange) attempts.',
+  off_dunks_rate_total:'Dunk attempts as a share of total field goal attempts. Typically the highest-percentage shot in basketball.',
+  off_dunks_fg:'FG% on dunk attempts on offense.',
+  def_dunks_rate_total:'Opponent dunk attempts as a share of their total field goal attempts.',
+  def_dunks_fg:'Opponent FG% on dunk attempts allowed.',
+  off_close_twos_rate_total:'Non-dunk rim attempts — layups, floaters, and putbacks. Excludes dunks.',
+  off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
+  def_close_twos_rate_total:'Opponent non-dunk rim attempts allowed — layups, floaters, and putbacks.',
+  def_close_twos_fg:'Opponent FG% on non-dunk rim attempts allowed.',
+  off_rim_rate_total:'All shot attempts at the rim — dunks plus close two-point attempts (layups, floaters, putbacks). Reflects overall paint presence.',
+  off_rim_fg:'Weighted FG% at the rim on offense — dunks plus close twos, weighted by attempts.',
+  def_rim_rate_total:'All opponent shot attempts at the rim allowed — dunks plus close two-point attempts. Reflects how much opponents attack the paint.',
+  def_rim_fg:'Weighted FG% allowed at the rim on defense — dunks plus close twos, weighted by attempts.',
   blk_pct_off:'Percentage of offensive field goal attempts that were blocked. Lower is better.',
   blk_pct_def:'Percentage of opponent field goal attempts blocked by this team. Higher is better.',
   ast_pct_off:'Percentage of made field goals that were assisted on offense. Higher = more ball movement.',
   ast_pct_def:'Percentage of opponent made field goals that were assisted. Lower = forcing tougher, less structured shots.',
+  off_rim_rate_total:'All shot attempts at the rim — dunks plus close two-point attempts (layups, floaters, putbacks) — as a share of total FGA.',
+  off_rim_fg:'Weighted FG% on all rim attempts (dunks + close 2s combined).',
+  def_rim_rate_total:'All opponent shot attempts at the rim allowed — dunks plus close two-point attempts — as a share of total FGA.',
+  def_rim_fg:'Weighted FG% allowed on all rim attempts on defense (dunks + close 2s combined).',
+  off_dunks_rate_total:'Dunk attempts as a share of total field goal attempts. Typically the highest-percentage shot in basketball.',
+  off_dunks_fg:'FG% on dunk attempts on offense.',
+  def_dunks_rate_total:'Opponent dunk attempts as a share of total field goal attempts.',
+  def_dunks_fg:'Opponent FG% on dunk attempts.',
+  off_close_twos_rate_total:'Non-dunk rim attempts as a share of total FGA — layups, floaters, and putbacks. Excludes dunks.',
+  off_close_twos_fg:'FG% on non-dunk rim attempts (layups, floaters, putbacks).',
+  def_close_twos_rate_total:'Opponent non-dunk rim attempts as a share of total FGA.',
+  def_close_twos_fg:'Opponent FG% on non-dunk rim attempts.',
+  off_long_twos_rate_total:'Long two-point attempts as a share of total FGA — all two-point shots not taken at the rim.',
+  off_long_twos_fg:'FG% on long two-point (midrange) attempts.',
+  def_long_twos_rate_total:'Opponent long two-point attempts as a share of total FGA.',
+  def_long_twos_fg:'Opponent FG% on long two-point (midrange) attempts.',
 };
 
 const STAT_CATS={
@@ -688,7 +730,7 @@ const SUMMARY_LABELS={
   efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',ft_pct_off:'FT%',
   efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',
   ppp_off_full:'Scoring Efficiency',ppp_def_full:'Defensive Efficiency',
-  ppp_residual_off:'Shotmaking (Off)',ppp_residual_def:'Shotmaking (Def)',residual_diff:'Residual Differential',
+  ppp_residual_off:'How much this team scores above what their shot selection would predict — driven by shotmaking, ball security, free throw generation, offensive rebounding, transition, spacing, creation, and talent. Positive = outperforming what the shot profile predicts.',ppp_residual_def:'Shotmaking (Def)',residual_diff:'Residual Differential',
   blk_pct_def:'Blocking Shots',blk_pct_off:'Getting Blocked',ast_pct_off:'Ball Movement',
 };
 
@@ -932,7 +974,9 @@ function toggleTip(e,el){
   document.querySelectorAll('.tooltip').forEach(t=>t.style.display='none');
   tip.style.display=wasOpen?'none':'block';
 }
-document.addEventListener('click',()=>document.querySelectorAll('.tooltip').forEach(t=>t.style.display='none'));
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.info-icon'))document.querySelectorAll('.tooltip').forEach(t=>t.style.display='');
+});
 
 function statRowHtml(row,stat,view){
   const pct=getPct(row,stat.key,view);
@@ -1188,7 +1232,7 @@ function renderConfStats(){
     <th style="color:var(--accent)">${cRow.team_name.split(' ').slice(-1)}</th>`;
   compareTeams.forEach(t=>{
     const col=cCustomMode?'var(--yellow)':'var(--text3)';
-    thead+=`<th style="color:${col}">${t.team_name.split(' ').slice(-1)}</th>`;
+    thead+=`<th style="color:${col}">${t.team_name}</th>`;
   });
   const avgLabel=(cCustomMode&&cCompTeams.length>0)||cTopN>0?'Selected Avg':'Conf Avg';
   thead+=`<th style="color:var(--text4);font-style:italic">${avgLabel}</th></tr></thead>`;
@@ -1459,8 +1503,8 @@ async function renderH2H(){
       const zA=parseFloat(rA[stat.key+'_z']),zB=parseFloat(rB[stat.key+'_z']);
       if(!isNaN(zA)&&!isNaN(zB)){
         const diff=zA-zB;
-        const nmA=tA.split(' ').slice(-1)[0];
-        const nmB=tB.split(' ').slice(-1)[0];
+        const nmA=tA;
+        const nmB=tB;
         if(stat.isTempo){
           if(diff>=1.0){h2hDesc=nmA+' Much Faster';h2hCls='pct-fast';}
           else if(diff>=0.5){h2hDesc=nmA+' Faster';h2hCls='pct-good';}
