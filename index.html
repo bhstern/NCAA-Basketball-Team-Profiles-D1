@@ -67,7 +67,7 @@ select:focus{border-color:var(--accent);}
 .stat-card-title{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);margin-bottom:14px;}
 .stat-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;position:relative;}
 .stat-row:last-child{margin-bottom:0;}
-.stat-name{font-size:14px;color:var(--text2);width:172px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
+.stat-name{font-size:14px;color:var(--text2);width:185px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
 .stat-val{font-family:var(--font-mono);font-size:12px;color:var(--text3);width:64px;flex-shrink:0;text-align:right;}
 .stat-bar-wrap{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
 .stat-bar{height:100%;border-radius:3px;transition:width 0.5s ease;}
@@ -88,7 +88,7 @@ select:focus{border-color:var(--accent);}
 .badge-blwfreq{background:rgba(240,154,74,0.12);color:var(--orange);}
 
 /* INFO ICON */
-.info-icon{width:13px;height:13px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--text4);font-size:8px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;font-style:normal;}
+.info-icon{width:14px;height:14px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--text4);font-size:9px;display:inline-flex;align-items:center;justify-content:center;cursor:default;flex-shrink:0;position:relative;font-style:normal;user-select:none;}
 .tooltip{display:none;position:absolute;left:16px;top:-4px;width:210px;background:#1a2640;border:1px solid var(--border2);border-radius:4px;padding:6px 8px;font-size:10px;color:var(--text2);line-height:1.5;z-index:999;pointer-events:none;}
 @media(hover:hover){.info-icon:hover .tooltip{display:block;}}
 
@@ -708,7 +708,7 @@ const STAT_CATS={
   Overview:[
     {key:'adj_em',label:'Adj. Efficiency Margin',fmt:v=>(v>0?'+':'')+v.toFixed(1)},
     {key:'ppp_diff',label:'PPP Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
-    {key:'xPPP_diff',label:'Expected PPP Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
+    {key:'xPPP_diff',label:'Expected PPP Diff',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
     {key:'residual_diff',label:'Residual Differential',fmt:v=>(v>0?'+':'')+v.toFixed(3)},
     {key:'barthag',label:'Barthag',fmt:v=>v.toFixed(3)},
     {key:'elite_sos_rate',label:'Elite SOS Rating',fmt:v=>(v*100).toFixed(1)+'%'},
@@ -1111,14 +1111,16 @@ function renderShotProfile(row,view){
     const arrow=c.expandable?('<span class="shot-expand-arrow" data-cat="'+c.name+'" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">'+arrowChar+'</span>'):'';
     const hint=c.expandable&&!isExp?'<div style="font-size:9px;color:var(--text4);margin-top:2px">click ▸ for breakdown</div>':'';
     const fw=c.expandable?'600':'500';
-    html+=`<div class="shot-cat-cell" style="font-weight:${fw};flex-direction:column;align-items:flex-start">${c.name}${arrow}${hint}</div>
+    const shotTip=tip(c.rk);
+    html+=`<div class="shot-cat-cell" style="font-weight:${fw};flex-direction:column;align-items:flex-start">${c.name}${shotTip}${arrow}${hint}</div>
       ${shotMetricCell(row,c.rk,true,view)}
       ${shotMetricCell(row,c.fk,false,view)}
       ${shotMetricCell(row,c.drk,true,view)}
       ${shotMetricCell(row,c.dfk,false,view)}`;
     if(c.expandable&&isExp&&c.children){
       c.children.forEach(ch=>{
-        html+=`<div class="shot-cat-cell" style="padding-left:28px;font-size:11px;color:var(--text3)">${ch.name}</div>
+        const childTip=tip(ch.rk);
+        html+=`<div class="shot-cat-cell" style="padding-left:28px;font-size:13px;color:var(--text3)">${ch.name}${childTip}</div>
           ${shotMetricCell(row,ch.rk,true,view)}
           ${shotMetricCell(row,ch.fk,false,view)}
           ${shotMetricCell(row,ch.drk,true,view)}
