@@ -1071,7 +1071,12 @@ function shotMetricCell(row,key,isFreq,view){
   if(view==='conf'){const r=parseInt(row[key+'_conf_rank']);const sz=cYearData.filter(d=>d.conference===row.conference).length;pct=isNaN(r)?null:1-(r-1)/sz;}
   else if(view==='sub'){const v=parseFloat(row[key+'_sub_pct']);pct=isNaN(v)?null:v;}
   else{const v=parseFloat(row[key+'_pct']);pct=isNaN(v)?null:v;}
-  const cls=pctCls(pct,false,isFreq);
+  // For defensive rate stats that are inverted (higher pct = allowing fewer = good defense)
+  // we need to flip pct for frequency display so label matches actual rate volume
+  const INVERTED_DEF_RATES=['def_dunks_rate_total','def_close_twos_rate_total','def_threes_rate_total'];
+  let displayPct=pct;
+  if(isFreq&&INVERTED_DEF_RATES.includes(key)&&pct!==null)displayPct=1-pct;
+  const cls=pctCls(displayPct,false,isFreq);
   const bw=pct!==null?Math.round(pct*100):0;
   const rd=view==='conf'?`Conf #${row[key+'_conf_rank']||'—'}`:view==='sub'?`Sub #${row[key+'_sub_rank']||'—'}`:`#${row[key+'_rank']||'—'}`;
   // Conference rank view: no percentile bar or pct number
@@ -1313,30 +1318,29 @@ function renderConfStats(){
     const avgVals=avgSource.map(t=>parseFloat(t[stat.key])).filter(v=>!isNaN(v));
     const avg=avgVals.length?avgVals.reduce((a,b)=>a+b,0)/avgVals.length:null;
     let avgDesc='',avgDescCls='';
-    // Use percentile-based comparison so direction is handled automatically
-    // (all stats normalized: higher percentile = better)
-    const myPct=parseFloat(cRow[stat.key+'_pct']);
-    const avgPcts=avgSource.map(t=>parseFloat(t[stat.key+'_pct'])).filter(v=>!isNaN(v));
-    const avgPct=avgPcts.length?avgPcts.reduce((a,b)=>a+b,0)/avgPcts.length:null;
-    if(!isNaN(myPct)&&avgPct!==null){
-      const diff=(myPct-avgPct)*100;
+    // Use z-score based comparison for accuracy at extremes
+    const myZ=parseFloat(cRow[stat.key+'_z']);
+    const avgZs=avgSource.map(t=>parseFloat(t[stat.key+'_z'])).filter(v=>!isNaN(v));
+    const avgZ=avgZs.length?avgZs.reduce((a,b)=>a+b,0)/avgZs.length:null;
+    if(!isNaN(myZ)&&avgZ!==null){
+      const diff=myZ-avgZ;
       if(stat.isTempo){
-        if(diff>20){avgDesc='Much Faster';avgDescCls='pct-fast';}
-        else if(diff>8){avgDesc='Faster';avgDescCls='pct-good';}
-        else if(diff>-8){avgDesc='Avg Pace';avgDescCls='pct-avg';}
-        else if(diff>-20){avgDesc='Slower';avgDescCls='pct-below';}
+        if(diff>=1.0){avgDesc='Much Faster';avgDescCls='pct-fast';}
+        else if(diff>=0.4){avgDesc='Faster';avgDescCls='pct-good';}
+        else if(diff>-0.4){avgDesc='Avg Pace';avgDescCls='pct-avg';}
+        else if(diff>-1.0){avgDesc='Slower';avgDescCls='pct-below';}
         else{avgDesc='Much Slower';avgDescCls='pct-slow';}
       } else if(stat.isFreq){
-        if(diff>20){avgDesc='Much Higher';avgDescCls='pct-elite';}
-        else if(diff>8){avgDesc='Higher Freq';avgDescCls='pct-good';}
-        else if(diff>-8){avgDesc='Avg Freq';avgDescCls='pct-avg';}
-        else if(diff>-20){avgDesc='Lower Freq';avgDescCls='pct-below';}
-        else{avgDesc='Much Lower';avgDescCls='pct-poor';}
+        if(diff>=1.0){avgDesc='Much Higher Freq';avgDescCls='pct-elite';}
+        else if(diff>=0.4){avgDesc='Higher Freq';avgDescCls='pct-good';}
+        else if(diff>-0.4){avgDesc='Avg Freq';avgDescCls='pct-avg';}
+        else if(diff>-1.0){avgDesc='Lower Freq';avgDescCls='pct-below';}
+        else{avgDesc='Much Lower Freq';avgDescCls='pct-poor';}
       } else {
-        if(diff>20){avgDesc='Well Above';avgDescCls='pct-elite';}
-        else if(diff>8){avgDesc='Above Avg';avgDescCls='pct-good';}
-        else if(diff>-8){avgDesc='On Par';avgDescCls='pct-avg';}
-        else if(diff>-20){avgDesc='Below Avg';avgDescCls='pct-below';}
+        if(diff>=1.0){avgDesc='Well Above';avgDescCls='pct-elite';}
+        else if(diff>=0.4){avgDesc='Above Avg';avgDescCls='pct-good';}
+        else if(diff>-0.4){avgDesc='On Par';avgDescCls='pct-avg';}
+        else if(diff>-1.0){avgDesc='Below Avg';avgDescCls='pct-below';}
         else{avgDesc='Well Below';avgDescCls='pct-poor';}
       }
     }
