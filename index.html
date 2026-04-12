@@ -854,43 +854,152 @@ function updateBanner(row){
   // ── Shot profile sentence ────────────────────────────────────────────────
   const offThreeR=parseFloat(row.off_threes_rate_total_pct);
   const offRimR=parseFloat(row.off_rim_rate_total_pct);
-  const offLongR=parseFloat(row.off_long_twos_rate_total_pct);
-  const defRimR=parseFloat(row.def_rim_rate_total_pct);
+  const offMidR=parseFloat(row.off_long_twos_rate_total_pct);
+  const offRimRaw=parseFloat(row.off_rim_rate_total);
+  const offThreeRaw=parseFloat(row.off_threes_rate_total);
+  const offMidRaw=parseFloat(row.off_long_twos_rate_total);
+  const fg3=parseFloat(row.off_threes_fg_pct);
+  const fgRim=parseFloat(row.off_rim_fg_pct);
   const defThreeR=parseFloat(row.def_threes_rate_total_pct);
-  const defLongR=parseFloat(row.def_long_twos_rate_total_pct);
-  const nm=row.team_name.split(' ').slice(-1)[0];
+  const defRimR=parseFloat(row.def_rim_rate_total_pct);
+  const defMidR=parseFloat(row.def_long_twos_rate_total_pct);
+  const dfg3=parseFloat(row.def_threes_fg_pct);
+  const dfgRim=parseFloat(row.def_rim_fg_pct);
+  const nm=row.team_name;
   let blurb='';
-  if(!isNaN(offThreeR)&&!isNaN(offRimR)){
-    // Offense shot diet
-    let offDesc='';
-    if(offThreeR>=0.65&&offRimR<=0.35)offDesc='generates most of their attempts from three with limited paint attacks';
-    else if(offThreeR>=0.65&&offRimR>=0.65)offDesc='attacks from both the perimeter and the rim at high rates';
-    else if(offThreeR<=0.35&&offRimR>=0.65)offDesc='prioritizes paint scoring over perimeter shooting';
-    else if(offThreeR<=0.35&&offRimR<=0.35)offDesc='takes a midrange-heavy approach';
-    else if(offThreeR>=0.65)offDesc='leans heavily on the three-point line';
-    else if(offRimR>=0.65)offDesc='attacks the rim at a high rate';
-    else offDesc='takes a balanced offensive approach';
-    if(!isNaN(offLongR)&&offLongR>=0.65)offDesc+=' with heavy midrange usage';
-    else if(!isNaN(offLongR)&&offLongR<=0.25)offDesc+=' while avoiding the midrange';
-    // Defense
-    let defDesc='';
-    if(!isNaN(defRimR)&&!isNaN(defThreeR)){
-      if(defRimR<=0.35&&defThreeR<=0.35)defDesc='protect the rim and contest the perimeter';
-      else if(defRimR<=0.35)defDesc='protect the rim effectively';
-      else if(defThreeR<=0.35)defDesc='contest perimeter shots effectively';
-      else if(defRimR>=0.65&&defThreeR>=0.65)defDesc='allow high volumes of both rim and perimeter attempts';
-      else if(defRimR>=0.65)defDesc='struggle to protect the paint';
-      else if(defThreeR>=0.65)defDesc='concede a high volume of three-point attempts';
-      else if(!isNaN(defLongR)&&defLongR>=0.65)defDesc='force opponents into midrange shots';
-      else defDesc='play a conventional defensive scheme';
-    }
-    blurb=defDesc
-      ?`${nm} ${offDesc}; defensively, they ${defDesc}.`
-      :`${nm} ${offDesc}.`;
-    // ensure grammar: no 'concedes' (should be 'concede')
 
+  if(!isNaN(offThreeR)&&!isNaN(offRimR)&&!isNaN(offMidR)){
+    // ── OFFENSE ────────────────────────────────────────────────────────
+    // Find dominant (highest pct) and avoided (lowest pct)
+    const offShots={threes:offThreeR,rim:offRimR,mid:offMidR};
+    const domName=Object.keys(offShots).reduce((a,b)=>offShots[a]>offShots[b]?a:b);
+    const avoName=Object.keys(offShots).reduce((a,b)=>offShots[a]<offShots[b]?a:b);
+    const domPct=offShots[domName];
+    const avoPct=offShots[avoName];
+    // Is dominant also the highest raw rate?
+    const rawMax=Math.max(offRimRaw,offThreeRaw,offMidRaw);
+    const domIsTopRaw=(domName==='rim'&&offRimRaw===rawMax)||(domName==='threes'&&offThreeRaw===rawMax)||(domName==='mid'&&offMidRaw===rawMax);
+
+    // Two shots both very high
+    const highShots=Object.keys(offShots).filter(k=>offShots[k]>=0.75);
+    let offDesc='';
+    if(highShots.length>=2){
+      if(highShots.includes('threes')&&highShots.includes('mid')&&!highShots.includes('rim'))
+        offDesc='generates a high volume of both three-point and midrange attempts while rarely attacking the rim';
+      else if(highShots.includes('threes')&&highShots.includes('rim')&&!highShots.includes('mid'))
+        offDesc='attacks from both the perimeter and the rim at high rates';
+      else if(highShots.includes('rim')&&highShots.includes('mid')&&!highShots.includes('threes'))
+        offDesc='scores predominantly through interior and midrange attempts while rarely shooting from three';
+      else
+        offDesc='generates high volume across all shot types';
+    } else if(domPct>=0.80&&avoPct<=0.30){
+      // Clear dominant + clear avoided
+      if(domName==='threes'&&avoName==='rim')
+        offDesc=domIsTopRaw?'lives beyond the arc and rarely attacks the rim':'shoots threes at a high rate while rarely attacking the rim';
+      else if(domName==='threes'&&avoName==='mid')
+        offDesc=domIsTopRaw?'lives beyond the arc while avoiding the midrange':'shoots threes at a high rate while avoiding the midrange';
+      else if(domName==='rim'&&avoName==='threes')
+        offDesc=domIsTopRaw?'heavily attacks the rim while rarely shooting from three':'attacks the rim at a high rate while rarely shooting from three';
+      else if(domName==='rim'&&avoName==='mid')
+        offDesc=domIsTopRaw?'heavily attacks the rim while avoiding the midrange':'attacks the rim at a high rate while avoiding the midrange';
+      else if(domName==='mid'&&avoName==='rim')
+        offDesc=domIsTopRaw?'relies heavily on midrange attempts while almost never attacking the rim':'shoots midrange at a much higher rate than most teams while almost never attacking the rim';
+      else if(domName==='mid'&&avoName==='threes')
+        offDesc=domIsTopRaw?'relies heavily on midrange and interior attempts while rarely shooting from three':'shoots midrange at a much higher rate than most teams while rarely shooting from three';
+    } else if(domPct>=0.75){
+      if(domName==='threes') offDesc=domIsTopRaw?'leans heavily on the three-point line':'shoots threes at a high rate';
+      else if(domName==='rim') offDesc=domIsTopRaw?'heavily attacks the rim':'attacks the rim at a high rate';
+      else offDesc=domIsTopRaw?'relies heavily on midrange attempts':'shoots midrange at a higher rate than most teams';
+      if(avoPct<=0.25){
+        const avoLabels={threes:'the three-point line',rim:'the rim',mid:'the midrange'};
+        offDesc+=' while avoiding '+avoLabels[avoName];
+      }
+    } else if(domPct>=0.65){
+      if(domName==='threes') offDesc='favors the three-point line';
+      else if(domName==='rim') offDesc='favors attacking the rim';
+      else offDesc=domIsTopRaw?'favors the midrange':'relies on the midrange more than most teams';
+      if(avoPct<=0.25){
+        const avoLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
+        offDesc+=' while notably avoiding '+avoLabels[avoName];
+      }
+    } else if(avoPct<=0.25){
+      const avoLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
+      offDesc='takes a balanced approach while notably avoiding '+avoLabels[avoName];
+    } else {
+      offDesc='takes a balanced offensive approach';
+    }
+
+    // FG% modifier (only add if dominant is notable AND it flows grammatically)
+    if(domPct>=0.65){
+      if(domName==='threes'&&fg3>=0.85) offDesc+=', converting at an elite rate from deep';
+      else if(domName==='rim'&&fgRim<=0.20) offDesc+=' though struggling to finish at the rim';
+      else if(domName==='rim'&&fgRim>=0.85) offDesc+=' and finishes at an elite rate';
+    }
+
+    // ── DEFENSE ────────────────────────────────────────────────────────
+    const defShots={threes:defThreeR,rim:defRimR,mid:defMidR};
+    const defMost=Object.keys(defShots).reduce((a,b)=>defShots[a]>defShots[b]?a:b);
+    const defLeast=Object.keys(defShots).reduce((a,b)=>defShots[a]<defShots[b]?a:b);
+    const defMostPct=defShots[defMost];
+    const defLeastPct=defShots[defLeast];
+
+    // FG% suppression — notable even when volume is average
+    const eliteRimDef=!isNaN(dfgRim)&&dfgRim>=0.75;
+    const poorRimDef=!isNaN(dfgRim)&&dfgRim<=0.20;
+    const elite3Def=!isNaN(dfg3)&&dfg3>=0.75;
+    const poor3Def=!isNaN(dfg3)&&dfg3<=0.20;
+
+    let defDesc='';
+    const defBothThresh=defLeast==='threes'?0.28:defLeast==='mid'?0.22:0.20;
+    if(defMostPct>=0.80&&defLeastPct<=defBothThresh){
+      // Both extremes very clear
+      const atkLabels={threes:'from three',rim:'at the rim',mid:'from midrange'};
+      const protLabels={threes:'perimeter shots',rim:'rim attempts',mid:'midrange attempts'};
+      defDesc='opponents attack them heavily '+atkLabels[defMost]+' while they limit '+protLabels[defLeast];
+    } else if((defMost==='rim'&&defMostPct>=0.78)||(defMost==='threes'&&defMostPct>=0.78)||(defMost==='mid'&&defMostPct>=0.82)){
+      // Clear area being attacked
+      if(defMost==='rim'){
+        defDesc='opponents attack the paint at a high rate';
+        if(eliteRimDef) defDesc+=', though they hold opponents to a low FG% at the rim';
+        else if(poorRimDef) defDesc+=' and convert effectively';
+      } else if(defMost==='threes'){
+        defDesc='opponents generate a high volume of three-point attempts';
+        if(elite3Def) defDesc+=', though they shoot a low percentage';
+        else if(poor3Def) defDesc+=' and convert at a high rate';
+      } else {
+        defDesc='opponents shoot a high volume of midrange attempts against them';
+      }
+    } else if(defLeastPct<=0.25){
+      // Clear area being protected
+      if(defLeast==='rim'){
+        defDesc='protect the rim effectively';
+        if(eliteRimDef) defDesc+=', holding opponents well below average FG% at the rim';
+      } else if(defLeast==='threes'){
+        defDesc='chase opponents off the three-point line';
+        if(elite3Def) defDesc+=' and hold them to a low FG% when they do shoot from deep';
+      } else {
+        defDesc='force opponents away from the midrange';
+      }
+    } else if(eliteRimDef&&!poorRimDef){
+      defDesc='hold opponents well below average at the rim despite average rim attempt rates allowed';
+    } else if(poor3Def){
+      defDesc='allow opponents to convert three-point attempts at a high rate';
+    } else if(poorRimDef){
+      defDesc='struggle to prevent opponents from finishing at the rim';
+    } else if(defMostPct>=0.65){
+      const atkLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
+      defDesc='allow above-average '+atkLabels[defMost];
+    } else {
+      defDesc='play a sound defensive scheme without a clear tendency';
+    }
+
+    // Some defDesc phrases start with 'opponents' and don't need 'they'
+    const defOpponent=defDesc.startsWith('opponents')||defDesc.startsWith('allow')||defDesc.startsWith('hold')||defDesc.startsWith('force')||defDesc.startsWith('funnel')||defDesc.startsWith('limit')||defDesc.startsWith('struggle');
+    const defClause=defOpponent?defDesc:'they '+defDesc;
+    blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
+  document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
   document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
 }
 
@@ -1023,12 +1132,7 @@ function shotMetricCell(row,key,isFreq,view){
   if(view==='conf'){const r=parseInt(row[key+'_conf_rank']);const sz=cYearData.filter(d=>d.conference===row.conference).length;pct=isNaN(r)?null:1-(r-1)/sz;}
   else if(view==='sub'){const v=parseFloat(row[key+'_sub_pct']);pct=isNaN(v)?null:v;}
   else{const v=parseFloat(row[key+'_pct']);pct=isNaN(v)?null:v;}
-  // For defensive rate stats that are inverted (higher pct = allowing fewer = good defense)
-  // we need to flip pct for frequency display so label matches actual rate volume
-  const INVERTED_DEF_RATES=['def_dunks_rate_total','def_close_twos_rate_total','def_threes_rate_total'];
-  let displayPct=pct;
-  if(isFreq&&INVERTED_DEF_RATES.includes(key)&&pct!==null)displayPct=1-pct;
-  const cls=pctCls(displayPct,false,isFreq);
+  const cls=pctCls(pct,false,isFreq);
   const bw=pct!==null?Math.round(pct*100):0;
   const rd=view==='conf'?`Conf #${row[key+'_conf_rank']||'—'}`:view==='sub'?`Sub #${row[key+'_sub_rank']||'—'}`:`#${row[key+'_rank']||'—'}`;
   // Conference rank view: no percentile bar or pct number
