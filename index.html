@@ -77,11 +77,20 @@ select:focus{border-color:var(--accent);}
 .pct-elite{color:var(--green);} .pct-good{color:#7dd88a;} .pct-avg{color:var(--yellow);} .pct-below{color:var(--orange);} .pct-poor{color:var(--red);}
 .bar-elite{background:var(--green);} .bar-good{background:#7dd88a;} .bar-avg{background:var(--yellow);} .bar-below{background:var(--orange);} .bar-poor{background:var(--red);}
 .badge-elite{background:rgba(61,214,140,0.12);color:var(--green);} .badge-good{background:rgba(125,216,138,0.12);color:#7dd88a;} .badge-avg{background:rgba(245,200,66,0.12);color:var(--yellow);} .badge-below{background:rgba(240,154,74,0.12);color:var(--orange);} .badge-poor{background:rgba(240,97,74,0.12);color:var(--red);}
-.badge-fast{background:rgba(74,158,255,0.12);color:var(--accent);}
-.badge-slow{background:rgba(148,163,184,0.12);color:var(--text3);}
-.pct-fast{color:var(--accent);} .pct-slow{color:var(--text3);}
-.badge-hifreq{background:rgba(61,214,140,0.12);color:var(--green);}
-.badge-lofreq{background:rgba(240,97,74,0.12);color:var(--red);}
+.badge-fast{background:rgba(74,158,255,0.15);color:#4a9eff;}
+.badge-faster{background:rgba(122,184,255,0.12);color:#7ab8ff;}
+.badge-avgpace{background:rgba(74,85,104,0.15);color:var(--text4);}
+.badge-slower{background:rgba(148,163,184,0.12);color:#94a3b8;}
+.badge-slow{background:rgba(100,116,139,0.12);color:#64748b;}
+
+.pct-fast{color:#4a9eff;} .pct-slow{color:#64748b;}
+.pct-faster{color:#7ab8ff;} .pct-slower{color:#94a3b8;}
+.pct-avgpace{color:var(--text4);}
+.badge-hifreq{background:rgba(74,158,255,0.15);color:#4a9eff;}
+.badge-hifreq2{background:rgba(122,184,255,0.12);color:#7ab8ff;}
+.badge-avgfreq{background:rgba(74,85,104,0.15);color:var(--text4);}
+.badge-lofreq2{background:rgba(148,163,184,0.12);color:#94a3b8;}
+.badge-lofreq{background:rgba(100,116,139,0.12);color:#64748b;}
 .badge-abvavg{background:rgba(125,216,138,0.12);color:#7dd88a;}
 .badge-blwavg{background:rgba(240,154,74,0.12);color:var(--orange);}
 .badge-abvfreq{background:rgba(125,216,138,0.12);color:#7dd88a;}
@@ -129,7 +138,7 @@ select:focus{border-color:var(--accent);}
 .hist-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:top;min-width:110px;}
 .hist-table tr:last-child td{border-bottom:none;}
 .hist-table td.stat-col{text-align:left;font-size:12px;color:var(--text2);min-width:160px;}
-.hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:6px 14px;}
+.hist-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);padding:8px 14px;text-align:left;border-top:1px solid var(--border2);}
 .hist-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;}
 .hist-val{font-family:var(--font-mono);font-size:13px;color:var(--text3);}
 .hist-pct{font-family:var(--font-mono);font-size:13px;font-weight:500;}
@@ -161,7 +170,7 @@ select:focus{border-color:var(--accent);}
 .conf-stats-table td{padding:9px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
 .conf-stats-table tr:last-child td{border-bottom:none;}
 .conf-stats-table td.stat-col{text-align:left;font-size:14px;color:var(--text2);display:flex;align-items:center;gap:4px;}
-.conf-stats-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:5px 12px;}
+.conf-stats-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);padding:8px 12px;text-align:left;border-top:1px solid var(--border2);}
 .conf-stats-table tr.my-row td{background:rgba(74,158,255,0.05);}
 .conf-stats-table tr.my-row td.stat-col{color:var(--accent);font-weight:500;}
 .conf-cell{display:flex;flex-direction:column;align-items:center;gap:1px;}
@@ -183,7 +192,7 @@ select:focus{border-color:var(--accent);}
 .h2h-table td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle;height:76px;}
 .h2h-table tr:last-child td{border-bottom:none;}
 .h2h-table td.stat-col{font-size:14px;color:var(--text2);display:flex;align-items:center;gap:4px;}
-.h2h-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);padding:5px 14px;}
+.h2h-table .cat-row td{background:var(--surface2);font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);padding:8px 14px;text-align:left;border-top:1px solid var(--border2);}
 .h2h-cell{display:flex;flex-direction:column;align-items:center;gap:1px;height:60px;justify-content:center;}
 .h2h-val{font-family:var(--font-mono);font-size:14px;font-weight:500;}
 .h2h-pct{font-family:var(--font-mono);font-size:12px;}
@@ -331,11 +340,11 @@ select:focus{border-color:var(--accent);}
       </div>
       <div class="conf-right">
         <div style="display:flex;gap:4px;margin-bottom:10px" id="conf-cat-filter">
-          <button class="hist-cat-btn active" onclick="setConfCat('All',this)">All</button>
-          <button class="hist-cat-btn" onclick="setConfCat('Overview',this)">Overview</button>
+          <button class="hist-cat-btn active" onclick="setConfCat('Overview',this)">Overview</button>
           <button class="hist-cat-btn" onclick="setConfCat('Offense',this)">Offense</button>
           <button class="hist-cat-btn" onclick="setConfCat('Defense',this)">Defense</button>
           <button class="hist-cat-btn" onclick="setConfCat('Shot Profile',this)">Shot Profile</button>
+          <button class="hist-cat-btn" onclick="setConfCat('All',this)">All</button>
         </div>
         <div class="conf-right-header">
           <div class="section-header" style="margin-bottom:0;border:none;padding:0" id="conf-detail-title">Statistical Comparison</div>
@@ -416,11 +425,11 @@ select:focus{border-color:var(--accent);}
     </div>
   </div>
   <div style="display:flex;gap:4px;margin-bottom:14px" id="h2h-cat-filter">
-    <button class="hist-cat-btn active" onclick="setH2HCat('All',this)">All</button>
-    <button class="hist-cat-btn" onclick="setH2HCat('Overview',this)">Overview</button>
+    <button class="hist-cat-btn active" onclick="setH2HCat('Overview',this)">Overview</button>
     <button class="hist-cat-btn" onclick="setH2HCat('Offense',this)">Offense</button>
     <button class="hist-cat-btn" onclick="setH2HCat('Defense',this)">Defense</button>
     <button class="hist-cat-btn" onclick="setH2HCat('Shot Profile',this)">Shot Profile</button>
+    <button class="hist-cat-btn" onclick="setH2HCat('All',this)">All</button>
   </div>
   <div id="h2h-empty" class="empty-state">Select two teams above to compare</div>
   <div id="h2h-loading" class="loading-state" style="display:none">Loading...</div>
@@ -699,8 +708,8 @@ const SHOT_CATS=[
   {name:'3-Pointers',rk:'off_threes_rate_total',fk:'off_threes_fg',drk:'def_threes_rate_total',dfk:'def_threes_fg',offRateGood:true,expandable:false},
 ];
 let expandedShotRows=new Set();
-let cH2HCat='All';
-let cConfCat='All';
+let cH2HCat='Overview';
+let cConfCat='Overview';
 let cTrendWindow=2;
 
 const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def',
@@ -741,7 +750,7 @@ function initSelectors(){
   ['h2h-team-a','h2h-team-b'].forEach(id=>{const s=document.getElementById(id);teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});});
   ['h2h-year-a','h2h-year-b'].forEach(id=>{const s=document.getElementById(id);years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);s.appendChild(o);});});
   const cf=document.getElementById('hist-cat-filter');
-  ['All','Overview','Offense','Defense','Shot Profile'].forEach((c,i)=>{
+  ['Overview','Offense','Defense','Shot Profile'].forEach((c,i)=>{
     const b=document.createElement('button');b.className='hist-cat-btn'+(i===0?' active':'');
     b.textContent=c;b.onclick=()=>setHistCat(c,b);cf.appendChild(b);
   });
@@ -923,17 +932,17 @@ function pctCls(pct,isTempo,isFreq){
   }
   if(isTempo){
     if(pct>=0.80)return{color:'pct-fast',bar:'bar-elite',badge:'badge-fast',label:'Very Fast'};
-    if(pct>=0.60)return{color:'pct-good',bar:'bar-good',badge:'badge-abvavg',label:'Above Avg'};
-    if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
-    if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-blwavg',label:'Below Avg'};
+    if(pct>=0.60)return{color:'pct-faster',bar:'bar-good',badge:'badge-faster',label:'Faster'};
+    if(pct>=0.40)return{color:'pct-avgpace',bar:'bar-avg',badge:'badge-avgpace',label:'Avg Pace'};
+    if(pct>=0.20)return{color:'pct-slower',bar:'bar-below',badge:'badge-slower',label:'Slower'};
     return{color:'pct-slow',bar:'bar-poor',badge:'badge-slow',label:'Very Slow'};
   }
   if(isFreq){
-    if(pct>=0.80)return{color:'pct-elite',bar:'bar-elite',badge:'badge-hifreq',label:'Very High Freq'};
-    if(pct>=0.60)return{color:'pct-good',bar:'bar-good',badge:'badge-abvfreq',label:'Higher Freq'};
-    if(pct>=0.40)return{color:'pct-avg',bar:'bar-avg',badge:'badge-avg',label:'Average'};
-    if(pct>=0.20)return{color:'pct-below',bar:'bar-below',badge:'badge-blwfreq',label:'Lower Freq'};
-    return{color:'pct-poor',bar:'bar-poor',badge:'badge-lofreq',label:'Very Low Freq'};
+    if(pct>=0.80)return{color:'pct-fast',bar:'bar-elite',badge:'badge-hifreq',label:'Very High Freq'};
+    if(pct>=0.60)return{color:'pct-faster',bar:'bar-good',badge:'badge-hifreq2',label:'Higher Freq'};
+    if(pct>=0.40)return{color:'pct-avgpace',bar:'bar-avg',badge:'badge-avgfreq',label:'Avg Freq'};
+    if(pct>=0.20)return{color:'pct-slower',bar:'bar-below',badge:'badge-lofreq2',label:'Lower Freq'};
+    return{color:'pct-slow',bar:'bar-poor',badge:'badge-lofreq',label:'Very Low Freq'};
   }
   if(pct>=0.85)return{color:'pct-elite',bar:'bar-elite',badge:'badge-elite',label:'Elite'};
   if(pct>=0.65)return{color:'pct-good',bar:'bar-good',badge:'badge-good',label:'Above Avg'};
@@ -1055,12 +1064,11 @@ function renderShotProfile(row,view){
     <div class="shot-subheader-cell">FG% Allowed</div>`;
   SHOT_CATS.forEach(c=>{
     const isExp=expandedShotRows.has(c.name);
-    const arrowChar=isExp?'▾':'▸';
-    const arrow=c.expandable?('<span class="shot-expand-arrow" data-cat="'+c.name+'" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:6px;font-size:11px;color:var(--text4);user-select:none">'+arrowChar+'</span>'):'';
-    const hint=c.expandable&&!isExp?'<div style="font-size:9px;color:var(--text4);margin-top:2px">click ▸ for breakdown</div>':'';
+    const arrowChar=isExp?'▼':'►';
+    const arrow=c.expandable?('<span class="shot-expand-arrow" data-cat="'+c.name+'" onclick="toggleShotRowByName(this)" style="cursor:pointer;margin-left:8px;font-size:13px;color:var(--accent);user-select:none;vertical-align:middle">'+arrowChar+'</span>'):'';
     const fw=c.expandable?'600':'500';
     const shotTip=tip(c.rk);
-    html+=`<div class="shot-cat-cell" style="font-weight:${fw};flex-direction:column;align-items:flex-start">${c.name}${shotTip}${arrow}${hint}</div>
+    html+=`<div class="shot-cat-cell" style="font-weight:${fw};flex-direction:column;align-items:flex-start">${c.name}${shotTip}${arrow}</div>
       ${shotMetricCell(row,c.rk,true,view)}
       ${shotMetricCell(row,c.fk,false,view)}
       ${shotMetricCell(row,c.drk,true,view)}
