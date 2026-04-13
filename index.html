@@ -276,7 +276,7 @@ select:focus{border-color:var(--accent);}
   <div class="banner-top">
     <div class="selector-group">
       <span class="selector-label">Team</span>
-      <select id="team-select" onchange="onSelectionChange()"><option value="">— Select Team —</option></select>
+      <select id="team-select" onchange="onTeamChange()"><option value="">— Select Team —</option></select>
     </div>
     <div class="selector-group">
       <span class="selector-label">Season</span>
@@ -775,11 +775,29 @@ function initSelectors(){
   // No default team - blank on load unless URL param provided
 }
 
+function onTeamChange(){
+  const team=document.getElementById('team-select').value;
+  if(!team)return;
+  // Auto-select most recent year available for this team
+  const ySel=document.getElementById('year-select');
+  const availYears=[...ySel.options]
+    .map(o=>parseInt(o.value))
+    .filter(y=>!isNaN(y)&&INDEX[String(y)]&&INDEX[String(y)].includes(team))
+    .sort((a,b)=>b-a);
+  if(availYears.length>0)ySel.value=availYears[0];
+  onSelectionChange();
+}
+
 async function onSelectionChange(){
   const team=document.getElementById('team-select').value;
   const year=parseInt(document.getElementById('year-select').value);
   if(!team||!year)return;
   cTeam=team;cYear=year;cCompTeams=[];cCustomMode=false;
+  // Update URL so refresh/share preserves selection
+  const params=new URLSearchParams();
+  params.set('team',team);
+  params.set('year',year);
+  history.replaceState(null,'','?'+params.toString());
   showLoading();
   try{
     const yd=await loadYear(year);cYearData=yd;
@@ -1715,13 +1733,21 @@ loadIndex().then(()=>{
   if(teamParam){
     const tSel=document.getElementById('team-select');
     const ySel=document.getElementById('year-select');
-    // Find matching team option
     const opt=[...tSel.options].find(o=>o.value.toLowerCase()===teamParam.toLowerCase());
     if(opt){
       tSel.value=opt.value;
       if(yearParam){
         const yOpt=[...ySel.options].find(o=>o.value===yearParam);
         if(yOpt)ySel.value=yearParam;
+        else{
+          // Auto-pick most recent year for this team
+          const availYears=[...ySel.options].map(o=>parseInt(o.value)).filter(y=>!isNaN(y)&&INDEX[String(y)]&&INDEX[String(y)].includes(opt.value)).sort((a,b)=>b-a);
+          if(availYears.length>0)ySel.value=availYears[0];
+        }
+      } else {
+        // No year param - auto-pick most recent
+        const availYears=[...ySel.options].map(o=>parseInt(o.value)).filter(y=>!isNaN(y)&&INDEX[String(y)]&&INDEX[String(y)].includes(opt.value)).sort((a,b)=>b-a);
+        if(availYears.length>0)ySel.value=availYears[0];
       }
       onSelectionChange();
     }
