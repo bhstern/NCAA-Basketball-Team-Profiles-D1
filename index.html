@@ -67,7 +67,7 @@ select:focus{border-color:var(--accent);}
 .stat-card-title{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text4);margin-bottom:14px;}
 .stat-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;position:relative;}
 .stat-row:last-child{margin-bottom:0;}
-.stat-name{font-size:14px;color:var(--text2);width:185px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
+.stat-name{font-size:14px;color:var(--text2);width:200px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
 .stat-val{font-family:var(--font-mono);font-size:12px;color:var(--text3);width:64px;flex-shrink:0;text-align:right;}
 .stat-bar-wrap{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
 .stat-bar{height:100%;border-radius:3px;transition:width 0.5s ease;}
@@ -1022,11 +1022,11 @@ function pctCls(pct,isTempo,isFreq){
 
 function tip(key){
   const t=TIPS[key];
-  const customKeys=["ppp_diff", "xPPP_diff", "residual_diff", "ppp_off_full", "xPPP_off", "ppp_residual_off", "ppp_def_full", "xPPP_def", "ppp_residual_def", "off_rim_rate_total", "off_rim_fg", "def_rim_rate_total", "def_rim_fg"];
-  const scrapedKeys=["off_dunks_rate_total", "off_dunks_fg", "def_dunks_rate_total", "def_dunks_fg", "off_close_twos_rate_total", "off_close_twos_fg", "def_close_twos_rate_total", "def_close_twos_fg", "off_long_twos_rate_total", "off_long_twos_fg", "def_long_twos_rate_total", "def_long_twos_fg", "off_threes_rate_total", "off_threes_fg", "def_threes_rate_total", "def_threes_fg", "ft_pct_off"];
+  const customKeys=["ppp_diff","xPPP_diff","residual_diff","ppp_off_full","xPPP_off","ppp_residual_off","ppp_def_full","xPPP_def","ppp_residual_def"];
+  const scrapedKeys=["off_rim_rate_total","off_rim_fg","def_rim_rate_total","def_rim_fg","off_dunks_rate_total","off_dunks_fg","def_dunks_rate_total","def_dunks_fg","off_close_twos_rate_total","off_close_twos_fg","def_close_twos_rate_total","def_close_twos_fg","off_long_twos_rate_total","off_long_twos_fg","def_long_twos_rate_total","def_long_twos_fg","off_threes_rate_total","off_threes_fg","def_threes_rate_total","def_threes_fg"];
   const badge=customKeys.includes(key)?'<span class="custom-badge">Custom</span>':scrapedKeys.includes(key)?'<span class="scraped-badge">Engineered</span>':'';
   if(!t)return badge;
-  return badge+`<span class="info-icon" onclick="toggleTip(event,this)">i<span class="tooltip">${t}</span></span>`;
+  return `<span class="info-icon" onclick="toggleTip(event,this)">i<span class="tooltip">${t}</span></span>`+badge;
 }
 function toggleTip(e,el){
   e.stopPropagation();
