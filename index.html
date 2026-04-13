@@ -278,9 +278,9 @@ select:focus{border-color:var(--accent);}
       <span class="selector-label">Team</span>
       <select id="team-select" onchange="onTeamChange()"><option value="">— Select Team —</option></select>
     </div>
-    <div class="selector-group">
+    <div class="selector-group" id="year-group" style="display:none">
       <span class="selector-label">Season</span>
-      <select id="year-select" onchange="onSelectionChange()"><option value="">— Select Season —</option></select>
+      <select id="year-select" onchange="onSelectionChange()"></select>
     </div>
     <div class="banner-team" id="banner-team" style="display:none">
       <div class="banner-logos">
@@ -444,8 +444,8 @@ select:focus{border-color:var(--accent);}
 
     <div class="view-toggle" style="margin-bottom:24px">
       <button class="view-btn active" onclick="setAboutSection('creator',this)">About the Creator</button>
-      <button class="view-btn" onclick="setAboutSection('sources',this)">Data Sources</button>
       <button class="view-btn" onclick="setAboutSection('dictionary',this)">Data Dictionary</button>
+      <button class="view-btn" onclick="setAboutSection('sources',this)">Data Sources</button>
     </div>
 
     <!-- About the Creator -->
@@ -778,12 +778,11 @@ function initSelectors(){
 function onTeamChange(){
   const team=document.getElementById('team-select').value;
   if(!team)return;
-  // Auto-select most recent year available for this team
   const ySel=document.getElementById('year-select');
-  const availYears=[...ySel.options]
-    .map(o=>parseInt(o.value))
-    .filter(y=>!isNaN(y)&&INDEX[String(y)]&&INDEX[String(y)].includes(team))
-    .sort((a,b)=>b-a);
+  const availYears=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(team)).sort((a,b)=>b-a);
+  ySel.innerHTML='';
+  availYears.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);ySel.appendChild(o);});
+  document.getElementById('year-group').style.display='flex';
   if(availYears.length>0)ySel.value=availYears[0];
   onSelectionChange();
 }
@@ -1736,19 +1735,13 @@ loadIndex().then(()=>{
     const opt=[...tSel.options].find(o=>o.value.toLowerCase()===teamParam.toLowerCase());
     if(opt){
       tSel.value=opt.value;
-      if(yearParam){
-        const yOpt=[...ySel.options].find(o=>o.value===yearParam);
-        if(yOpt)ySel.value=yearParam;
-        else{
-          // Auto-pick most recent year for this team
-          const availYears=[...ySel.options].map(o=>parseInt(o.value)).filter(y=>!isNaN(y)&&INDEX[String(y)]&&INDEX[String(y)].includes(opt.value)).sort((a,b)=>b-a);
-          if(availYears.length>0)ySel.value=availYears[0];
-        }
-      } else {
-        // No year param - auto-pick most recent
-        const availYears=[...ySel.options].map(o=>parseInt(o.value)).filter(y=>!isNaN(y)&&INDEX[String(y)]&&INDEX[String(y)].includes(opt.value)).sort((a,b)=>b-a);
-        if(availYears.length>0)ySel.value=availYears[0];
-      }
+      const teamName=opt.value;
+      const availYears=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(teamName)).sort((a,b)=>b-a);
+      ySel.innerHTML='';
+      availYears.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);ySel.appendChild(o);});
+      document.getElementById('year-group').style.display='flex';
+      if(yearParam&&availYears.includes(parseInt(yearParam)))ySel.value=yearParam;
+      else if(availYears.length>0)ySel.value=availYears[0];
       onSelectionChange();
     }
   }
