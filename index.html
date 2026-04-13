@@ -91,6 +91,8 @@ select:focus{border-color:var(--accent);}
 .badge-avgfreq{background:rgba(74,85,104,0.15);color:var(--text4);}
 .badge-lofreq2{background:rgba(148,163,184,0.12);color:#94a3b8;}
 .badge-lofreq{background:rgba(100,116,139,0.12);color:#64748b;}
+.custom-badge{display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:rgba(245,200,66,0.15);color:var(--yellow);border:1px solid rgba(245,200,66,0.3);margin-left:4px;flex-shrink:0;vertical-align:middle;}
+.scraped-badge{display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:rgba(74,158,255,0.12);color:var(--accent);border:1px solid rgba(74,158,255,0.25);margin-left:4px;flex-shrink:0;vertical-align:middle;}
 .badge-abvavg{background:rgba(125,216,138,0.12);color:#7dd88a;}
 .badge-blwavg{background:rgba(240,154,74,0.12);color:var(--orange);}
 .badge-abvfreq{background:rgba(125,216,138,0.12);color:#7dd88a;}
@@ -440,144 +442,94 @@ select:focus{border-color:var(--accent);}
 <div id="tab-about" class="tab-content">
   <div class="about-wrap">
 
-    <!-- Sub-nav -->
-    <div class="view-toggle" style="margin-bottom:24px">
-      <button class="view-btn active" onclick="setAboutSection('creator',this)">About the Creator</button>
-      <button class="view-btn" onclick="setAboutSection('sources',this)">Data Sources</button>
-      <button class="view-btn" onclick="setAboutSection('dictionary',this)">Data Dictionary</button>
-    </div>
-
-    <!-- About the Creator -->
-    <div id="about-creator">
-      <div class="about-hero">
-        <div class="about-avatar">BS</div>
-        <div class="about-headline">
-          <h1>Benj Stern</h1>
-          <div class="title">Corporate Strategy · Harris Blitzer Sports & Entertainment</div>
-          <div class="tagline">Strategy professional with a front office background and a genuine obsession with college basketball — building analytics tools to bridge the gap between the two.</div>
-        </div>
-      </div>
-      <div class="about-section">
-        <h2>Background</h2>
-        <p>I grew up loving college basketball and have spent years watching as many games as I can — not just as a fan, but as someone trying to understand the game at a deeper level. That obsession met my professional background in strategy and analytics, and this project was born.</p>
-        <p>By day I work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers and New Jersey Devils. Before that I was a strategy consultant at Deloitte. The through line: take complex data, find the signal, and make it actionable for decision-makers.</p>
-        <p>I am actively pursuing Graduate Assistant roles and positions in recruiting, scouting, NIL, and roster construction at D1 programs.</p>
-      </div>
-      <div class="about-section">
-        <h2>Career</h2>
-        <div class="career-timeline">
-          <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Corporate Strategy</div><div class="career-org">Harris Blitzer Sports & Entertainment (76ers / Devils)</div><div class="career-dates">2022 — Present · Philadelphia, PA</div></div></div>
-          <div class="career-item"><div class="career-dot"></div><div><div class="career-role">Strategy Consultant</div><div class="career-org">Deloitte</div><div class="career-dates">2020 — 2022</div></div></div>
-          <div class="career-item"><div class="career-dot"></div><div><div class="career-role">B.S. Economics & Data Analytics — Highest Distinction</div><div class="career-org">Indiana University, Kelley School of Business</div><div class="career-dates">Class of 2020</div></div></div>
-        </div>
-      </div>
-      <div class="about-section">
-        <h2>Skills & Tools</h2>
-        <div class="skills-grid">
-          <div class="skill-chip">Python (pandas, sklearn)</div><div class="skill-chip">Web Scraping</div><div class="skill-chip">K-Means Clustering</div>
-          <div class="skill-chip">Data Visualization</div><div class="skill-chip">Strategic Analysis</div><div class="skill-chip">Front Office Operations</div>
-          <div class="skill-chip">Bart Torvik / KenPom</div><div class="skill-chip">Roster Construction</div><div class="skill-chip">NIL & Recruiting</div>
-        </div>
-      </div>
-      <div class="about-section">
-        <h2>Get In Touch</h2>
-        <div class="contact-links">
-          <a class="contact-link" href="https://www.linkedin.com/in/benjamin-stern-b73a27151/" target="_blank">LinkedIn</a>
-          <a class="contact-link" href="mailto:benjstern@gmail.com">Email</a>
-        </div>
+    <div class="about-hero">
+      <div class="about-avatar">BS</div>
+      <div class="about-headline">
+        <h1>Benj Stern</h1>
+        <div class="title">Corporate Strategy · Harris Blitzer Sports & Entertainment</div>
+        <div class="tagline">Strategy and analytics professional with experience at a major professional sports and entertainment organization — I find the signal in data, build tools that make it actionable, and know how to get insights in front of decision-makers.</div>
       </div>
     </div>
 
-    <!-- Data Sources -->
-    <div id="about-sources" style="display:none">
-      <div class="about-section">
-        <h2>Data Sources & Citation</h2>
-        <p>Raw team statistics, adjusted efficiencies, roster metrics, and shooting splits were sourced from Bart Torvik's T-Rank database (<a href="https://barttorvik.com" target="_blank" style="color:var(--accent)">barttorvik.com</a>). All feature engineering — including shot profile construction, per-possession estimates, expected PPP (xPPP), shotmaking residuals, and descriptive layers (z-scores, percentiles, ranks) — was developed independently as part of this analytics pipeline.</p>
-        <p style="margin-top:12px;font-style:italic;color:var(--text4)">Torvik, Bart. T-Rank College Basketball Statistics. barttorvik.com.</p>
-      </div>
-      <div class="about-section">
-        <h2>What Comes from Torvik</h2>
-        <p>Adjusted efficiencies (adj_oe, adj_de, adj_em), tempo (adj._t, raw_t), Four Factors, roster metrics (height, experience, talent, SOS), and raw shooting splits are sourced directly from T-Rank.</p>
-      </div>
-      <div class="about-section">
-        <h2>What Was Engineered Independently</h2>
-        <p>Shot profile construction (parsing made-attempt strings, computing FGA totals, shot distribution rates, and FG% by location), the full-season PPP system (estimated FTA/FTM, total points, offensive and defensive PPP), expected PPP (xPPP) based on shot distribution multiplied by league-average shot values by year, shotmaking residuals, residual differentials, and all descriptive layers (z-scores, percentiles, D1 ranks, conference ranks, power/mid-major ranks) were built independently.</p>
-      </div>
-      <div class="about-section">
-        <h2>Dataset Scope</h2>
-        <p>11 seasons of D1 college basketball (2016–2026). Approximately 3,900 team-season records. 398 columns per record including raw stats, engineered features, and descriptive layers. Updated through the 2025–26 full season.</p>
+    <div class="about-section">
+      <h2>About This Project</h2>
+      <p>This started as an open-ended exploration. I was watching games every week, taking detailed notes, and I wanted to know if what the data said matched what my eyes were telling me. That question eventually turned into this.</p>
+      <p>I built the entire thing from scratch — Python for the data pipeline and variable engineering, HTML and JavaScript for the front end, deployed on GitHub Pages. It combines Bart Torvik efficiency metrics with shot quality variables, PPP differentials, and residual performance layers I engineered myself across 11 seasons of D1 data covering 2016 through 2026. Every team profile includes D1-wide percentiles, conference context, and power vs. mid-major comparisons, all calculated independently.</p>
+      <p>The goal was never to just surface more stats. It was to turn data into something a coaching staff can actually use to understand their own identity, prepare for opponents, and make faster decisions. This is a proof of concept of what I can build, and I know the real value multiplies with access to private data like Synergy Sports and Second Spectrum.</p>
+      <p>Next up is individual player profiles, transfer portal decision support, and eventually clustering and similarity models, with a long-term goal of building predictive tools on the player development side.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>Background</h2>
+      <p>I was born and raised in Philadelphia and have spent my whole life around Philly sports. I currently work in Corporate Strategy at Harris Blitzer Sports & Entertainment, the organization behind the Philadelphia 76ers, New Jersey Devils, Washington Commanders, and Prudential Center. My role is essentially an internal strategy consultant — department heads and senior executives across ticketing, premium seating, partnerships, food and beverage, and venue operations bring their biggest problems to our team, and we dig into the data, benchmark against the industry, and build out recommendations. I present findings directly to senior leadership on a regular basis.</p>
+      <p>Before HBSE I spent two years at Deloitte Consulting doing similar work for clients across sports, beverage, and technology. I studied Economics and Data Analytics at Indiana University's Kelley School of Business, graduating with highest distinction in 2020.</p>
+      <p>My interest in basketball analytics is not new. In college I worked with NBA data in R and during COVID started a twice-weekly NBA debate podcast that grew to include guests like a USA Today sports editor. This site is where that interest and my professional background finally came together.</p>
+      <p>I am actively pursuing Graduate Assistant and basketball operations roles with a long-term focus on player personnel, roster construction, and the analytics that support those decisions — though I am open to wherever I can add the most value to a program.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>Career</h2>
+      <div class="career-timeline">
+        <div class="career-item">
+          <div class="career-dot"></div>
+          <div>
+            <div class="career-role">Corporate Strategy</div>
+            <div class="career-org">Harris Blitzer Sports & Entertainment (76ers / Devils / Commanders / Prudential Center)</div>
+            <div class="career-dates">April 2023 — Present · Philadelphia, PA</div>
+          </div>
+        </div>
+        <div class="career-item">
+          <div class="career-dot"></div>
+          <div>
+            <div class="career-role">Strategy Consultant</div>
+            <div class="career-org">Deloitte Consulting</div>
+            <div class="career-dates">Sep 2022 — Mar 2023</div>
+          </div>
+        </div>
+        <div class="career-item">
+          <div class="career-dot"></div>
+          <div>
+            <div class="career-role">Strategy Analyst</div>
+            <div class="career-org">Deloitte Consulting</div>
+            <div class="career-dates">Jan 2021 — Sep 2022</div>
+          </div>
+        </div>
+        <div class="career-item">
+          <div class="career-dot"></div>
+          <div>
+            <div class="career-role">B.S. Economics & Data Analytics — Highest Distinction</div>
+            <div class="career-org">Indiana University, Kelley School of Business</div>
+            <div class="career-dates">Class of 2020</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Data Dictionary -->
-    <div id="about-dictionary" style="display:none">
-      <div class="about-section">
-        <h2>Identity & Context</h2>
-        <div class="dict-table-wrap"><table class="dict-table">
-          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td>year</td><td>Season year (e.g., 2026 = 2025-26 season).</td></tr>
-            <tr><td>team_name</td><td>Clean team name without year suffix.</td></tr>
-            <tr><td>conference</td><td>Standardized conference name.</td></tr>
-            <tr><td>full_season_record</td><td>Wins-losses for the full season.</td></tr>
-            <tr><td>power_mid</td><td>"Power" or "Mid-Major" classification based on conference affiliation.</td></tr>
-          </tbody>
-        </table></div>
+    <div class="about-section">
+      <h2>Skills & Tools</h2>
+      <div class="skills-grid">
+        <div class="skill-chip">Python (pandas, web scraping)</div>
+        <div class="skill-chip">SQL & Power BI</div>
+        <div class="skill-chip">Excel modeling & dashboarding</div>
+        <div class="skill-chip">HTML & JavaScript</div>
+        <div class="skill-chip">Shot quality & efficiency modeling</div>
+        <div class="skill-chip">Data visualization & storytelling</div>
+        <div class="skill-chip">Executive presentations & decks</div>
+        <div class="skill-chip">Benchmark & market research</div>
+        <div class="skill-chip">ROI & valuation analysis</div>
+        <div class="skill-chip">AI-assisted analytics & development</div>
+        <div class="skill-chip">Bart Torvik / KenPom</div>
+        <div class="skill-chip">CBB film study & scouting</div>
       </div>
-      <div class="about-section">
-        <h2>Torvik-Sourced Variables</h2>
-        <div class="dict-table-wrap"><table class="dict-table">
-          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td>adj_em</td><td>Adjusted Efficiency Margin — offensive minus defensive efficiency, adjusted for opponent strength.</td></tr>
-            <tr><td>adj_oe</td><td>Adjusted Offensive Efficiency — points scored per 100 possessions, adjusted for opponent defense.</td></tr>
-            <tr><td>adj_de</td><td>Adjusted Defensive Efficiency — points allowed per 100 possessions, adjusted for opponent offense.</td></tr>
-            <tr><td>barthag</td><td>Estimated probability of beating an average D1 team on a neutral court.</td></tr>
-            <tr><td>elite_sos_rate</td><td>Share of games an elite team would be expected to lose against this schedule. Higher = tougher schedule.</td></tr>
-            <tr><td>adj._t / raw_t</td><td>Adjusted and raw tempo — possessions per 40 minutes.</td></tr>
-            <tr><td>avg_hgt. / eff._hgt.</td><td>Average and effective height of the rotation, weighted by minutes.</td></tr>
-            <tr><td>exp.</td><td>Composite roster experience, weighted by minutes played.</td></tr>
-            <tr><td>talent</td><td>Composite talent rating based on recruiting rankings.</td></tr>
-            <tr><td>efg_rate_off/def</td><td>Effective Field Goal % — accounts for 3-pointers being worth more than 2s.</td></tr>
-            <tr><td>tov_rate_off/def</td><td>Turnover rate on offense; turnovers forced per possession on defense.</td></tr>
-            <tr><td>orb_rate_off</td><td>Percentage of missed shots where this team secured the offensive rebound. Higher = more second-chance opportunities.</td></tr>
-              <tr><td>orb_rate_def</td><td>Percentage of opponent missed shots secured by this team. Higher = limits opponent second-chance opportunities.</td></tr>
-            <tr><td>ft_rate_off</td><td>Free throw attempts per field goal attempt on offense.</td></tr>
-              <tr><td>ft_rate_def</td><td>Free throw attempts allowed per field goal attempt on defense.</td></tr>
-            <tr><td>blk_pct_off/def</td><td>Block rate on offense (shots blocked); block rate on defense (blocks generated).</td></tr>
-            <tr><td>ast_pct_off/def</td><td>Assist rate on offense; assist rate allowed on defense.</td></tr>
-            <tr><td>off/def_dunks_*</td><td>Dunk attempts as a share of total FGA, and FG% on dunks. Typically the highest-percentage shot in basketball.</td></tr>
-            <tr><td>off/def_close_twos_*</td><td>Non-dunk rim attempts (layups, floaters, putbacks) as a share of total FGA, and FG% on those attempts. Excludes dunks.</td></tr>
-            <tr><td>off/def_long_twos_*</td><td>Long two-point attempts — all two-point shots not taken at the rim — as a share of total FGA, and FG% on those attempts.</td></tr>
-            <tr><td>off/def_threes_*</td><td>Three-point attempt rate and FG% on offense and defense.</td></tr>
-          </tbody>
-        </table></div>
+    </div>
+
+    <div class="about-section">
+      <h2>Get In Touch</h2>
+      <div class="contact-links">
+        <a class="contact-link" href="https://www.linkedin.com/in/benj-stern/" target="_blank">LinkedIn</a>
+        <a class="contact-link" href="mailto:benjhs1125@gmail.com">Email</a>
       </div>
-      <div class="about-section">
-        <h2>Custom-Engineered Variables</h2>
-        <div class="dict-table-wrap"><table class="dict-table">
-          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td>off_rim_rate_total</td><td>All shot attempts at the rim (dunks + close 2s) as a share of total FGA.</td></tr>
-            <tr><td>off_rim_fg</td><td>Weighted FG% at the rim on offense (dunks + close 2s). Higher = better finishing at the rim.</td></tr>
-            <tr><td>def_rim_rate_total</td><td>All opponent rim attempts (dunks + close 2s) allowed as a share of total FGA.</td></tr>
-            <tr><td>def_rim_fg</td><td>Weighted FG% allowed at the rim on defense. Lower = better rim protection. High percentile = elite rim defense.</td></tr>
-            <tr><td>ppp_off_full</td><td>Actual points scored per possession — estimated from shot distribution and FG%, calculated independently (not from Torvik).</td></tr>
-            <tr><td>ppp_def_full</td><td>Actual points allowed per possession — estimated independently.</td></tr>
-            <tr><td>xPPP_off</td><td>Expected points per possession on offense — shot profile frequencies multiplied by league-average FG% by shot type and season.</td></tr>
-            <tr><td>xPPP_def</td><td>Expected PPP allowed on defense — opponent shot profile frequencies multiplied by league-average FG% by shot type and season.</td></tr>
-            <tr><td>ppp_residual_off</td><td>How much this team scores above what their shot selection would predict — driven by shotmaking, ball security, free throw generation, offensive rebounding, transition, spacing, creation, and talent. Positive = outperforming what the shot profile predicts.</td></tr>
-            <tr><td>ppp_residual_def</td><td>How much this team holds opponents below their expected efficiency — driven by contesting shots, forcing turnovers, defensive rebounding, limiting free throws, scheme, and athleticism. Higher = holding opponents further below their expected efficiency.</td></tr>
-            <tr><td>ppp_diff</td><td>PPP Differential — actual offensive PPP minus defensive PPP. How many points per possession this team outscores opponents.</td></tr>
-            <tr><td>xPPP_diff</td><td>The difference between expected offensive and defensive PPP, based on each team's shot distribution compared against league-average FG% by shot type and season.</td></tr>
-            <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms shot quality on both ends combined.</td></tr>
-            <tr><td>ft_pct_off</td><td>Free throw percentage on offense.</td></tr>
-            <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and D1-wide rank for each variable. All normalized so higher = better.</td></tr>
-            <tr><td>_conf_rank</td><td>Rank within conference for each variable.</td></tr>
-            <tr><td>_sub_z / _sub_pct / _sub_rank</td><td>Z-score, percentile, and rank within power conference or mid-major subgroup.</td></tr>
-          </tbody>
-        </table></div>
-      </div></div>
+    </div>
 
   </div>
 </div>
@@ -952,48 +904,56 @@ function updateBanner(row){
     let defDesc='';
     const defBothThresh=defLeast==='threes'?0.28:defLeast==='mid'?0.22:0.20;
     if(defMostPct>=0.80&&defLeastPct<=defBothThresh){
-      // Both extremes very clear
-      const atkLabels={threes:'from three',rim:'at the rim',mid:'from midrange'};
-      const protLabels={threes:'perimeter shots',rim:'rim attempts',mid:'midrange attempts'};
-      defDesc='opponents attack them heavily '+atkLabels[defMost]+' while they limit '+protLabels[defLeast];
+      if(defMost==='threes'&&defLeast==='rim'){
+        defDesc='force opponents away from the rim and into perimeter attempts';
+        if(elite3Def) defDesc+=', holding them to a low FG% from three';
+        else if(poor3Def) defDesc+=', though opponents convert from deep at a high rate';
+      } else if(defMost==='rim'&&defLeast==='threes'){
+        defDesc='funnel opponents toward the paint while limiting three-point attempts';
+        if(poorRimDef) defDesc+=', though opponents finish well at the rim';
+        else if(eliteRimDef) defDesc+=', holding opponents to a low FG% inside';
+      } else if(defMost==='mid'&&defLeast==='rim'){
+        defDesc='force opponents into midrange attempts while limiting rim attacks';
+        if(eliteRimDef) defDesc+=', and hold opponents to a low FG% at the rim';
+      } else if(defMost==='threes'&&defLeast==='mid'){
+        defDesc='force opponents away from midrange and into three-point attempts';
+        if(poor3Def) defDesc+=', though opponents convert from deep at a high rate';
+        else if(elite3Def) defDesc+=', holding them to a low FG% from three';
+      } else if(defMost==='rim'&&defLeast==='mid'){
+        defDesc='funnel opponents to the paint while limiting midrange attempts';
+        if(poorRimDef) defDesc+=', though opponents finish well at the rim';
+        else if(eliteRimDef) defDesc+=', contesting rim attempts effectively';
+      } else if(defMost==='mid'&&defLeast==='threes'){
+        defDesc='force opponents into midrange attempts while limiting three-point looks';
+      }
     } else if((defMost==='rim'&&defMostPct>=0.78)||(defMost==='threes'&&defMostPct>=0.78)||(defMost==='mid'&&defMostPct>=0.82)){
-      // Clear area being attacked
       if(defMost==='rim'){
-        defDesc='opponents attack the paint at a high rate';
+        defDesc='opponents attack the paint frequently';
         if(eliteRimDef) defDesc+=', though they hold opponents to a low FG% at the rim';
-        else if(poorRimDef) defDesc+=' and convert effectively';
+        else if(poorRimDef) defDesc+=' and finish at a high rate';
       } else if(defMost==='threes'){
         defDesc='opponents generate a high volume of three-point attempts';
-        if(elite3Def) defDesc+=', though they shoot a low percentage';
+        if(elite3Def) defDesc+=', though they hold opponents to a low shooting percentage';
         else if(poor3Def) defDesc+=' and convert at a high rate';
       } else {
-        defDesc='opponents shoot a high volume of midrange attempts against them';
+        defDesc='force opponents into a high volume of midrange attempts';
       }
     } else if(defLeastPct<=0.25){
-      // Clear area being protected
       if(defLeast==='rim'){
-        defDesc='protect the rim effectively';
-        if(eliteRimDef) defDesc+=', holding opponents well below average FG% at the rim';
+        defDesc='limit opponent rim attempts';
+        if(eliteRimDef) defDesc+=', and contest the rim effectively when opponents do attack';
       } else if(defLeast==='threes'){
-        defDesc='chase opponents off the three-point line';
-        if(elite3Def) defDesc+=' and hold them to a low FG% when they do shoot from deep';
-      } else {
-        defDesc='force opponents away from the midrange';
-      }
-    } else if(eliteRimDef&&!poorRimDef){
-      defDesc='hold opponents well below average at the rim despite average rim attempt rates allowed';
-    } else if(poor3Def){
-      defDesc='allow opponents to convert three-point attempts at a high rate';
-    } else if(poorRimDef){
-      defDesc='struggle to prevent opponents from finishing at the rim';
-    } else if(defMostPct>=0.65){
-      const atkLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
-      defDesc='allow above-average '+atkLabels[defMost];
-    } else {
-      defDesc='play a sound defensive scheme without a clear tendency';
+        if(elite3Def) defDesc='hold opponents to both a low volume and low FG% from three';
+        else defDesc='hold opponents to a low volume of three-point attempts';
+      } else { defDesc=''; }
     }
-
-    // Some defDesc phrases start with 'opponents' and don't need 'they'
+    if(!defDesc){
+      if(eliteRimDef) defDesc='hold opponents well below average FG% at the rim';
+      else if(poorRimDef) defDesc='struggle to contest shots at the rim';
+      else if(poor3Def) defDesc='allow opponents to shoot a high percentage from three';
+      else if(elite3Def) defDesc='hold opponents to a low FG% from three-point range';
+      else defDesc='play a sound defensive scheme without a clear tendency';
+    }
     const defOpponent=defDesc.startsWith('opponents')||defDesc.startsWith('allow')||defDesc.startsWith('hold')||defDesc.startsWith('force')||defDesc.startsWith('funnel')||defDesc.startsWith('limit')||defDesc.startsWith('struggle');
     const defClause=defOpponent?defDesc:'they '+defDesc;
     blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
@@ -1061,8 +1021,12 @@ function pctCls(pct,isTempo,isFreq){
 }
 
 function tip(key){
-  const t=TIPS[key];if(!t)return'';
-  return`<span class="info-icon" onclick="toggleTip(event,this)">i<span class="tooltip">${t}</span></span>`;
+  const t=TIPS[key];
+  const customKeys=["ppp_diff", "xPPP_diff", "residual_diff", "ppp_off_full", "xPPP_off", "ppp_residual_off", "ppp_def_full", "xPPP_def", "ppp_residual_def", "off_rim_rate_total", "off_rim_fg", "def_rim_rate_total", "def_rim_fg"];
+  const scrapedKeys=["off_dunks_rate_total", "off_dunks_fg", "def_dunks_rate_total", "def_dunks_fg", "off_close_twos_rate_total", "off_close_twos_fg", "def_close_twos_rate_total", "def_close_twos_fg", "off_long_twos_rate_total", "off_long_twos_fg", "def_long_twos_rate_total", "def_long_twos_fg", "off_threes_rate_total", "off_threes_fg", "def_threes_rate_total", "def_threes_fg", "ft_pct_off"];
+  const badge=customKeys.includes(key)?'<span class="custom-badge">Custom</span>':scrapedKeys.includes(key)?'<span class="scraped-badge">Engineered</span>':'';
+  if(!t)return badge;
+  return badge+`<span class="info-icon" onclick="toggleTip(event,this)">i<span class="tooltip">${t}</span></span>`;
 }
 function toggleTip(e,el){
   e.stopPropagation();
@@ -1659,6 +1623,9 @@ function switchTab(tab,btn){
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
   if(btn)btn.classList.add('active');
+  // Hide banner on About tab
+  document.getElementById('banner').style.display=tab==='about'?'none':'';
+  document.getElementById('page-desc').style.display=tab==='about'?'none':'';
   updatePageDesc();
   if(tab==='h2h')syncH2HTeamA();
   if(cRow){
@@ -1675,7 +1642,26 @@ function setAboutSection(section,btn){
   document.getElementById('about-sources').style.display=section==='sources'?'block':'none';
   document.getElementById('about-dictionary').style.display=section==='dictionary'?'block':'none';
 }
-loadIndex();
+loadIndex().then(()=>{
+  // Check URL params for team deep link
+  const params=new URLSearchParams(window.location.search);
+  const teamParam=params.get('team');
+  const yearParam=params.get('year');
+  if(teamParam){
+    const tSel=document.getElementById('team-select');
+    const ySel=document.getElementById('year-select');
+    // Find matching team option
+    const opt=[...tSel.options].find(o=>o.value.toLowerCase()===teamParam.toLowerCase());
+    if(opt){
+      tSel.value=opt.value;
+      if(yearParam){
+        const yOpt=[...ySel.options].find(o=>o.value===yearParam);
+        if(yOpt)ySel.value=yearParam;
+      }
+      onSelectionChange();
+    }
+  }
+});
 </script>
 </body>
 </html>
