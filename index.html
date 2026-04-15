@@ -734,13 +734,13 @@ let cH2HCat='Overview';
 let cConfCat='Overview';
 let cTrendWindow=2;
 
-const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def',
+const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def',
   'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
 const SUMMARY_LABELS={
   efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',ft_pct_off:'FT%',
-  efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',
+  efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',ft_rate_def:'FT Rate Allowed',ast_pct_def:'Opp. Assist Rate',
   ppp_off_full:'Scoring Efficiency',ppp_def_full:'Defensive Efficiency',
-  ppp_residual_off:'How much this team scores above what their shot selection would predict — driven by shotmaking, ball security, free throw generation, offensive rebounding, transition, spacing, creation, and talent. Positive = outperforming what the shot profile predicts.',ppp_residual_def:'Shotmaking (Def)',residual_diff:'Residual Differential',
+  ppp_residual_off:'PPP Residual (Off)',ppp_residual_def:'PPP Residual (Def)',residual_diff:'Residual Differential',
   blk_pct_def:'Blocking Shots',blk_pct_off:'Getting Blocked',ast_pct_off:'Ball Movement',
 };
 
@@ -860,72 +860,80 @@ function updateBanner(row){
   function shotIsStr(rate,fg,thr){return(rate>=(1-thr)&&fg>=0.60)||(fg>=(1-thr)&&rate>=0.50);}
   function shotIsWk(rate,fg,thr){return(rate>=(1-thr)&&fg<=0.40)||(fg<=(thr)&&rate>=0.50);}
 
-  // ── PASS 1: top/bottom 25% D1 ────────────────────────────────────────────
+  // ── PASS 1: top/bottom 25% D1 — sorted by percentile ──────────────────
+  const p1Strs=[],p1Wks=[];
   SUMMARY_KEYS.forEach(k=>{
     const p=parseFloat(row[k+'_pct']);if(isNaN(p))return;
-    if(p>=0.75&&strTags.length<3)strTags.push({label:SUMMARY_LABELS[k],cls:'strength-tag',pass:1});
-    else if(p<=0.25&&wkTags.length<3)wkTags.push({label:SUMMARY_LABELS[k],cls:'weakness-tag',pass:1});
+    if(p>=0.75)p1Strs.push({label:SUMMARY_LABELS[k],cls:'strength-tag',pass:1,pct:p});
+    else if(p<=0.25)p1Wks.push({label:SUMMARY_LABELS[k],cls:'weakness-tag',pass:1,pct:p});
   });
   shotChecks.forEach(sc=>{
-    if(strTags.length>=3&&wkTags.length>=3)return;
     const rate=parseFloat(row[sc.rateKey]),fg=parseFloat(row[sc.fgKey]);
     if(isNaN(rate)||isNaN(fg))return;
-    if(shotIsStr(rate,fg,0.25)&&strTags.length<3)strTags.push({label:sc.label,cls:'strength-tag',pass:1});
-    else if(shotIsWk(rate,fg,0.25)&&wkTags.length<3)wkTags.push({label:sc.label,cls:'weakness-tag',pass:1});
+    if(shotIsStr(rate,fg,0.25))p1Strs.push({label:sc.label,cls:'strength-tag',pass:1,pct:Math.max(rate,fg)});
+    else if(shotIsWk(rate,fg,0.25))p1Wks.push({label:sc.label,cls:'weakness-tag',pass:1,pct:Math.min(rate,fg)});
   });
+  p1Strs.sort((a,b)=>b.pct-a.pct).slice(0,3).forEach(t=>strTags.push(t));
+  p1Wks.sort((a,b)=>a.pct-b.pct).slice(0,3).forEach(t=>wkTags.push(t));
 
   // ── PASS 2: top/bottom 26-35% D1 (relative) ─────────────────────────────
   const pass1StrLabels=strTags.map(t=>t.label);
   const pass1WkLabels=wkTags.map(t=>t.label);
   if(strTags.length<2||wkTags.length<2){
+    const p2Strs=[],p2Wks=[];
     SUMMARY_KEYS.forEach(k=>{
       const p=parseFloat(row[k+'_pct']);if(isNaN(p))return;
       const lbl=SUMMARY_LABELS[k];
-      if(p>=0.65&&p<0.75&&!pass1StrLabels.includes(lbl)&&strTags.length<2)
-        strTags.push({label:lbl,cls:'strength-tag-2',pass:2});
-      else if(p<=0.35&&p>0.25&&!pass1WkLabels.includes(lbl)&&wkTags.length<2)
-        wkTags.push({label:lbl,cls:'weakness-tag-2',pass:2});
+      if(p>=0.65&&p<0.75&&!pass1StrLabels.includes(lbl))p2Strs.push({label:lbl,cls:'strength-tag-2',pass:2,pct:p});
+      else if(p<=0.35&&p>0.25&&!pass1WkLabels.includes(lbl))p2Wks.push({label:lbl,cls:'weakness-tag-2',pass:2,pct:p});
     });
     shotChecks.forEach(sc=>{
-      if(strTags.length>=2&&wkTags.length>=2)return;
       const rate=parseFloat(row[sc.rateKey]),fg=parseFloat(row[sc.fgKey]);
       if(isNaN(rate)||isNaN(fg))return;
-      if(shotIsStr(rate,fg,0.35)&&!shotIsStr(rate,fg,0.25)&&!pass1StrLabels.includes(sc.label)&&strTags.length<2)
-        strTags.push({label:sc.label,cls:'strength-tag-2',pass:2});
-      else if(shotIsWk(rate,fg,0.35)&&!shotIsWk(rate,fg,0.25)&&!pass1WkLabels.includes(sc.label)&&wkTags.length<2)
-        wkTags.push({label:sc.label,cls:'weakness-tag-2',pass:2});
+      if(shotIsStr(rate,fg,0.35)&&!shotIsStr(rate,fg,0.25)&&!pass1StrLabels.includes(sc.label))
+        p2Strs.push({label:sc.label,cls:'strength-tag-2',pass:2,pct:Math.max(rate,fg)});
+      else if(shotIsWk(rate,fg,0.35)&&!shotIsWk(rate,fg,0.25)&&!pass1WkLabels.includes(sc.label))
+        p2Wks.push({label:sc.label,cls:'weakness-tag-2',pass:2,pct:Math.min(rate,fg)});
     });
+    p2Strs.sort((a,b)=>b.pct-a.pct).forEach(t=>{if(strTags.length<2)strTags.push(t);});
+    p2Wks.sort((a,b)=>a.pct-b.pct).forEach(t=>{if(wkTags.length<2)wkTags.push(t);});
   }
 
   // ── PASS 3: bottom 25% subgroup (always runs if room, not already in pass 1) ─
   const allStrLabels=strTags.map(t=>t.label);
   const allWkLabels=wkTags.map(t=>t.label);
+  const p3Strs=[],p3Wks=[];
   SUMMARY_KEYS.forEach(k=>{
     const sp=parseFloat(row[k+'_sub_pct']);if(isNaN(sp))return;
     const lbl=SUMMARY_LABELS[k];
-    if(sp>=0.75&&!allStrLabels.includes(lbl)&&strTags.length<3)
-      strTags.push({label:lbl,cls:'strength-tag-3',pass:3});
-    else if(sp<=0.25&&!allWkLabels.includes(lbl)&&wkTags.length<3)
-      wkTags.push({label:lbl,cls:'weakness-tag-3',pass:3});
+    if(sp>=0.75&&!allStrLabels.includes(lbl))p3Strs.push({label:lbl,cls:'strength-tag-3',pass:3,pct:sp});
+    else if(sp<=0.25&&!allWkLabels.includes(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp});
   });
   shotChecks.forEach(sc=>{
-    if(strTags.length>=3&&wkTags.length>=3)return;
     const subRate=parseFloat(row[sc.subRateKey]),subFg=parseFloat(row[sc.subFgKey]);
     if(isNaN(subRate)||isNaN(subFg))return;
-    if(shotIsStr(subRate,subFg,0.25)&&!allStrLabels.includes(sc.label)&&strTags.length<3)
-      strTags.push({label:sc.label,cls:'strength-tag-3',pass:3});
-    else if(shotIsWk(subRate,subFg,0.25)&&!allWkLabels.includes(sc.label)&&wkTags.length<3)
-      wkTags.push({label:sc.label,cls:'weakness-tag-3',pass:3});
+    if(shotIsStr(subRate,subFg,0.25)&&!allStrLabels.includes(sc.label))
+      p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:Math.max(subRate,subFg)});
+    else if(shotIsWk(subRate,subFg,0.25)&&!allWkLabels.includes(sc.label))
+      p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:Math.min(subRate,subFg)});
   });
+  p3Strs.sort((a,b)=>b.pct-a.pct).forEach(t=>{if(strTags.length<3)strTags.push(t);});
+  p3Wks.sort((a,b)=>a.pct-b.pct).forEach(t=>{if(wkTags.length<3)wkTags.push(t);});
 
   // ── Render ────────────────────────────────────────────────────────────────
   const sEl=document.getElementById('summary-strengths');
   sEl.innerHTML=`<span class="summary-label">Strengths</span>`+
-    (strTags.length?strTags.map(t=>`<span class="${t.cls}" title="${t.pass===3?subLbl:'vs. All D1'}">${t.label}${t.pass===3?` <span style="font-size:8px;opacity:0.7">${subLbl}</span>`:''}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
+    (strTags.length?strTags.map(t=>{
+      const lbl=t.pass===3?` <span style="font-size:8px;opacity:0.8">${subLbl}</span>`:t.pass===2?` <span style="font-size:8px;opacity:0.8">Relative</span>`:'';
+      return`<span class="${t.cls}">${t.label}${lbl}</span>`;
+    }).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
   const wEl=document.getElementById('summary-weaknesses');
   wEl.innerHTML=`<span class="summary-label">Weaknesses</span>`+
-    (wkTags.length?wkTags.map(t=>`<span class="${t.cls}" title="${t.pass===3?subLbl:'vs. All D1'}">${t.label}${t.pass===3?` <span style="font-size:8px;opacity:0.7">${subLbl}</span>`:''}</span>`).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
+    (wkTags.length?wkTags.map(t=>{
+      const lbl=t.pass===3?` <span style="font-size:8px;opacity:0.8">${subLbl}</span>`:t.pass===2?` <span style="font-size:8px;opacity:0.8">Relative</span>`:'';
+      return`<span class="${t.cls}">${t.label}${lbl}</span>`;
+    }).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
 
   // ── Shot profile sentence ────────────────────────────────────────────────
