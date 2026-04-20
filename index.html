@@ -841,96 +841,141 @@ function updateBanner(row){
   document.getElementById('banner-adjem').textContent=(em>0?'+':'')+em.toFixed(1);
   document.getElementById('banner-rank').textContent='#'+row.adj_em_rank;
 
-  // ── Strengths / weaknesses — 3-pass tiered system ────────────────────────
-  // tag: {label, cls} where cls = strength-tag / strength-tag-2 / strength-tag-3
+  // ── Strengths / weaknesses — 3-pass tiered system ────────────────────
   const strTags=[], wkTags=[];
   const subLbl=isPower(row)?'vs. Power Conf':'vs. Mid Major';
 
-  // Shot checks — custom str/wk logic per shot type and side
-  const shotDefs=[
-    {rk:'off_threes_rate_total_pct',fk:'off_threes_fg_pct',srk:'off_threes_rate_total_sub_pct',sfk:'off_threes_fg_sub_pct',label:'3-Point Shooting',
-     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>f},
-    {rk:'off_rim_rate_total_pct',fk:'off_rim_fg_pct',srk:'off_rim_rate_total_sub_pct',sfk:'off_rim_fg_sub_pct',label:'Rim Finishing',
-     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.50&&f<=0.35, sortKey:(r,f)=>f},
-    {rk:'off_long_twos_rate_total_pct',fk:'off_long_twos_fg_pct',srk:'off_long_twos_rate_total_sub_pct',sfk:'off_long_twos_fg_sub_pct',label:'Midrange Shooting',
-     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>f},
-    {rk:'def_threes_rate_total_pct',fk:'def_threes_fg_pct',srk:'def_threes_rate_total_sub_pct',sfk:'def_threes_fg_sub_pct',label:'3PT Defense',
-     strFn:(r,f)=>f>=0.75, wkFn:(r,f)=>f<=0.25&&r>=0.35, sortKey:(r,f)=>f},
-    {rk:'def_rim_rate_total_pct',fk:'def_rim_fg_pct',srk:'def_rim_rate_total_sub_pct',sfk:'def_rim_fg_sub_pct',label:'Rim Protection',
-     strFn:(r,f)=>f>=0.75&&r<=0.50, wkFn:(r,f)=>f<=0.25&&r>=0.35, sortKey:(r,f)=>f},
-    {rk:'def_long_twos_rate_total_pct',fk:'def_long_twos_fg_pct',srk:'def_long_twos_rate_total_sub_pct',sfk:'def_long_twos_fg_sub_pct',label:'Midrange Defense',
-     strFn:(r,f)=>false, wkFn:(r,f)=>f<=0.25, sortKey:(r,f)=>f},
-  ];
+  // Categorize each tag as offense or defense
+  const OFF_KEYS=new Set(['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','blk_pct_off','ast_pct_off']);
+  const DEF_KEYS=new Set(['efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def','blk_pct_def']);
+  const OFF_SHOTS=new Set(['3-Point Shooting','Rim Finishing','Midrange Shooting']);
+  const DEF_SHOTS=new Set(['3PT Defense','Rim Protection','Midrange Defense']);
+  function getSide(label,key){
+    if(key&&OFF_KEYS.has(key))return'off';
+    if(key&&DEF_KEYS.has(key))return'def';
+    if(OFF_SHOTS.has(label))return'off';
+    if(DEF_SHOTS.has(label))return'def';
+    return'off';
+  }
 
-  // ── PASS 1: top/bottom 25% D1 — sorted by percentile ──────────────────
-  const p1Strs=[],p1Wks=[];
-  SUMMARY_KEYS.forEach(k=>{
-    const p=parseFloat(row[k+'_pct']);if(isNaN(p))return;
-    if(p>=0.75)p1Strs.push({label:SUMMARY_LABELS[k],cls:'strength-tag',pass:1,pct:p});
-    else if(p<=0.25)p1Wks.push({label:SUMMARY_LABELS[k],cls:'weakness-tag',pass:1,pct:p});
-  });
-  shotDefs.forEach(sc=>{
-    const rate=parseFloat(row[sc.rk]),fg=parseFloat(row[sc.fk]);
-    if(isNaN(rate)||isNaN(fg))return;
-    if(sc.strFn(rate,fg))p1Strs.push({label:sc.label,cls:'strength-tag',pass:1,pct:sc.sortKey(rate,fg)});
-    else if(sc.wkFn(rate,fg))p1Wks.push({label:sc.label,cls:'weakness-tag',pass:1,pct:sc.sortKey(rate,fg)});
-  });
-  p1Strs.sort((a,b)=>b.pct-a.pct).slice(0,3).forEach(t=>strTags.push(t));
-  p1Wks.sort((a,b)=>a.pct-b.pct).slice(0,3).forEach(t=>wkTags.push(t));
+  // Collect all qualifiers for a given pass
+  function collectPass(pctField,subField,strCls,wkCls,passNum){
+    const strs=[],wks=[];
+    SUMMARY_KEYS.forEach(k=>{
+      const p=parseFloat(row[k+pctField]);if(isNaN(p))return;
+      const lbl=SUMMARY_LABELS[k];
+      if(p>=0.75)strs.push({label:lbl,cls:strCls,pass:passNum,pct:p,side:getSide(lbl,k)});
+      else if(p<=0.25)wks.push({label:lbl,cls:wkCls,pass:passNum,pct:p,side:getSide(lbl,k)});
+    });
+    shotDefs.forEach(sc=>{
+      const rk=subField?sc.srk:sc.rk, fk=subField?sc.sfk:sc.fk;
+      const rate=parseFloat(row[rk]),fg=parseFloat(row[fk]);
+      if(isNaN(rate)||isNaN(fg))return;
+      if(sc.strFn(rate,fg))strs.push({label:sc.label,cls:strCls,pass:passNum,pct:sc.sortKey(rate,fg),side:getSide(sc.label,null)});
+      else if(sc.wkFn(rate,fg))wks.push({label:sc.label,cls:wkCls,pass:passNum,pct:sc.sortKey(rate,fg),side:getSide(sc.label,null)});
+    });
+    return{strs,wks};
+  }
 
-  // ── PASS 2: top/bottom 26-35% D1 (relative) ─────────────────────────────
-  const pass1StrLabels=strTags.map(t=>t.label);
-  const pass1WkLabels=wkTags.map(t=>t.label);
-  if(strTags.length<2||wkTags.length<2){
-    const p2Strs=[],p2Wks=[];
+  // Pass 2 uses looser thresholds for SUMMARY_KEYS and shot checks
+  function collectPass2(){
+    const strs=[],wks=[];
+    const usedStrLabels=new Set(strTags.map(t=>t.label));
+    const usedWkLabels=new Set(wkTags.map(t=>t.label));
     SUMMARY_KEYS.forEach(k=>{
       const p=parseFloat(row[k+'_pct']);if(isNaN(p))return;
       const lbl=SUMMARY_LABELS[k];
-      if(p>=0.65&&p<0.75&&!pass1StrLabels.includes(lbl))p2Strs.push({label:lbl,cls:'strength-tag-2',pass:2,pct:p});
-      else if(p<=0.35&&p>0.25&&!pass1WkLabels.includes(lbl))p2Wks.push({label:lbl,cls:'weakness-tag-2',pass:2,pct:p});
+      if(p>=0.65&&p<0.75&&!usedStrLabels.has(lbl))strs.push({label:lbl,cls:'strength-tag-2',pass:2,pct:p,side:getSide(lbl,k)});
+      else if(p<=0.35&&p>0.25&&!usedWkLabels.has(lbl))wks.push({label:lbl,cls:'weakness-tag-2',pass:2,pct:p,side:getSide(lbl,k)});
     });
     shotDefs.forEach(sc=>{
       const rate=parseFloat(row[sc.rk]),fg=parseFloat(row[sc.fk]);
       if(isNaN(rate)||isNaN(fg))return;
-      // Pass 2: slightly looser thresholds
-      const isStr2Off=rate>=0.55&&fg>=0.55&&(sc.label==='3-Point Shooting'||sc.label==='Rim Finishing'||sc.label==='Midrange Shooting');
-      const isWk2Off=rate>=0.55&&fg<=0.45&&(sc.label==='3-Point Shooting'||sc.label==='Rim Finishing'||sc.label==='Midrange Shooting');
+      const isStr2Off=OFF_SHOTS.has(sc.label)&&rate>=0.55&&fg>=0.55;
+      const isWk2Off=OFF_SHOTS.has(sc.label)&&rate>=0.55&&fg<=0.45;
       const isStr2Def=(sc.label==='3PT Defense'&&fg>=0.65)||(sc.label==='Rim Protection'&&fg>=0.65&&rate<=0.60);
       const isWk2Def=(sc.label==='3PT Defense'||sc.label==='Rim Protection')&&fg<=0.35&&rate>=0.35;
-      const isStr2=isStr2Off||isStr2Def;
-      const isWk2=isWk2Off||isWk2Def;
-      if(isStr2&&!sc.strFn(rate,fg)&&!pass1StrLabels.includes(sc.label))
-        p2Strs.push({label:sc.label,cls:'strength-tag-2',pass:2,pct:sc.sortKey(rate,fg)});
-      else if(isWk2&&!sc.wkFn(rate,fg)&&!pass1WkLabels.includes(sc.label))
-        p2Wks.push({label:sc.label,cls:'weakness-tag-2',pass:2,pct:sc.sortKey(rate,fg)});
+      if((isStr2Off||isStr2Def)&&!sc.strFn(rate,fg)&&!usedStrLabels.has(sc.label))
+        strs.push({label:sc.label,cls:'strength-tag-2',pass:2,pct:sc.sortKey(rate,fg),side:getSide(sc.label,null)});
+      else if((isWk2Off||isWk2Def)&&!sc.wkFn(rate,fg)&&!usedWkLabels.has(sc.label))
+        wks.push({label:sc.label,cls:'weakness-tag-2',pass:2,pct:sc.sortKey(rate,fg),side:getSide(sc.label,null)});
     });
-    p2Strs.sort((a,b)=>b.pct-a.pct).forEach(t=>{if(strTags.length<2)strTags.push(t);});
-    p2Wks.sort((a,b)=>a.pct-b.pct).forEach(t=>{if(wkTags.length<2)wkTags.push(t);});
+    return{strs,wks};
   }
 
-  // ── PASS 3: bottom 25% subgroup (always runs if room, not already in pass 1) ─
-  const allStrLabels=strTags.map(t=>t.label);
-  const allWkLabels=wkTags.map(t=>t.label);
-  const p3Strs=[],p3Wks=[];
-  SUMMARY_KEYS.forEach(k=>{
-    const sp=parseFloat(row[k+'_sub_pct']);if(isNaN(sp))return;
-    const lbl=SUMMARY_LABELS[k];
-    if(sp>=0.75&&!allStrLabels.includes(lbl))p3Strs.push({label:lbl,cls:'strength-tag-3',pass:3,pct:sp});
-    else if(sp<=0.25&&!allWkLabels.includes(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp});
-  });
-  shotDefs.forEach(sc=>{
-    const sr=parseFloat(row[sc.srk]),sf=parseFloat(row[sc.sfk]);
-    if(isNaN(sr)||isNaN(sf))return;
-    if(sc.strFn(sr,sf)&&!allStrLabels.includes(sc.label))
-      p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:sc.sortKey(sr,sf)});
-    else if(sc.wkFn(sr,sf)&&!allWkLabels.includes(sc.label))
-      p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:sc.sortKey(sr,sf)});
-  });
-  p3Strs.sort((a,b)=>b.pct-a.pct).forEach(t=>{if(strTags.length<3)strTags.push(t);});
-  p3Wks.sort((a,b)=>a.pct-b.pct).forEach(t=>{if(wkTags.length<3)wkTags.push(t);});
+  // Smart fill: pass quality first, balance as tiebreaker when 4+ qualify
+  function smartFill(tags,candidates,isStr){
+    // candidates already sorted best first
+    if(tags.length>=3)return;
+    const slots=3-tags.length;
+    if(candidates.length<=slots){candidates.forEach(t=>tags.push(t));return;}
+    // More candidates than slots — check if we need balance tiebreaker
+    const usedSides=new Set(tags.map(t=>t.side));
+    const offCands=candidates.filter(t=>t.side==='off');
+    const defCands=candidates.filter(t=>t.side==='def');
+    const hasBothSides=offCands.length>0&&defCands.length>0;
+    if(hasBothSides&&slots>=2){
+      // Guarantee at least 1 from each side if both qualify
+      const bestOff=offCands[0], bestDef=defCands[0];
+      // Fill remaining with best overall excluding guaranteed picks
+      const guaranteed=[bestOff,bestDef];
+      const remaining=candidates.filter(t=>t!==bestOff&&t!==bestDef);
+      const fill=[...guaranteed,...remaining].slice(0,slots);
+      fill.forEach(t=>tags.push(t));
+    } else if(hasBothSides&&slots===1){
+      // Only 1 slot — pick best by percentile but prefer opposite side if not represented
+      const sidesInTags=new Set(tags.map(t=>t.side));
+      const missingside=sidesInTags.has('off')&&!sidesInTags.has('def')?'def':sidesInTags.has('def')&&!sidesInTags.has('off')?'off':null;
+      if(missingside){
+        const missingSideCand=candidates.find(t=>t.side===missingside);
+        if(missingSideCand)tags.push(missingSideCand);
+        else tags.push(candidates[0]);
+      } else {
+        tags.push(candidates[0]);
+      }
+    } else {
+      candidates.slice(0,slots).forEach(t=>tags.push(t));
+    }
+  }
 
-  // ── Render ────────────────────────────────────────────────────────────────
-  const sEl=document.getElementById('summary-strengths');
+  // ── PASS 1 ────────────────────────────────────────────────────────────────
+  const p1=collectPass('_pct',false,'strength-tag','weakness-tag',1);
+  const p1Strs=p1.strs.sort((a,b)=>b.pct-a.pct);
+  const p1Wks=p1.wks.sort((a,b)=>a.pct-b.pct);
+  smartFill(strTags,p1Strs,true);
+  smartFill(wkTags,p1Wks,false);
+
+  // ── PASS 2 ────────────────────────────────────────────────────────────────
+  if(strTags.length<3||wkTags.length<3){
+    const p2=collectPass2();
+    const p2Strs=p2.strs.sort((a,b)=>b.pct-a.pct);
+    const p2Wks=p2.wks.sort((a,b)=>a.pct-b.pct);
+    if(strTags.length<3)smartFill(strTags,p2Strs,true);
+    if(wkTags.length<3)smartFill(wkTags,p2Wks,false);
+  }
+
+  // ── PASS 3: subgroup ──────────────────────────────────────────────────────
+  if(strTags.length<3||wkTags.length<3){
+    const usedStrLabels=new Set(strTags.map(t=>t.label));
+    const usedWkLabels=new Set(wkTags.map(t=>t.label));
+    const p3Strs=[],p3Wks=[];
+    SUMMARY_KEYS.forEach(k=>{
+      const sp=parseFloat(row[k+'_sub_pct']);if(isNaN(sp))return;
+      const lbl=SUMMARY_LABELS[k];
+      if(sp>=0.75&&!usedStrLabels.has(lbl))p3Strs.push({label:lbl,cls:'strength-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
+      else if(sp<=0.25&&!usedWkLabels.has(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
+    });
+    shotDefs.forEach(sc=>{
+      const sr=parseFloat(row[sc.srk]),sf=parseFloat(row[sc.sfk]);
+      if(isNaN(sr)||isNaN(sf))return;
+      if(sc.strFn(sr,sf)&&!usedStrLabels.has(sc.label))p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:sc.sortKey(sr,sf),side:getSide(sc.label,null)});
+      else if(sc.wkFn(sr,sf)&&!usedWkLabels.has(sc.label))p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:sc.sortKey(sr,sf),side:getSide(sc.label,null)});
+    });
+    if(strTags.length<3)smartFill(strTags,p3Strs.sort((a,b)=>b.pct-a.pct),true);
+    if(wkTags.length<3)smartFill(wkTags,p3Wks.sort((a,b)=>a.pct-b.pct),false);
+  }
+
+    const sEl=document.getElementById('summary-strengths');
   sEl.innerHTML=`<span class="summary-label">Strengths</span>`+
     (strTags.length?strTags.map(t=>{
       const lbl=t.pass===3?` <span style="font-size:8px;opacity:0.8">${subLbl}</span>`:t.pass===2?` <span style="font-size:8px;opacity:0.8">Relative</span>`:'';
