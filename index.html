@@ -308,8 +308,7 @@ select:focus{border-color:var(--accent);}
   <div class="banner-summary" id="banner-summary" style="display:none">
     <div id="summary-strengths" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
     <div id="summary-weaknesses" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
-    <div id="shot-profile-label" style="display:flex;align-items:center;gap:6px"><span class="summary-label">Shot Profile</span></div>
-    <div class="shot-profile-blurb" id="shot-profile-blurb"></div>
+    <div style="width:100%;margin-top:2px;display:flex;align-items:center;gap:8px"><span id="shot-profile-label" class="summary-label" style="display:none;flex-shrink:0">Shot Profile</span><div class="shot-profile-blurb" id="shot-profile-blurb"></div></div>
   </div>
 </div>
 
@@ -734,8 +733,7 @@ let cH2HCat='Overview';
 let cConfCat='Overview';
 let cTrendWindow=2;
 
-const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def',
-  'ppp_off_full','ppp_def_full','ppp_residual_off','ppp_residual_def','blk_pct_def','blk_pct_off','ast_pct_off'];
+const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def','blk_pct_def','blk_pct_off','ast_pct_off'];
 const SUMMARY_LABELS={
   efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',ft_pct_off:'FT%',
   efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',ft_rate_def:'FT Rate Allowed',ast_pct_def:'Opp. Assist Rate',
@@ -848,17 +846,21 @@ function updateBanner(row){
   const strTags=[], wkTags=[];
   const subLbl=isPower(row)?'vs. Power Conf':'vs. Mid Major';
 
-  const shotChecks=[
-    {rateKey:'off_threes_rate_total_pct',fgKey:'off_threes_fg_pct',subRateKey:'off_threes_rate_total_sub_pct',subFgKey:'off_threes_fg_sub_pct',label:'3-Point Shooting',off:true},
-    {rateKey:'off_rim_rate_total_pct',fgKey:'off_rim_fg_pct',subRateKey:'off_rim_rate_total_sub_pct',subFgKey:'off_rim_fg_sub_pct',label:'Rim Finishing',off:true},
-    {rateKey:'off_long_twos_rate_total_pct',fgKey:'off_long_twos_fg_pct',subRateKey:'off_long_twos_rate_total_sub_pct',subFgKey:'off_long_twos_fg_sub_pct',label:'Midrange',off:true},
-    {rateKey:'def_threes_rate_total_pct',fgKey:'def_threes_fg_pct',subRateKey:'def_threes_rate_total_sub_pct',subFgKey:'def_threes_fg_sub_pct',label:'3PT Defense',off:false},
-    {rateKey:'def_rim_rate_total_pct',fgKey:'def_rim_fg_pct',subRateKey:'def_rim_rate_total_sub_pct',subFgKey:'def_rim_fg_sub_pct',label:'Rim Protection',off:false},
-    {rateKey:'def_long_twos_rate_total_pct',fgKey:'def_long_twos_fg_pct',subRateKey:'def_long_twos_rate_total_sub_pct',subFgKey:'def_long_twos_fg_sub_pct',label:'Midrange Defense',off:false},
+  // Shot checks — custom str/wk logic per shot type and side
+  const shotDefs=[
+    {rk:'off_threes_rate_total_pct',fk:'off_threes_fg_pct',srk:'off_threes_rate_total_sub_pct',sfk:'off_threes_fg_sub_pct',label:'3-Point Shooting',
+     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>f},
+    {rk:'off_rim_rate_total_pct',fk:'off_rim_fg_pct',srk:'off_rim_rate_total_sub_pct',sfk:'off_rim_fg_sub_pct',label:'Rim Finishing',
+     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.50&&f<=0.35, sortKey:(r,f)=>f},
+    {rk:'off_long_twos_rate_total_pct',fk:'off_long_twos_fg_pct',srk:'off_long_twos_rate_total_sub_pct',sfk:'off_long_twos_fg_sub_pct',label:'Midrange Shooting',
+     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>f},
+    {rk:'def_threes_rate_total_pct',fk:'def_threes_fg_pct',srk:'def_threes_rate_total_sub_pct',sfk:'def_threes_fg_sub_pct',label:'3PT Defense',
+     strFn:(r,f)=>f>=0.75, wkFn:(r,f)=>f<=0.25&&r>=0.35, sortKey:(r,f)=>f},
+    {rk:'def_rim_rate_total_pct',fk:'def_rim_fg_pct',srk:'def_rim_rate_total_sub_pct',sfk:'def_rim_fg_sub_pct',label:'Rim Protection',
+     strFn:(r,f)=>f>=0.75&&r<=0.50, wkFn:(r,f)=>f<=0.25&&r>=0.35, sortKey:(r,f)=>f},
+    {rk:'def_long_twos_rate_total_pct',fk:'def_long_twos_fg_pct',srk:'def_long_twos_rate_total_sub_pct',sfk:'def_long_twos_fg_sub_pct',label:'Midrange Defense',
+     strFn:(r,f)=>false, wkFn:(r,f)=>f<=0.25, sortKey:(r,f)=>f},
   ];
-
-  function shotIsStr(rate,fg,thr){return(rate>=(1-thr)&&fg>=0.60)||(fg>=(1-thr)&&rate>=0.50);}
-  function shotIsWk(rate,fg,thr){return(rate>=(1-thr)&&fg<=0.40)||(fg<=(thr)&&rate>=0.50);}
 
   // ── PASS 1: top/bottom 25% D1 — sorted by percentile ──────────────────
   const p1Strs=[],p1Wks=[];
@@ -867,11 +869,11 @@ function updateBanner(row){
     if(p>=0.75)p1Strs.push({label:SUMMARY_LABELS[k],cls:'strength-tag',pass:1,pct:p});
     else if(p<=0.25)p1Wks.push({label:SUMMARY_LABELS[k],cls:'weakness-tag',pass:1,pct:p});
   });
-  shotChecks.forEach(sc=>{
-    const rate=parseFloat(row[sc.rateKey]),fg=parseFloat(row[sc.fgKey]);
+  shotDefs.forEach(sc=>{
+    const rate=parseFloat(row[sc.rk]),fg=parseFloat(row[sc.fk]);
     if(isNaN(rate)||isNaN(fg))return;
-    if(shotIsStr(rate,fg,0.25))p1Strs.push({label:sc.label,cls:'strength-tag',pass:1,pct:Math.max(rate,fg)});
-    else if(shotIsWk(rate,fg,0.25))p1Wks.push({label:sc.label,cls:'weakness-tag',pass:1,pct:Math.min(rate,fg)});
+    if(sc.strFn(rate,fg))p1Strs.push({label:sc.label,cls:'strength-tag',pass:1,pct:sc.sortKey(rate,fg)});
+    else if(sc.wkFn(rate,fg))p1Wks.push({label:sc.label,cls:'weakness-tag',pass:1,pct:sc.sortKey(rate,fg)});
   });
   p1Strs.sort((a,b)=>b.pct-a.pct).slice(0,3).forEach(t=>strTags.push(t));
   p1Wks.sort((a,b)=>a.pct-b.pct).slice(0,3).forEach(t=>wkTags.push(t));
@@ -887,13 +889,20 @@ function updateBanner(row){
       if(p>=0.65&&p<0.75&&!pass1StrLabels.includes(lbl))p2Strs.push({label:lbl,cls:'strength-tag-2',pass:2,pct:p});
       else if(p<=0.35&&p>0.25&&!pass1WkLabels.includes(lbl))p2Wks.push({label:lbl,cls:'weakness-tag-2',pass:2,pct:p});
     });
-    shotChecks.forEach(sc=>{
-      const rate=parseFloat(row[sc.rateKey]),fg=parseFloat(row[sc.fgKey]);
+    shotDefs.forEach(sc=>{
+      const rate=parseFloat(row[sc.rk]),fg=parseFloat(row[sc.fk]);
       if(isNaN(rate)||isNaN(fg))return;
-      if(shotIsStr(rate,fg,0.35)&&!shotIsStr(rate,fg,0.25)&&!pass1StrLabels.includes(sc.label))
-        p2Strs.push({label:sc.label,cls:'strength-tag-2',pass:2,pct:Math.max(rate,fg)});
-      else if(shotIsWk(rate,fg,0.35)&&!shotIsWk(rate,fg,0.25)&&!pass1WkLabels.includes(sc.label))
-        p2Wks.push({label:sc.label,cls:'weakness-tag-2',pass:2,pct:Math.min(rate,fg)});
+      // Pass 2: slightly looser thresholds
+      const isStr2Off=rate>=0.55&&fg>=0.55&&(sc.label==='3-Point Shooting'||sc.label==='Rim Finishing'||sc.label==='Midrange Shooting');
+      const isWk2Off=rate>=0.55&&fg<=0.45&&(sc.label==='3-Point Shooting'||sc.label==='Rim Finishing'||sc.label==='Midrange Shooting');
+      const isStr2Def=(sc.label==='3PT Defense'&&fg>=0.65)||(sc.label==='Rim Protection'&&fg>=0.65&&rate<=0.60);
+      const isWk2Def=(sc.label==='3PT Defense'||sc.label==='Rim Protection')&&fg<=0.35&&rate>=0.35;
+      const isStr2=isStr2Off||isStr2Def;
+      const isWk2=isWk2Off||isWk2Def;
+      if(isStr2&&!sc.strFn(rate,fg)&&!pass1StrLabels.includes(sc.label))
+        p2Strs.push({label:sc.label,cls:'strength-tag-2',pass:2,pct:sc.sortKey(rate,fg)});
+      else if(isWk2&&!sc.wkFn(rate,fg)&&!pass1WkLabels.includes(sc.label))
+        p2Wks.push({label:sc.label,cls:'weakness-tag-2',pass:2,pct:sc.sortKey(rate,fg)});
     });
     p2Strs.sort((a,b)=>b.pct-a.pct).forEach(t=>{if(strTags.length<2)strTags.push(t);});
     p2Wks.sort((a,b)=>a.pct-b.pct).forEach(t=>{if(wkTags.length<2)wkTags.push(t);});
@@ -909,13 +918,13 @@ function updateBanner(row){
     if(sp>=0.75&&!allStrLabels.includes(lbl))p3Strs.push({label:lbl,cls:'strength-tag-3',pass:3,pct:sp});
     else if(sp<=0.25&&!allWkLabels.includes(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp});
   });
-  shotChecks.forEach(sc=>{
-    const subRate=parseFloat(row[sc.subRateKey]),subFg=parseFloat(row[sc.subFgKey]);
-    if(isNaN(subRate)||isNaN(subFg))return;
-    if(shotIsStr(subRate,subFg,0.25)&&!allStrLabels.includes(sc.label))
-      p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:Math.max(subRate,subFg)});
-    else if(shotIsWk(subRate,subFg,0.25)&&!allWkLabels.includes(sc.label))
-      p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:Math.min(subRate,subFg)});
+  shotDefs.forEach(sc=>{
+    const sr=parseFloat(row[sc.srk]),sf=parseFloat(row[sc.sfk]);
+    if(isNaN(sr)||isNaN(sf))return;
+    if(sc.strFn(sr,sf)&&!allStrLabels.includes(sc.label))
+      p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:sc.sortKey(sr,sf)});
+    else if(sc.wkFn(sr,sf)&&!allWkLabels.includes(sc.label))
+      p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:sc.sortKey(sr,sf)});
   });
   p3Strs.sort((a,b)=>b.pct-a.pct).forEach(t=>{if(strTags.length<3)strTags.push(t);});
   p3Wks.sort((a,b)=>a.pct-b.pct).forEach(t=>{if(wkTags.length<3)wkTags.push(t);});
@@ -1092,8 +1101,7 @@ function updateBanner(row){
     blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
-  document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
-  document.getElementById('shot-profile-label').style.display=blurb?'flex':'none';
+  document.getElementById('shot-profile-label').style.display=blurb?'inline':'none';
 }
 
 function updateSubLabels(row){
