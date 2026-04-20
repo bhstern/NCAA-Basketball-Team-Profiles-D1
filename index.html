@@ -739,7 +739,7 @@ const SUMMARY_LABELS={
   efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',ft_rate_def:'FT Rate Allowed',ast_pct_def:'Opp. Assist Rate',
   ppp_off_full:'Scoring Efficiency',ppp_def_full:'Defensive Efficiency',
   ppp_residual_off:'PPP Residual (Off)',ppp_residual_def:'PPP Residual (Def)',residual_diff:'Residual Differential',
-  blk_pct_def:'Blocking Shots',blk_pct_off:'Getting Blocked',ast_pct_off:'Ball Movement',
+  blk_pct_def:'Blocking Shots',blk_pct_off:'Avoiding Blocks',ast_pct_off:'Ball Movement',
 };
 
 const PAGE_DESCS={
@@ -861,11 +861,11 @@ function updateBanner(row){
   // Shot checks — custom str/wk logic per shot type and side
   const shotDefs=[
     {rk:'off_threes_rate_total_pct',fk:'off_threes_fg_pct',srk:'off_threes_rate_total_sub_pct',sfk:'off_threes_fg_sub_pct',label:'3-Point Shooting',
-     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>f},
+     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>(r+f)/2},
     {rk:'off_rim_rate_total_pct',fk:'off_rim_fg_pct',srk:'off_rim_rate_total_sub_pct',sfk:'off_rim_fg_sub_pct',label:'Rim Finishing',
-     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.50&&f<=0.35, sortKey:(r,f)=>f},
+     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.50&&f<=0.35, sortKey:(r,f)=>(r+f)/2},
     {rk:'off_long_twos_rate_total_pct',fk:'off_long_twos_fg_pct',srk:'off_long_twos_rate_total_sub_pct',sfk:'off_long_twos_fg_sub_pct',label:'Midrange Shooting',
-     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>f},
+     strFn:(r,f)=>r>=0.65&&f>=0.65, wkFn:(r,f)=>r>=0.65&&f<=0.35, sortKey:(r,f)=>(r+f)/2},
     {rk:'def_threes_rate_total_pct',fk:'def_threes_fg_pct',srk:'def_threes_rate_total_sub_pct',sfk:'def_threes_fg_sub_pct',label:'3PT Defense',
      strFn:(r,f)=>f>=0.75, wkFn:(r,f)=>f<=0.25&&r>=0.35, sortKey:(r,f)=>f},
     {rk:'def_rim_rate_total_pct',fk:'def_rim_fg_pct',srk:'def_rim_rate_total_sub_pct',sfk:'def_rim_fg_sub_pct',label:'Rim Protection',
