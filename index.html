@@ -904,18 +904,7 @@ function updateBanner(row){
       if(p>=0.65&&p<0.75&&!usedStrLabels.has(lbl))strs.push({label:lbl,cls:'strength-tag-2',pass:2,pct:p,side:getSide(lbl,k)});
       else if(p<=0.35&&p>0.25&&!usedWkLabels.has(lbl))wks.push({label:lbl,cls:'weakness-tag-2',pass:2,pct:p,side:getSide(lbl,k)});
     });
-    shotDefs.forEach(sc=>{
-      const rate=parseFloat(row[sc.rk]),fg=parseFloat(row[sc.fk]);
-      if(isNaN(rate)||isNaN(fg))return;
-      const isStr2Off=OFF_SHOTS.has(sc.label)&&rate>=0.55&&fg>=0.55;
-      const isWk2Off=OFF_SHOTS.has(sc.label)&&rate>=0.55&&fg<=0.45;
-      const isStr2Def=(sc.label==='3PT Defense'&&fg>=0.65)||(sc.label==='Rim Protection'&&fg>=0.65&&rate<=0.60);
-      const isWk2Def=(sc.label==='3PT Defense'||sc.label==='Rim Protection')&&fg<=0.35&&rate>=0.35;
-      if((isStr2Off||isStr2Def)&&!sc.strFn(rate,fg)&&!usedStrLabels.has(sc.label))
-        strs.push({label:sc.label,cls:'strength-tag-2',pass:2,pct:sc.sortKey(rate,fg),side:getSide(sc.label,null)});
-      else if((isWk2Off||isWk2Def)&&!sc.wkFn(rate,fg)&&!usedWkLabels.has(sc.label))
-        wks.push({label:sc.label,cls:'weakness-tag-2',pass:2,pct:sc.sortKey(rate,fg),side:getSide(sc.label,null)});
-    });
+        // Shot checks: Pass 1 only
     return{strs,wks};
   }
 
@@ -983,12 +972,7 @@ function updateBanner(row){
       if(sp>=0.75&&!usedStrLabels.has(lbl))p3Strs.push({label:lbl,cls:'strength-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
       else if(sp<=0.25&&!usedWkLabels.has(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
     });
-    shotDefs.forEach(sc=>{
-      const sr=parseFloat(row[sc.srk]),sf=parseFloat(row[sc.sfk]);
-      if(isNaN(sr)||isNaN(sf))return;
-      if(sc.strFn(sr,sf)&&!usedStrLabels.has(sc.label))p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:sc.sortKey(sr,sf),side:getSide(sc.label,null)});
-      else if(sc.wkFn(sr,sf)&&!usedWkLabels.has(sc.label))p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:sc.sortKey(sr,sf),side:getSide(sc.label,null)});
-    });
+    // Shot checks: Pass 1 only — no Pass 3 for shot types
     if(strTags.length<4)smartFill(strTags,p3Strs.sort((a,b)=>b.pct-a.pct),true);
     if(wkTags.length<4)smartFill(wkTags,p3Wks.sort((a,b)=>a.pct-b.pct),false);
   }
