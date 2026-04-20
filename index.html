@@ -921,30 +921,32 @@ function updateBanner(row){
 
   // Smart fill: pass quality first, balance as tiebreaker when 4+ qualify
   function smartFill(tags,candidates,isStr){
-    // candidates already sorted best first
-    if(tags.length>=3)return;
-    const slots=3-tags.length;
+    if(tags.length>=4)return;
+    const slots=4-tags.length;
     if(candidates.length<=slots){candidates.forEach(t=>tags.push(t));return;}
-    // More candidates than slots — check if we need balance tiebreaker
-    const usedSides=new Set(tags.map(t=>t.side));
     const offCands=candidates.filter(t=>t.side==='off');
     const defCands=candidates.filter(t=>t.side==='def');
     const hasBothSides=offCands.length>0&&defCands.length>0;
     if(hasBothSides&&slots>=2){
-      // Guarantee at least 1 from each side if both qualify
-      const bestOff=offCands[0], bestDef=defCands[0];
-      // Fill remaining with best overall excluding guaranteed picks
-      const guaranteed=[bestOff,bestDef];
-      const remaining=candidates.filter(t=>t!==bestOff&&t!==bestDef);
-      const fill=[...guaranteed,...remaining].slice(0,slots);
-      fill.forEach(t=>tags.push(t));
+      const bestOff=offCands[0],bestDef=defCands[0];
+      // Only guarantee defensive slot if best def pct is within 20pts of best off
+      // Otherwise just take top by percentile (don't sacrifice quality for balance)
+      const pctGap=Math.abs(bestOff.pct-bestDef.pct);
+      if(pctGap<=0.20){
+        const guaranteed=[bestOff,bestDef];
+        const remaining=candidates.filter(t=>t!==bestOff&&t!==bestDef);
+        [...guaranteed,...remaining].slice(0,slots).forEach(t=>tags.push(t));
+      } else {
+        candidates.slice(0,slots).forEach(t=>tags.push(t));
+      }
     } else if(hasBothSides&&slots===1){
-      // Only 1 slot — pick best by percentile but prefer opposite side if not represented
       const sidesInTags=new Set(tags.map(t=>t.side));
-      const missingside=sidesInTags.has('off')&&!sidesInTags.has('def')?'def':sidesInTags.has('def')&&!sidesInTags.has('off')?'off':null;
-      if(missingside){
-        const missingSideCand=candidates.find(t=>t.side===missingside);
-        if(missingSideCand)tags.push(missingSideCand);
+      const missingSide=sidesInTags.has('off')&&!sidesInTags.has('def')?'def':
+                        sidesInTags.has('def')&&!sidesInTags.has('off')?'off':null;
+      if(missingSide){
+        const mc=candidates.find(t=>t.side===missingSide);
+        // Only prefer missing side if within 15pct of best overall
+        if(mc&&Math.abs(candidates[0].pct-mc.pct)<=0.15)tags.push(mc);
         else tags.push(candidates[0]);
       } else {
         tags.push(candidates[0]);
@@ -962,16 +964,16 @@ function updateBanner(row){
   smartFill(wkTags,p1Wks,false);
 
   // ── PASS 2 ────────────────────────────────────────────────────────────────
-  if(strTags.length<3||wkTags.length<3){
+  if(strTags.length<4||wkTags.length<4){
     const p2=collectPass2();
     const p2Strs=p2.strs.sort((a,b)=>b.pct-a.pct);
     const p2Wks=p2.wks.sort((a,b)=>a.pct-b.pct);
-    if(strTags.length<3)smartFill(strTags,p2Strs,true);
-    if(wkTags.length<3)smartFill(wkTags,p2Wks,false);
+    if(strTags.length<4)smartFill(strTags,p2Strs,true);
+    if(wkTags.length<4)smartFill(wkTags,p2Wks,false);
   }
 
   // ── PASS 3: subgroup ──────────────────────────────────────────────────────
-  if(strTags.length<3||wkTags.length<3){
+  if(strTags.length<4||wkTags.length<4){
     const usedStrLabels=new Set(strTags.map(t=>t.label));
     const usedWkLabels=new Set(wkTags.map(t=>t.label));
     const p3Strs=[],p3Wks=[];
@@ -987,9 +989,13 @@ function updateBanner(row){
       if(sc.strFn(sr,sf)&&!usedStrLabels.has(sc.label))p3Strs.push({label:sc.label,cls:'strength-tag-3',pass:3,pct:sc.sortKey(sr,sf),side:getSide(sc.label,null)});
       else if(sc.wkFn(sr,sf)&&!usedWkLabels.has(sc.label))p3Wks.push({label:sc.label,cls:'weakness-tag-3',pass:3,pct:sc.sortKey(sr,sf),side:getSide(sc.label,null)});
     });
-    if(strTags.length<3)smartFill(strTags,p3Strs.sort((a,b)=>b.pct-a.pct),true);
-    if(wkTags.length<3)smartFill(wkTags,p3Wks.sort((a,b)=>a.pct-b.pct),false);
+    if(strTags.length<4)smartFill(strTags,p3Strs.sort((a,b)=>b.pct-a.pct),true);
+    if(wkTags.length<4)smartFill(wkTags,p3Wks.sort((a,b)=>a.pct-b.pct),false);
   }
+
+  // ── Sort: offense first then defense, by pct within each group ───────────
+  strTags.sort((a,b)=>{const s=( a.side==='off'?0:1)-(b.side==='off'?0:1);return s!==0?s:b.pct-a.pct;});
+  wkTags.sort((a,b)=>{const s=(a.side==='off'?0:1)-(b.side==='off'?0:1);return s!==0?s:a.pct-b.pct;});
 
     const sEl=document.getElementById('summary-strengths');
   sEl.innerHTML=`<span class="summary-label">Strengths</span>`+
