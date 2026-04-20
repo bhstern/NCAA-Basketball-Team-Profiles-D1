@@ -733,7 +733,7 @@ let cH2HCat='Overview';
 let cConfCat='Overview';
 let cTrendWindow=2;
 
-const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def','blk_pct_def','blk_pct_off','ast_pct_off'];
+const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def','ast_pct_off'];
 const SUMMARY_LABELS={
   efg_rate_off:'eFG% Off',tov_rate_off:'Ball Security',orb_rate_off:'Off. Rebounding',ft_rate_off:'FT Rate',ft_pct_off:'FT%',
   efg_rate_def:'eFG% Defense',tov_rate_def:'Forcing Turnovers',orb_rate_def:'Def. Rebounding',ft_rate_def:'FT Rate Allowed',ast_pct_def:'Opp. Assist Rate',
@@ -846,8 +846,8 @@ function updateBanner(row){
   const subLbl=isPower(row)?'vs. Power Conf':'vs. Mid Major';
 
   // Categorize each tag as offense or defense
-  const OFF_KEYS=new Set(['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','blk_pct_off','ast_pct_off']);
-  const DEF_KEYS=new Set(['efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def','blk_pct_def']);
+  const OFF_KEYS=new Set(['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','ast_pct_off']);
+  const DEF_KEYS=new Set(['efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def']);
   const OFF_SHOTS=new Set(['3-Point Shooting','Rim Finishing','Midrange Shooting']);
   const DEF_SHOTS=new Set(['3PT Defense','Rim Protection','Midrange Defense']);
   function getSide(label,key){
