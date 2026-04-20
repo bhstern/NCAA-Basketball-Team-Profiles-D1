@@ -993,9 +993,17 @@ function updateBanner(row){
     if(wkTags.length<4)smartFill(wkTags,p3Wks.sort((a,b)=>a.pct-b.pct),false);
   }
 
-  // ── Sort: offense first then defense, by pct within each group ───────────
-  strTags.sort((a,b)=>{const s=( a.side==='off'?0:1)-(b.side==='off'?0:1);return s!==0?s:b.pct-a.pct;});
-  wkTags.sort((a,b)=>{const s=(a.side==='off'?0:1)-(b.side==='off'?0:1);return s!==0?s:a.pct-b.pct;});
+  // ── Sort: pass first, then offense/defense, then pct ─────────────────────
+  strTags.sort((a,b)=>{
+    if(a.pass!==b.pass)return a.pass-b.pass;
+    const s=(a.side==='off'?0:1)-(b.side==='off'?0:1);
+    return s!==0?s:b.pct-a.pct;
+  });
+  wkTags.sort((a,b)=>{
+    if(a.pass!==b.pass)return a.pass-b.pass;
+    const s=(a.side==='off'?0:1)-(b.side==='off'?0:1);
+    return s!==0?s:a.pct-b.pct;
+  });
 
     const sEl=document.getElementById('summary-strengths');
   sEl.innerHTML=`<span class="summary-label">Strengths</span>`+
