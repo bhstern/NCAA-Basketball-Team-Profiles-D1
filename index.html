@@ -970,7 +970,7 @@ function updateBanner(row){
       const sp=parseFloat(row[k+'_sub_pct']);if(isNaN(sp))return;
       const lbl=SUMMARY_LABELS[k];
       if(sp>=0.75&&!usedStrLabels.has(lbl))p3Strs.push({label:lbl,cls:'strength-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
-      else if(sp<=0.25&&!usedWkLabels.has(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
+      else if(sp<=0.35&&!usedWkLabels.has(lbl))p3Wks.push({label:lbl,cls:'weakness-tag-3',pass:3,pct:sp,side:getSide(lbl,k)});
     });
     // Shot checks: Pass 1 only — no Pass 3 for shot types
     if(strTags.length<4)smartFill(strTags,p3Strs.sort((a,b)=>b.pct-a.pct),true);
@@ -1018,6 +1018,7 @@ function updateBanner(row){
   const defMidR=parseFloat(row.def_long_twos_rate_total_pct);
   const dfg3=parseFloat(row.def_threes_fg_pct);
   const dfgRim=parseFloat(row.def_rim_fg_pct);
+  const dfgMid=parseFloat(row.def_long_twos_fg_pct);
   const nm=row.team_name;
   let blurb='';
 
@@ -1082,11 +1083,15 @@ function updateBanner(row){
       offDesc='takes a balanced offensive approach';
     }
 
-    // FG% modifier (only add if dominant is notable AND it flows grammatically)
+    // FG% modifier — dominant shot and standalone rim finishing
     if(domPct>=0.65){
       if(domName==='threes'&&fg3>=0.85) offDesc+=', converting at an elite rate from deep';
       else if(domName==='rim'&&fgRim<=0.20) offDesc+=' though struggling to finish at the rim';
       else if(domName==='rim'&&fgRim>=0.85) offDesc+=' and finishes at an elite rate';
+    }
+    // Standalone rim FG% callout when rim is NOT dominant but team finishes at elite rate
+    if(domName!=='rim'&&!isNaN(fgRim)&&fgRim>=0.85&&!isNaN(offRimR)&&offRimR>=0.20){
+      offDesc+=' and finishes at an elite rate when attacking the rim';
     }
 
     // ── DEFENSE ────────────────────────────────────────────────────────
@@ -1137,7 +1142,12 @@ function updateBanner(row){
         if(elite3Def) defDesc+=', though they hold opponents to a low shooting percentage';
         else if(poor3Def) defDesc+=' and convert at a high rate';
       } else {
-        defDesc='force opponents into a high volume of midrange attempts';
+        // High midrange — only meaningful if mid is highest def rate AND fg% is decent
+        const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
+        if(midIsHighest){
+          if(!isNaN(dfgMid)&&dfgMid>=0.75) defDesc='force opponents into midrange attempts and hold them to a low FG% there';
+          else if(!isNaN(dfgMid)&&dfgMid>=0.50) defDesc='force opponents into midrange attempts';
+        }
       }
     } else if(defLeastPct<=0.25){
       if(defLeast==='rim'){
