@@ -1132,7 +1132,7 @@ function updateBanner(row){
       } else if(defMost==='mid'&&defLeast==='threes'){
         defDesc='force opponents into midrange attempts while limiting three-point looks';
       }
-    } else if((defMost==='rim'&&defMostPct>=0.78)||(defMost==='threes'&&defMostPct>=0.78)||(defMost==='mid'&&defMostPct>=0.82)){
+    } else if((defMost==='rim'&&defMostPct>=0.78)||(defMost==='threes'&&defMostPct>=0.78)||(defMost==='mid'&&defMostPct>=0.75)){
       if(defMost==='rim'){
         defDesc='opponents attack the paint frequently';
         if(eliteRimDef) defDesc+=', though they hold opponents to a low FG% at the rim';
