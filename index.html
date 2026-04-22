@@ -1658,7 +1658,7 @@ async function renderHistorical(){
     const vals=td.map(d=>{
       const raw=parseFloat(d[stat.key]);
       let pct,rank;
-      if(cHistComp==='conf'){rank=d[stat.key+'_conf_rank'];pct=null;}
+      if(cHistComp==='conf'){rank=d[stat.key+'_conf_rank'];const cp=parseFloat(d[stat.key+'_conf_pct']);pct=isNaN(cp)?null:cp;}
       else if(cHistComp==='sub'){pct=parseFloat(d[stat.key+'_sub_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_sub_rank'];}
       else{pct=parseFloat(d[stat.key+'_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_rank'];}
       return{raw,pct,rank};
@@ -1667,17 +1667,7 @@ async function renderHistorical(){
     const trendVals=vals.slice(-Math.min(cTrendWindow+1,vals.length));
     const tFirst=trendVals[0],tLast=trendVals[trendVals.length-1];
     let arrow='';
-    if(cHistComp==='conf'){
-      const fr=parseInt(tFirst?.rank),lr=parseInt(tLast?.rank);
-      if(!isNaN(fr)&&!isNaN(lr)&&tFirst!==tLast){
-        const diff=fr-lr;
-        if(diff>=4)arrow=`<span class="hist-arrow arrow-up">↑↑ Strong Improvement</span>`;
-        else if(diff>=2)arrow=`<span class="hist-arrow arrow-up">↑ Rising</span>`;
-        else if(diff<=-4)arrow=`<span class="hist-arrow arrow-down">↓↓ Sharp Decline</span>`;
-        else if(diff<=-2)arrow=`<span class="hist-arrow arrow-down">↓ Falling</span>`;
-        else arrow=`<span class="hist-arrow arrow-flat">→ Stable</span>`;
-      }
-    } else {
+    {
       const fp=tFirst?.pct,lp=tLast?.pct;
       if(fp!==null&&fp!==undefined&&lp!==null&&lp!==undefined&&tFirst!==tLast){
         const diff=lp-fp;
