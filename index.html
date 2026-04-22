@@ -1658,10 +1658,16 @@ async function renderHistorical(){
     const vals=td.map(d=>{
       const raw=parseFloat(d[stat.key]);
       let pct,rank;
-      if(cHistComp==='conf'){rank=d[stat.key+'_conf_rank'];const cp=parseFloat(d[stat.key+'_conf_pct']);pct=isNaN(cp)?null:cp;}
+      if(cHistComp==='conf'){
+        rank=d[stat.key+'_conf_rank'];
+        // Use D1 pct for trend arrow, store conf_pct separately for caveat
+        const d1p=parseFloat(d[stat.key+'_pct']);pct=isNaN(d1p)?null:d1p;
+        const cp=parseFloat(d[stat.key+'_conf_pct']);
+        return{raw,pct,rank,confPct:isNaN(cp)?null:cp};
+      }
       else if(cHistComp==='sub'){pct=parseFloat(d[stat.key+'_sub_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_sub_rank'];}
       else{pct=parseFloat(d[stat.key+'_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_rank'];}
-      return{raw,pct,rank};
+      return{raw,pct,rank,confPct:null};
     });
     // Trend: use last cTrendWindow years only
     const trendVals=vals.slice(-Math.min(cTrendWindow+1,vals.length));
@@ -1689,6 +1695,25 @@ async function renderHistorical(){
           else if(diff<=-0.20)arrow=`<span class="hist-arrow arrow-down">↓↓ Sharp Decline</span>`;
           else if(diff<=-0.07)arrow=`<span class="hist-arrow arrow-down">↓ Declining</span>`;
           else arrow=`<span class="hist-arrow arrow-flat">→ Stable</span>`;
+        }
+        // Conference caveat — only on conf view, when conf trajectory diverges from D1 trend
+        if(cHistComp==='conf'&&arrow){
+          const fcp=tFirst?.confPct,lcp=tLast?.confPct;
+          if(fcp!==null&&fcp!==undefined&&lcp!==null&&lcp!==undefined){
+            const confDiff=lcp-fcp;
+            const confName=cRow?cRow.conference:'Conf';
+            const THRESH=0.10;
+            const d1Up=diff>0.07,d1Down=diff<-0.07,d1Flat=!d1Up&&!d1Down;
+            const confUp=confDiff>THRESH,confDown=confDiff<-THRESH,confFlat=!confUp&&!confDown;
+            // Only add caveat when there's meaningful divergence
+            if(d1Up&&confDown)arrow+=` <span style="font-size:10px;color:var(--orange);font-style:italic">(↓ vs. ${confName})</span>`;
+            else if(d1Up&&confFlat)arrow+=` <span style="font-size:10px;color:var(--text3);font-style:italic">(→ vs. ${confName})</span>`;
+            else if(d1Down&&confUp)arrow+=` <span style="font-size:10px;color:var(--green);font-style:italic">(↑ vs. ${confName})</span>`;
+            else if(d1Down&&confFlat)arrow+=` <span style="font-size:10px;color:var(--text3);font-style:italic">(→ vs. ${confName})</span>`;
+            else if(d1Flat&&confUp)arrow+=` <span style="font-size:10px;color:var(--green);font-style:italic">(↑ vs. ${confName})</span>`;
+            else if(d1Flat&&confDown)arrow+=` <span style="font-size:10px;color:var(--orange);font-style:italic">(↓ vs. ${confName})</span>`;
+            // Same direction — no caveat needed
+          }
         }
       }
     }
