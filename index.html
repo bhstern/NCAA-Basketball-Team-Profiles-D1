@@ -595,6 +595,7 @@ select:focus{border-color:var(--accent);}
             <tr><td>residual_diff</td><td>Residual Differential — Performance Over Expectation. How much a team outperforms shot quality on both ends combined.</td></tr>
             <tr><td>_z / _pct / _rank</td><td>Z-score, percentile, and D1-wide rank for each variable. All normalized so higher = better.</td></tr>
             <tr><td>_conf_rank</td><td>Rank within conference for each variable.</td></tr>
+            <tr><td>_conf_pct</td><td>Percentile within conference for each variable. Higher = better relative to conference peers. More intuitive than rank since it is on the same 0–1 scale as all other percentiles.</td></tr>
             <tr><td>_sub_z / _sub_pct / _sub_rank</td><td>Z-score, percentile, and rank within power conference or mid-major subgroup.</td></tr>
           </tbody>
         </table></div>
@@ -1200,7 +1201,7 @@ function setView(v,btn){
 }
 
 function getPct(row,key,view){
-  if(view==='conf'){const r=parseInt(row[key+'_conf_rank']);if(isNaN(r))return null;const sz=cYearData.filter(d=>d.conference===row.conference).length;return 1-(r-1)/sz;}
+  if(view==='conf'){const v=parseFloat(row[key+'_conf_pct']);return isNaN(v)?null:v;}
   if(view==='sub'){const v=parseFloat(row[key+'_sub_pct']);return isNaN(v)?null:v;}
   const v=parseFloat(row[key+'_pct']);return isNaN(v)?null:v;
 }
@@ -1257,17 +1258,19 @@ function statRowHtml(row,stat,view){
   const rawV=parseFloat(row[stat.key]);
   const fv=!isNaN(rawV)?stat.fmt(rawV):'—';
   const rd=view==='conf'?`Conf #${row[stat.key+'_conf_rank']||'—'}`:view==='sub'?`Sub #${row[stat.key+'_sub_rank']||'—'}`:`#${row[stat.key+'_rank']||'—'}`;
-  // Conference rank view: show value + rank + descriptor only, no percentile bar or pct
+  // Conference rank view — show bar + percentile + rank + descriptor
   if(view==='conf'){
     const confRank=row[stat.key+'_conf_rank'];
-    const confSz=cYearData?cYearData.filter(d=>d.conference===row.conference).length:20;
-    const confPct=confRank?1-(parseInt(confRank)-1)/confSz:null;
+    const confPctRaw=parseFloat(row[stat.key+'_conf_pct']);
+    const confPct=isNaN(confPctRaw)?null:confPctRaw;
     const confCls=pctCls(confPct,stat.isTempo,false);
+    const confBw=confPct!==null?Math.round(confPct*100):0;
+    const confDp=confPct!==null?Math.round(confPct*100)+'%':'—';
     return`<div class="stat-row">
       <div class="stat-name">${stat.label}${tip(stat.key)}</div>
       <div class="stat-val">${fv}</div>
-      <div class="stat-bar-wrap" style="opacity:0"></div>
-      <div class="stat-pct-val" style="width:30px"></div>
+      <div class="stat-bar-wrap"><div class="stat-bar ${confCls.bar}" style="width:${confBw}%"></div></div>
+      <div class="stat-pct-val ${confCls.color}">${confDp}</div>
       <div class="stat-rank-val">Conf #${confRank||'—'}</div>
       <div class="descriptor-badge ${confCls.badge}">${confCls.label}</div>
     </div>`;
@@ -1303,20 +1306,23 @@ function shotMetricCell(row,key,isFreq,view){
   const rawV=parseFloat(row[key]);
   const fv=!isNaN(rawV)?(rawV<1?(rawV*100).toFixed(1)+'%':rawV.toFixed(1)):'—';
   let pct;
-  if(view==='conf'){const r=parseInt(row[key+'_conf_rank']);const sz=cYearData.filter(d=>d.conference===row.conference).length;pct=isNaN(r)?null:1-(r-1)/sz;}
+  if(view==='conf'){const v=parseFloat(row[key+'_conf_pct']);pct=isNaN(v)?null:v;}
   else if(view==='sub'){const v=parseFloat(row[key+'_sub_pct']);pct=isNaN(v)?null:v;}
   else{const v=parseFloat(row[key+'_pct']);pct=isNaN(v)?null:v;}
   const cls=pctCls(pct,false,isFreq);
   const bw=pct!==null?Math.round(pct*100):0;
   const rd=view==='conf'?`Conf #${row[key+'_conf_rank']||'—'}`:view==='sub'?`Sub #${row[key+'_sub_rank']||'—'}`:`#${row[key+'_rank']||'—'}`;
-  // Conference rank view: no percentile bar or pct number
+  // Conference rank view — show bar + percentile + rank + descriptor
   if(view==='conf'){
     const confR=row[key+'_conf_rank'];
-    const confSz=cYearData?cYearData.filter(d=>d.conference===row.conference).length:20;
-    const confPct=confR?1-(parseInt(confR)-1)/confSz:null;
-    const confCls=pctCls(confPct,false,isFreq);
+    const confPctRaw2=parseFloat(row[key+'_conf_pct']);
+    const confPct2=isNaN(confPctRaw2)?null:confPctRaw2;
+    const confCls=pctCls(confPct2,false,isFreq);
+    const confBw2=confPct2!==null?Math.round(confPct2*100):0;
     return`<div class="shot-metric-cell">
       <span class="shot-val">${fv}</span>
+      <div class="shot-bar-wrap"><div class="shot-bar ${confCls.bar}" style="width:${confBw2}%"></div></div>
+      <span class="shot-pct ${confCls.color}">${confPct2!==null?Math.round(confPct2*100)+'%':'—'}</span>
       <span class="shot-rank">Conf #${confR||'—'}</span>
       <span class="shot-badge ${confCls.badge}">${confCls.label}</span>
     </div>`;
