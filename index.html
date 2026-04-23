@@ -1695,42 +1695,45 @@ async function renderHistorical(){
     const tFirst=trendVals[0],tLast=trendVals[trendVals.length-1];
     let arrow='';
     {
+      // Helper: get trend label + css class from a pct diff
+      function trendLabel(diff,isTempo,isFreq){
+        if(isTempo){
+          if(diff>=0.20)return{txt:'↑↑ Much Faster',cls:'arrow-up'};
+          if(diff>=0.07)return{txt:'↑ Faster',cls:'arrow-up'};
+          if(diff<=-0.20)return{txt:'↓↓ Much Slower',cls:'arrow-down'};
+          if(diff<=-0.07)return{txt:'↓ Slower',cls:'arrow-down'};
+          return{txt:'→ Stable Pace',cls:'arrow-flat'};
+        } else if(isFreq){
+          if(diff>=0.20)return{txt:'↑↑ Much Higher Freq',cls:'arrow-up'};
+          if(diff>=0.07)return{txt:'↑ Higher Freq',cls:'arrow-up'};
+          if(diff<=-0.20)return{txt:'↓↓ Much Lower Freq',cls:'arrow-down'};
+          if(diff<=-0.07)return{txt:'↓ Lower Freq',cls:'arrow-down'};
+          return{txt:'→ Stable Freq',cls:'arrow-flat'};
+        } else {
+          if(diff>=0.20)return{txt:'↑↑ Strong Improvement',cls:'arrow-up'};
+          if(diff>=0.07)return{txt:'↑ Improving',cls:'arrow-up'};
+          if(diff<=-0.20)return{txt:'↓↓ Sharp Decline',cls:'arrow-down'};
+          if(diff<=-0.07)return{txt:'↓ Declining',cls:'arrow-down'};
+          return{txt:'→ Stable',cls:'arrow-flat'};
+        }
+      }
+
       const fp=tFirst?.pct,lp=tLast?.pct;
       if(fp!==null&&fp!==undefined&&lp!==null&&lp!==undefined&&tFirst!==tLast){
         const diff=lp-fp;
-        if(stat.isTempo){
-          if(diff>=0.20)arrow=`<span class="hist-arrow arrow-up">↑↑ Much Faster</span>`;
-          else if(diff>=0.07)arrow=`<span class="hist-arrow arrow-up">↑ Faster</span>`;
-          else if(diff<=-0.20)arrow=`<span class="hist-arrow arrow-down">↓↓ Much Slower</span>`;
-          else if(diff<=-0.07)arrow=`<span class="hist-arrow arrow-down">↓ Slower</span>`;
-          else arrow=`<span class="hist-arrow arrow-flat">→ Stable Pace</span>`;
-        } else if(stat.isFreq){
-          if(diff>=0.20)arrow=`<span class="hist-arrow arrow-up">↑↑ Much Higher Freq</span>`;
-          else if(diff>=0.07)arrow=`<span class="hist-arrow arrow-up">↑ Higher Freq</span>`;
-          else if(diff<=-0.20)arrow=`<span class="hist-arrow arrow-down">↓↓ Much Lower Freq</span>`;
-          else if(diff<=-0.07)arrow=`<span class="hist-arrow arrow-down">↓ Lower Freq</span>`;
-          else arrow=`<span class="hist-arrow arrow-flat">→ Stable Freq</span>`;
-        } else {
-          if(diff>=0.20)arrow=`<span class="hist-arrow arrow-up">↑↑ Strong Improvement</span>`;
-          else if(diff>=0.07)arrow=`<span class="hist-arrow arrow-up">↑ Improving</span>`;
-          else if(diff<=-0.20)arrow=`<span class="hist-arrow arrow-down">↓↓ Sharp Decline</span>`;
-          else if(diff<=-0.07)arrow=`<span class="hist-arrow arrow-down">↓ Declining</span>`;
-          else arrow=`<span class="hist-arrow arrow-flat">→ Stable</span>`;
-        }
-        // Conference caveat on d1conf view
-        if(isD1Conf&&arrow){
+        const d1Label=trendLabel(diff,stat.isTempo,stat.isFreq||false);
+        arrow=`<span class="hist-arrow ${d1Label.cls}">${d1Label.txt}</span>`;
+
+        // Second line for D1+Conf view — conf trend using same labels
+        if(isD1Conf){
           const fcp=tFirst?.confPct,lcp=tLast?.confPct;
           if(fcp!==null&&fcp!==undefined&&lcp!==null&&lcp!==undefined){
             const confDiff=lcp-fcp;
-            const THRESH=0.10;
-            const d1Up=diff>0.07,d1Down=diff<-0.07,d1Flat=!d1Up&&!d1Down;
-            const confUp=confDiff>THRESH,confDown=confDiff<-THRESH,confFlat=!confUp&&!confDown;
-            if(d1Up&&confDown)arrow+=` <span style="font-size:10px;color:var(--orange);font-style:italic">(↓ vs. ${confName})</span>`;
-            else if(d1Up&&confFlat)arrow+=` <span style="font-size:10px;color:var(--text3);font-style:italic">(→ vs. ${confName})</span>`;
-            else if(d1Down&&confUp)arrow+=` <span style="font-size:10px;color:var(--green);font-style:italic">(↑ vs. ${confName})</span>`;
-            else if(d1Down&&confFlat)arrow+=` <span style="font-size:10px;color:var(--text3);font-style:italic">(→ vs. ${confName})</span>`;
-            else if(d1Flat&&confUp)arrow+=` <span style="font-size:10px;color:var(--green);font-style:italic">(↑ vs. ${confName})</span>`;
-            else if(d1Flat&&confDown)arrow+=` <span style="font-size:10px;color:var(--orange);font-style:italic">(↓ vs. ${confName})</span>`;
+            const confLabel=trendLabel(confDiff,stat.isTempo,stat.isFreq||false);
+            // Only show second line if conf label differs from D1 label
+            if(confLabel.txt!==d1Label.txt){
+              arrow+=`<br><span class="hist-arrow ${confLabel.cls}" style="font-size:11px">${confLabel.txt} vs. ${confName}</span>`;
+            }
           }
         }
       }
