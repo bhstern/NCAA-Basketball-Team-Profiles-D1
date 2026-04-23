@@ -392,8 +392,8 @@ select:focus{border-color:var(--accent);}
       <div class="hist-filter-group">
         <span class="selector-label">Years Back</span>
         <div class="hist-btn-row">
-          <button class="hist-comp-btn" onclick="setTrendWindow(1,this)">Last 1 yr</button>
-          <button class="hist-comp-btn active" onclick="setTrendWindow(2,this)">Last 2 yrs</button>
+          <button class="hist-comp-btn active" onclick="setTrendWindow(1,this)">Last 1 yr</button>
+          <button class="hist-comp-btn" onclick="setTrendWindow(2,this)">Last 2 yrs</button>
           <button class="hist-comp-btn" onclick="setTrendWindow(3,this)">Last 3 yrs</button>
         </div>
       </div>
@@ -600,7 +600,7 @@ select:focus{border-color:var(--accent);}
 <script>
 const TDIR='logos/teams/', CDIR='logos/conferences/';
 let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
-let cView='d1', cHistCat='Overview', cHistComp='d1conf', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile';
+let cView='d1', cHistCat='Overview', cHistComp='d1conf', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile'; let cTrendWindow=1;
 
 function isPower(row){return row&&row.power_mid==='Power';}
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
@@ -725,7 +725,7 @@ const SHOT_CATS=[
 let expandedShotRows=new Set();
 let cH2HCat='Overview';
 let cConfCat='Overview';
-let cTrendWindow=2;
+
 
 const SUMMARY_KEYS=['efg_rate_off','tov_rate_off','orb_rate_off','ft_rate_off','ft_pct_off','efg_rate_def','tov_rate_def','orb_rate_def','ft_rate_def','ast_pct_def','ast_pct_off'];
 const SUMMARY_LABELS={
@@ -789,10 +789,7 @@ async function onSelectionChange(){
   if(!team||!year)return;
   cTeam=team;cYear=year;cCompTeams=[];cCustomMode=false;
   // Update URL so refresh/share preserves selection
-  const params=new URLSearchParams();
-  params.set('team',team);
-  params.set('year',year);
-  history.replaceState(null,'','?'+params.toString());
+  updateURL();
   showLoading();
   try{
     const yd=await loadYear(year);cYearData=yd;
@@ -1190,6 +1187,7 @@ function renderTab(){
 // ── PROFILE ───────────────────────────────────────────────────────────────────
 function setView(v,btn){
   cView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  updateURL();
   if(cRow)renderProfile();
 }
 
@@ -1886,12 +1884,25 @@ function syncH2HTeamA(){
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function updateURL(){
+  if(!cTeam||!cYear)return;
+  const params=new URLSearchParams();
+  params.set('team',cTeam);
+  params.set('year',cYear);
+  if(cTab&&cTab!=='profile')params.set('tab',cTab);
+  if(cView&&cView!=='d1')params.set('view',cView);
+  if(cHistComp&&cHistComp!=='d1conf')params.set('hcomp',cHistComp);
+  if(cTrendWindow&&cTrendWindow!==1)params.set('trend',cTrendWindow);
+  history.replaceState(null,'','?'+params.toString());
+}
+
 function switchTab(tab,btn){
   cTab=tab;
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
   if(btn)btn.classList.add('active');
+  updateURL();
   // Hide banner on About tab
   document.getElementById('banner').style.display=tab==='about'?'none':'';
   document.getElementById('page-desc').style.display=tab==='about'?'none':'';
@@ -1911,7 +1922,7 @@ function setAboutSection(section,btn){
   document.getElementById('about-sources').style.display=section==='sources'?'block':'none';
   document.getElementById('about-dictionary').style.display=section==='dictionary'?'block':'none';
 }
-loadIndex().then(()=>{
+loadIndex().then(async ()=>{
   // Check URL params for team deep link
   const params=new URLSearchParams(window.location.search);
   const teamParam=params.get('team');
@@ -1929,7 +1940,27 @@ loadIndex().then(()=>{
       document.getElementById('year-group').style.display='flex';
       if(yearParam&&availYears.includes(parseInt(yearParam)))ySel.value=yearParam;
       else if(availYears.length>0)ySel.value=availYears[0];
-      onSelectionChange();
+      // Restore view settings from URL
+      const tabParam=params.get('tab');
+      const viewParam=params.get('view');
+      const hcompParam=params.get('hcomp');
+      const trendParam=params.get('trend');
+      if(viewParam)cView=viewParam;
+      if(hcompParam)cHistComp=hcompParam;
+      if(trendParam)cTrendWindow=parseInt(trendParam);
+      await onSelectionChange();
+      // Switch to saved tab after data loads
+      if(tabParam){
+        const tabBtn=[...document.querySelectorAll('.nav-tab')].find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${tabParam}'`));
+        if(tabBtn)switchTab(tabParam,tabBtn);
+      }
+      // Restore view toggle button state
+      if(viewParam){
+        document.querySelectorAll('.view-btn').forEach(b=>{
+          if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${viewParam}'`))b.classList.add('active');
+          else b.classList.remove('active');
+        });
+      }
     }
   }
 });
