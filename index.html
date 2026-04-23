@@ -378,27 +378,19 @@ select:focus{border-color:var(--accent);}
   <div id="historical-content" style="display:none">
     <div class="hist-controls">
       <div class="hist-filter-group">
-        <span class="selector-label">Season Range</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="hist-start" onchange="renderHistorical()" style="min-width:100px"></select>
-          <span style="color:var(--text4);font-size:12px">to</span>
-          <select id="hist-end" onchange="renderHistorical()" style="min-width:100px"></select>
-        </div>
-      </div>
-      <div class="hist-filter-group">
         <span class="selector-label">Stat Category</span>
         <div class="hist-btn-row" id="hist-cat-filter"></div>
       </div>
       <div class="hist-filter-group">
-        <span class="selector-label">Compare vs.</span>
+        <span class="selector-label">View</span>
         <div class="hist-btn-row">
-          <button class="hist-comp-btn active" onclick="setHistComp('d1',this)">All D1</button>
-          <button class="hist-comp-btn" onclick="setHistComp('conf',this)">Conference</button>
+          <button class="hist-comp-btn active" onclick="setHistComp('d1conf',this)">D1 + Conference</button>
+          <button class="hist-comp-btn" onclick="setHistComp('d1',this)">All D1</button>
           <button class="hist-comp-btn" onclick="setHistComp('sub',this)" id="hist-sub-btn">Power Conf</button>
         </div>
       </div>
       <div class="hist-filter-group">
-        <span class="selector-label">Trend Based On</span>
+        <span class="selector-label">Years Back</span>
         <div class="hist-btn-row">
           <button class="hist-comp-btn" onclick="setTrendWindow(1,this)">Last 1 yr</button>
           <button class="hist-comp-btn active" onclick="setTrendWindow(2,this)">Last 2 yrs</button>
@@ -406,6 +398,7 @@ select:focus{border-color:var(--accent);}
         </div>
       </div>
     </div>
+    <div id="hist-caveat" style="display:none;margin-bottom:10px;font-size:11px;color:var(--text4);font-style:italic;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;"></div>
     <div id="hist-table-container"></div>
   </div>
 </div>
@@ -607,7 +600,7 @@ select:focus{border-color:var(--accent);}
 <script>
 const TDIR='logos/teams/', CDIR='logos/conferences/';
 let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
-let cView='d1', cHistCat='Overview', cHistComp='d1', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile';
+let cView='d1', cHistCat='Overview', cHistComp='d1conf', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile';
 
 function isPower(row){return row&&row.power_mid==='Power';}
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
@@ -1595,32 +1588,25 @@ function setHistCat(cat,btn){cHistCat=cat;document.querySelectorAll('.hist-cat-b
 function setHistComp(comp,btn){cHistComp=comp;document.querySelectorAll('.hist-comp-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistorical();}
 
 function initHistSelectors(){
-  const ty=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(cTeam)).sort((a,b)=>a-b);
-  const ss=document.getElementById('hist-start'),se=document.getElementById('hist-end');
-  ss.innerHTML='';se.innerHTML='';
-  ty.forEach(y=>{const l=yLabel(y);ss.innerHTML+=`<option value="${y}">${l}</option>`;se.innerHTML+=`<option value="${y}">${l}</option>`;});
-  se.value=cYear;ss.value=ty.includes(cYear-1)?cYear-1:ty[0];
+  // No-op — season range replaced by trend window (years back from current season)
 }
 
 async function renderHistorical(){
-  if(!cTeam)return;
-  const s=parseInt(document.getElementById('hist-start').value);
-  const e=parseInt(document.getElementById('hist-end').value);
-  if(s>=e){
-    document.getElementById('historical-loading').style.display='none';
-    document.getElementById('historical-empty').style.display='flex';
-    document.getElementById('historical-empty').textContent='Start year must be before end year.';
-    document.getElementById('historical-content').style.display='none';return;
-  }
+  if(!cTeam||!cYear)return;
   document.getElementById('historical-loading').style.display='flex';
   document.getElementById('historical-empty').style.display='none';
   document.getElementById('historical-content').style.display='none';
 
-  const yn=[];for(let y=s;y<=e;y++){if(INDEX[String(y)]&&INDEX[String(y)].includes(cTeam))yn.push(y);}
+  // Build year list: current year back cTrendWindow years
+  const allYears=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(cTeam)).sort((a,b)=>a-b);
+  const maxBack=cTrendWindow;
+  // Take current year + up to maxBack prior years
+  const yn=allYears.filter(y=>y<=cYear).slice(-( maxBack+1));
+
   if(yn.length<2){
     document.getElementById('historical-loading').style.display='none';
     document.getElementById('historical-empty').style.display='flex';
-    document.getElementById('historical-empty').textContent='Not enough seasons in range.';return;
+    document.getElementById('historical-empty').textContent='Not enough seasons available.';return;
   }
   await Promise.all(yn.map(y=>loadYear(y)));
   const td=yn.map(y=>YCACHE[y].find(d=>d.team_name===cTeam)).filter(Boolean);
@@ -1628,6 +1614,18 @@ async function renderHistorical(){
   document.getElementById('historical-content').style.display='block';
   updatePageDesc();
 
+  // Caveat if team has fewer years than requested
+  const caveatEl=document.getElementById('hist-caveat');
+  const firstYear=yn[0];
+  const requestedStart=allYears.filter(y=>y<=cYear).slice(-(maxBack+1))[0];
+  if(yn.length<=maxBack){
+    caveatEl.style.display='block';
+    caveatEl.textContent=`* ${cTeam} data begins in ${yLabel(firstYear)}. Showing all available seasons.`;
+  } else {
+    caveatEl.style.display='none';
+  }
+
+  // Build stats list
   let stats;
   if(cHistCat==='All'){
     const shotFlat=SHOT_CATS.flatMap(c=>[
@@ -1649,27 +1647,50 @@ async function renderHistorical(){
   }
 
   const years=td.map(d=>d.year);
+  const isD1Conf=cHistComp==='d1conf';
+  const confName=cRow?cRow.conference:'Conf';
+
+  // Build header
   let thead=`<thead><tr><th class="stat-col">Stat</th>`;
-  years.forEach(y=>{thead+=`<th>${yLabel(y)}</th>`;});
-  thead+=`<th>Trend</th></tr></thead>`;
+  years.forEach(y=>{
+    if(isD1Conf){
+      thead+=`<th colspan="2" style="text-align:center;border-left:1px solid var(--border2)">${yLabel(y)}</th>`;
+    } else {
+      thead+=`<th>${yLabel(y)}</th>`;
+    }
+  });
+  thead+=`<th>Trend</th></tr>`;
+  if(isD1Conf){
+    thead+=`<tr><th class="stat-col"></th>`;
+    years.forEach(()=>{
+      thead+=`<th style="font-size:9px;color:var(--text4);border-left:1px solid var(--border2)">All D1</th>`;
+      thead+=`<th style="font-size:9px;color:var(--text4)">${confName}</th>`;
+    });
+    thead+=`<th></th></tr>`;
+  }
+  thead+=`</thead>`;
 
   let tbody='<tbody>';
   stats.forEach(stat=>{
     const vals=td.map(d=>{
       const raw=parseFloat(d[stat.key]);
-      let pct,rank;
-      if(cHistComp==='conf'){
-        rank=d[stat.key+'_conf_rank'];
-        // Use D1 pct for trend arrow, store conf_pct separately for caveat
-        const d1p=parseFloat(d[stat.key+'_pct']);pct=isNaN(d1p)?null:d1p;
-        const cp=parseFloat(d[stat.key+'_conf_pct']);
-        return{raw,pct,rank,confPct:isNaN(cp)?null:cp};
+      let pct,rank,confPct,confRank;
+      if(cHistComp==='sub'){
+        pct=parseFloat(d[stat.key+'_sub_pct']);if(isNaN(pct))pct=null;
+        rank=d[stat.key+'_sub_rank'];
+      } else {
+        // d1 or d1conf — both use D1 pct for trend
+        pct=parseFloat(d[stat.key+'_pct']);if(isNaN(pct))pct=null;
+        rank=d[stat.key+'_rank'];
       }
-      else if(cHistComp==='sub'){pct=parseFloat(d[stat.key+'_sub_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_sub_rank'];}
-      else{pct=parseFloat(d[stat.key+'_pct']);if(isNaN(pct))pct=null;rank=d[stat.key+'_rank'];}
-      return{raw,pct,rank,confPct:null};
+      if(isD1Conf){
+        const cp=parseFloat(d[stat.key+'_conf_pct']);confPct=isNaN(cp)?null:cp;
+        confRank=d[stat.key+'_conf_rank'];
+      }
+      return{raw,pct,rank,confPct:confPct||null,confRank:confRank||null};
     });
-    // Trend: use last cTrendWindow years only
+
+    // Trend using last cTrendWindow years
     const trendVals=vals.slice(-Math.min(cTrendWindow+1,vals.length));
     const tFirst=trendVals[0],tLast=trendVals[trendVals.length-1];
     let arrow='';
@@ -1696,37 +1717,50 @@ async function renderHistorical(){
           else if(diff<=-0.07)arrow=`<span class="hist-arrow arrow-down">↓ Declining</span>`;
           else arrow=`<span class="hist-arrow arrow-flat">→ Stable</span>`;
         }
-        // Conference caveat — only on conf view, when conf trajectory diverges from D1 trend
-        if(cHistComp==='conf'&&arrow){
+        // Conference caveat on d1conf view
+        if(isD1Conf&&arrow){
           const fcp=tFirst?.confPct,lcp=tLast?.confPct;
           if(fcp!==null&&fcp!==undefined&&lcp!==null&&lcp!==undefined){
             const confDiff=lcp-fcp;
-            const confName=cRow?cRow.conference:'Conf';
             const THRESH=0.10;
             const d1Up=diff>0.07,d1Down=diff<-0.07,d1Flat=!d1Up&&!d1Down;
             const confUp=confDiff>THRESH,confDown=confDiff<-THRESH,confFlat=!confUp&&!confDown;
-            // Only add caveat when there's meaningful divergence
             if(d1Up&&confDown)arrow+=` <span style="font-size:10px;color:var(--orange);font-style:italic">(↓ vs. ${confName})</span>`;
             else if(d1Up&&confFlat)arrow+=` <span style="font-size:10px;color:var(--text3);font-style:italic">(→ vs. ${confName})</span>`;
             else if(d1Down&&confUp)arrow+=` <span style="font-size:10px;color:var(--green);font-style:italic">(↑ vs. ${confName})</span>`;
             else if(d1Down&&confFlat)arrow+=` <span style="font-size:10px;color:var(--text3);font-style:italic">(→ vs. ${confName})</span>`;
             else if(d1Flat&&confUp)arrow+=` <span style="font-size:10px;color:var(--green);font-style:italic">(↑ vs. ${confName})</span>`;
             else if(d1Flat&&confDown)arrow+=` <span style="font-size:10px;color:var(--orange);font-style:italic">(↓ vs. ${confName})</span>`;
-            // Same direction — no caveat needed
           }
         }
       }
     }
+
     tbody+=`<tr><td class="stat-col" style="padding:10px 14px;text-align:left">${stat.label}${tip(stat.key)}</td>`;
     vals.forEach(v=>{
       const fv=!isNaN(v.raw)?stat.fmt(v.raw):'—';
       const cls=pctCls(v.pct,stat.isTempo,stat.isFreq||false);
-      const rd=cHistComp==='conf'?`Conf #${v.rank||'—'}`:cHistComp==='sub'?`Sub #${v.rank||'—'}`:`#${v.rank||'—'}`;
-      tbody+=`<td><div class="hist-cell">
-        <span class="hist-val">${fv}</span>
-        ${v.pct!==null?`<span class="hist-pct ${cls.color}">${Math.round(v.pct*100)}%</span>`:''}
-        <span class="hist-rank">${rd}</span>
-      </div></td>`;
+      const rd=cHistComp==='sub'?`Sub #${v.rank||'—'}`:`#${v.rank||'—'}`;
+      if(isD1Conf){
+        // D1 column
+        tbody+=`<td style="border-left:1px solid var(--border2)"><div class="hist-cell">
+          <span class="hist-val">${fv}</span>
+          ${v.pct!==null?`<span class="hist-pct ${cls.color}">${Math.round(v.pct*100)}%</span>`:''}
+          <span class="hist-rank">${rd}</span>
+        </div></td>`;
+        // Conf column
+        const confCls=pctCls(v.confPct,stat.isTempo,stat.isFreq||false);
+        tbody+=`<td><div class="hist-cell">
+          ${v.confPct!==null?`<span class="hist-pct ${confCls.color}">${Math.round(v.confPct*100)}%</span>`:''}
+          <span class="hist-rank">Conf #${v.confRank||'—'}</span>
+        </div></td>`;
+      } else {
+        tbody+=`<td><div class="hist-cell">
+          <span class="hist-val">${fv}</span>
+          ${v.pct!==null?`<span class="hist-pct ${cls.color}">${Math.round(v.pct*100)}%</span>`:''}
+          <span class="hist-rank">${rd}</span>
+        </div></td>`;
+      }
     });
     tbody+=`<td>${arrow}</td></tr>`;
   });
@@ -1735,6 +1769,7 @@ async function renderHistorical(){
   document.getElementById('hist-table-container').innerHTML=
     `<div class="hist-table-wrap"><table class="hist-table">${thead}${tbody}</table></div>`;
 }
+
 
 // ── HEAD TO HEAD ──────────────────────────────────────────────────────────────
 async function renderH2H(){
