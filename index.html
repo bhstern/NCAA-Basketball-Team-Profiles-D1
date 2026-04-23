@@ -1517,25 +1517,25 @@ function renderConfStats(){
       lastCat=stat.cat;
     }
     const myRank=cRow[stat.key+'_conf_rank'];
-    const myD1Pct=parseFloat(cRow[stat.key+'_pct']);
-    const myD1Cls=pctCls(isNaN(myD1Pct)?null:myD1Pct,stat.isTempo,false);
+    const myConfPct=parseFloat(cRow[stat.key+'_conf_pct']);
+    const myConfCls=pctCls(isNaN(myConfPct)?null:myConfPct,stat.isTempo,false);
 
     tbody+=`<tr class="my-row"><td class="stat-col">${stat.label}${tip(stat.key)}</td>
       <td><div class="conf-cell">
         <span class="conf-val" style="color:var(--accent)">${stat.fmt(mv)}</span>
-        <span class="conf-pct ${myD1Cls.color}">${!isNaN(myD1Pct)?Math.round(myD1Pct*100)+'%':''}</span>
+        <span class="conf-pct ${myConfCls.color}">${!isNaN(myConfPct)?Math.round(myConfPct*100)+'%':''}</span>
         <span class="conf-rank">Conf #${myRank||'—'}</span>
       </div></td>`;
 
     compareTeams.forEach(t=>{
       const v=parseFloat(t[stat.key]);
       const r=t[stat.key+'_conf_rank'];
-      const vD1Pct=parseFloat(t[stat.key+'_pct']);
-      const vCls=pctCls(isNaN(vD1Pct)?null:vD1Pct,stat.isTempo,false);
+      const vConfPct=parseFloat(t[stat.key+'_conf_pct']);
+      const vCls=pctCls(isNaN(vConfPct)?null:vConfPct,stat.isTempo,false);
       const col=cCustomMode?'var(--yellow)':'var(--text2)';
       tbody+=`<td><div class="conf-cell">
         <span class="conf-val" style="color:${col}">${!isNaN(v)?stat.fmt(v):'—'}</span>
-        <span class="conf-pct ${vCls.color}">${!isNaN(vD1Pct)?Math.round(vD1Pct*100)+'%':''}</span>
+        <span class="conf-pct ${vCls.color}">${!isNaN(vConfPct)?Math.round(vConfPct*100)+'%':''}</span>
         <span class="conf-rank">Conf #${r||'—'}</span>
       </div></td>`;
     });
