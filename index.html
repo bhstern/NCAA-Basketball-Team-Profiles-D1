@@ -1339,13 +1339,10 @@ function shotMetricCell(row,key,isFreq,view){
 function renderShotProfile(row,view){
   let html=`<div class="shot-grid">
     <div class="shot-header-cell cat-h">Shot Type</div>
-    <div class="shot-header-cell" style="grid-column:span 2">Offense</div>
-    <div class="shot-header-cell" style="grid-column:span 2">Defense</div>
-    <div class="shot-subheader-cell cat-sh"></div>
-    <div class="shot-subheader-cell">Rate (Freq)</div>
-    <div class="shot-subheader-cell">FG%</div>
-    <div class="shot-subheader-cell">Rate Allowed</div>
-    <div class="shot-subheader-cell">FG% Allowed</div>`;
+    <div class="shot-header-cell">Rate (Freq)</div>
+    <div class="shot-header-cell">FG%</div>
+    <div class="shot-header-cell">Rate Allowed</div>
+    <div class="shot-header-cell">FG% Allowed</div>`;
   SHOT_CATS.forEach(c=>{
     const isExp=expandedShotRows.has(c.name);
     const arrowChar=isExp?'▼':'►';
@@ -1418,8 +1415,8 @@ function renderProfile(){
   try{
     const blurbText=window._shotBlurb||'';
     const contextLabel=cView==='conf'?(cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
-    const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText} <span class="shot-blurb-context">${contextLabel}</span></div></div>`:'';
-    sp.innerHTML=`<div class="stat-card-title">Shot Profile Summary</div>${blurbHtml}<div class="stat-card-title" style="margin-top:14px;margin-bottom:0;border-top:1px solid var(--border);padding-top:14px">Offense & Defense</div>${renderShotProfile(cRow,cView)}`;
+    const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText}</div></div>`:'';
+    sp.innerHTML=`<div class="stat-card-title" style="display:flex;align-items:center;justify-content:space-between">Shot Profile Summary<span class="shot-blurb-context">${contextLabel}</span></div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
   }catch(e){
     sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div><div style="padding:20px;color:var(--text4);font-size:12px">Shot profile error: ${e.message}</div>`;
     console.error('Shot profile error:',e);
