@@ -1169,9 +1169,8 @@ function recalcBlurb(row,view){
     const defClause=defOpponent?defDesc:'they '+defDesc;
     blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
   }
-  document.getElementById('shot-profile-blurb').textContent=blurb;
-  document.getElementById('shot-profile-label').style.display=blurb?'inline':'none';
-  document.getElementById('shot-profile-label').style.display=blurb?'inline':'none';
+  // Store blurb for use in renderProfile — element no longer in banner
+  window._shotBlurb=blurb;
 }
 
 function updateSubLabels(row){
@@ -1417,7 +1416,7 @@ function renderProfile(){
   // Shot profile full width
   const sp=document.createElement('div');sp.className='stat-card shot-profile-wrap';
   try{
-    const blurbText=document.getElementById('shot-profile-blurb').textContent;
+    const blurbText=window._shotBlurb||'';
     const contextLabel=cView==='conf'?(cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
     const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText}</div><div class="shot-blurb-context">${contextLabel}</div></div>`:'';
     sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
