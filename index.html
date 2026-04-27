@@ -1416,7 +1416,7 @@ function renderProfile(){
     const blurbText=window._shotBlurb||'';
     const contextLabel=cView==='conf'?(cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
     const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText}</div></div>`:'';
-    sp.innerHTML=`<div class="stat-card-title" style="display:flex;align-items:center;justify-content:space-between">Shot Profile Summary<span class="shot-blurb-context">${contextLabel}</span></div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
+    sp.innerHTML=`<div class="stat-card-title" style="display:flex;align-items:center;gap:10px">Shot Profile Summary<span class="shot-blurb-context">${contextLabel}</span></div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
   }catch(e){
     sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div><div style="padding:20px;color:var(--text4);font-size:12px">Shot profile error: ${e.message}</div>`;
     console.error('Shot profile error:',e);
