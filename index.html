@@ -46,6 +46,9 @@ select:focus{border-color:var(--accent);}
 .strength-tag{font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.2);}
 .weakness-tag{font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(240,97,74,0.12);color:var(--red);border:1px solid rgba(240,97,74,0.2);}
 .shot-profile-blurb{font-size:13px;color:var(--text3);font-style:italic;border-left:2px solid var(--border2);padding-left:10px;}
+.shot-blurb-wrap{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:4px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.shot-blurb-text{font-size:13px;color:var(--text2);font-style:italic;line-height:1.6;flex:1;}
+.shot-blurb-context{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2);border-radius:3px;padding:3px 7px;white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px;}
 .d1-label{font-size:9px;color:var(--text4);font-style:italic;margin-left:4px;}
 .strength-tag-2{font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(61,214,140,0.07);color:#7dd88a;border:1px solid rgba(125,216,138,0.2);}
 .strength-tag-3{font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(61,214,140,0.04);color:#a8e6c0;border:1px solid rgba(168,230,192,0.2);}
@@ -308,7 +311,7 @@ select:focus{border-color:var(--accent);}
   <div class="banner-summary" id="banner-summary" style="display:none">
     <div id="summary-strengths" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
     <div id="summary-weaknesses" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
-    <div style="width:100%;margin-top:2px;display:flex;align-items:center;gap:8px"><span id="shot-profile-label" class="summary-label" style="display:none;flex-shrink:0">Shot Profile</span><div class="shot-profile-blurb" id="shot-profile-blurb"></div></div>
+
   </div>
 </div>
 
@@ -995,21 +998,27 @@ function updateBanner(row){
     }).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
 
+  recalcBlurb(row,'d1');
+}
+
+function recalcBlurb(row,view){
   // ── Shot profile sentence ────────────────────────────────────────────────
-  const offThreeR=parseFloat(row.off_threes_rate_total_pct);
-  const offRimR=parseFloat(row.off_rim_rate_total_pct);
-  const offMidR=parseFloat(row.off_long_twos_rate_total_pct);
+    // Use view-specific percentiles for blurb
+  const pctSuffix=view==='conf'?'_conf_pct':view==='sub'?'_sub_pct':'_pct';
+  const offThreeR=parseFloat(row['off_threes_rate_total'+pctSuffix]);
+  const offRimR=parseFloat(row['off_rim_rate_total'+pctSuffix]);
+  const offMidR=parseFloat(row['off_long_twos_rate_total'+pctSuffix]);
   const offRimRaw=parseFloat(row.off_rim_rate_total);
   const offThreeRaw=parseFloat(row.off_threes_rate_total);
   const offMidRaw=parseFloat(row.off_long_twos_rate_total);
-  const fg3=parseFloat(row.off_threes_fg_pct);
-  const fgRim=parseFloat(row.off_rim_fg_pct);
-  const defThreeR=parseFloat(row.def_threes_rate_total_pct);
-  const defRimR=parseFloat(row.def_rim_rate_total_pct);
-  const defMidR=parseFloat(row.def_long_twos_rate_total_pct);
-  const dfg3=parseFloat(row.def_threes_fg_pct);
-  const dfgRim=parseFloat(row.def_rim_fg_pct);
-  const dfgMid=parseFloat(row.def_long_twos_fg_pct);
+  const fg3=parseFloat(row['off_threes_fg'+pctSuffix]);
+  const fgRim=parseFloat(row['off_rim_fg'+pctSuffix]);
+  const defThreeR=parseFloat(row['def_threes_rate_total'+pctSuffix]);
+  const defRimR=parseFloat(row['def_rim_rate_total'+pctSuffix]);
+  const defMidR=parseFloat(row['def_long_twos_rate_total'+pctSuffix]);
+  const dfg3=parseFloat(row['def_threes_fg'+pctSuffix]);
+  const dfgRim=parseFloat(row['def_rim_fg'+pctSuffix]);
+  const dfgMid=parseFloat(row['def_long_twos_fg'+pctSuffix]);
   const nm=row.team_name;
   let blurb='';
 
@@ -1162,6 +1171,7 @@ function updateBanner(row){
   }
   document.getElementById('shot-profile-blurb').textContent=blurb;
   document.getElementById('shot-profile-label').style.display=blurb?'inline':'none';
+  document.getElementById('shot-profile-label').style.display=blurb?'inline':'none';
 }
 
 function updateSubLabels(row){
@@ -1188,7 +1198,7 @@ function renderTab(){
 function setView(v,btn){
   cView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   updateURL();
-  if(cRow)renderProfile();
+  if(cRow){recalcBlurb(cRow,v);renderProfile();}
 }
 
 function getPct(row,key,view){
@@ -1407,7 +1417,10 @@ function renderProfile(){
   // Shot profile full width
   const sp=document.createElement('div');sp.className='stat-card shot-profile-wrap';
   try{
-    sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div>${renderShotProfile(cRow,cView)}`;
+    const blurbText=document.getElementById('shot-profile-blurb').textContent;
+    const contextLabel=cView==='conf'?(cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
+    const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText}</div><div class="shot-blurb-context">${contextLabel}</div></div>`:'';
+    sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
   }catch(e){
     sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div><div style="padding:20px;color:var(--text4);font-size:12px">Shot profile error: ${e.message}</div>`;
     console.error('Shot profile error:',e);
