@@ -1043,28 +1043,28 @@ function recalcBlurb(row,view){
     function offFGMod(shotName,fgPct){
       const t=fgTier(fgPct);
       if(shotName==='threes'){
-        if(t==='elite')return', converting at an elite rate from deep';
-        if(t==='abvavg')return', shooting it with above average efficiency';
-        if(t==='slightabv')return', converting at an above average clip';
-        if(t==='avg')return', though converting at only an inconsistent rate';
-        if(t==='blwavg')return', but struggling to convert from deep';
-        if(t==='poor')return', though converting at a poor rate from deep';
-        if(t==='terrible')return', converting at a very poor rate from deep';
+        if(t==='elite')return' and convert at an elite rate from deep';
+        if(t==='abvavg')return' and shoot it with above average efficiency';
+        if(t==='slightabv')return' and convert at an above average clip';
+        if(t==='avg')return', though they convert at only an inconsistent rate';
+        if(t==='blwavg')return', but struggle to convert from deep';
+        if(t==='poor')return', though they convert at a poor rate from deep';
+        if(t==='terrible')return', though they convert at a very poor rate from deep';
       } else if(shotName==='rim'){
-        if(t==='elite')return' and finishes at an elite rate at the rim';
-        if(t==='abvavg')return' and finishes with above average efficiency';
-        if(t==='slightabv')return' and converts at an above average clip at the rim';
-        if(t==='avg')return' but converts at only an inconsistent rate at the rim';
-        if(t==='blwavg')return' but struggles to finish at the rim';
-        if(t==='poor')return' but finishes at a poor rate at the rim';
-        if(t==='terrible')return' but rarely converts at the rim';
+        if(t==='elite')return' and finish at an elite rate';
+        if(t==='abvavg')return' and finish with above average efficiency';
+        if(t==='slightabv')return' and convert at an above average clip';
+        if(t==='avg')return' but convert at only an inconsistent rate';
+        if(t==='blwavg')return' but struggle to finish';
+        if(t==='poor')return' but finish at a poor rate';
+        if(t==='terrible')return' but rarely convert';
       } else {
-        if(t==='elite')return', shooting midrange at an elite rate';
-        if(t==='abvavg')return', shooting midrange with above average efficiency';
-        if(t==='avg')return', though converting at only an inconsistent rate';
-        if(t==='blwavg')return', but struggling on midrange attempts';
-        if(t==='poor')return', converting midrange at a poor rate';
-        if(t==='terrible')return', converting midrange at a very poor rate';
+        if(t==='elite')return' and shoot midrange at an elite rate';
+        if(t==='abvavg')return' and shoot midrange with above average efficiency';
+        if(t==='avg')return', though they convert at only an inconsistent rate';
+        if(t==='blwavg')return', but struggle on midrange attempts';
+        if(t==='poor')return', but convert midrange at a poor rate';
+        if(t==='terrible')return', but convert midrange at a very poor rate';
       }
       return'';
     }
@@ -1155,11 +1155,11 @@ function recalcBlurb(row,view){
     // Only fire if not already mentioned in offDesc
     const offDescLower=offDesc.toLowerCase();
     if(!offDescLower.includes('three')&&!offDescLower.includes('deep')){
-      if(fg3>=0.80)offDesc+='; additionally, converts three-point attempts at an elite rate when they do shoot from deep';
-      else if(fg3<=0.20)offDesc+='; however, they shoot three-pointers at a very poor rate';
+      if(fg3>=0.80)offDesc+='; they also convert three-point attempts at an elite rate when they do shoot from deep';
+      else if(fg3<=0.20)offDesc+='; however, they convert three-pointers at a very poor rate';
     }
     if(!offDescLower.includes('rim')&&!offDescLower.includes('paint')){
-      if(fgRim>=0.80)offDesc+='; they also finish at an elite rate when attacking the rim';
+      if(fgRim>=0.80)offDesc+='; they also finish at an elite rate at the rim';
       else if(fgRim<=0.20)offDesc+='; however, they struggle significantly to finish at the rim';
     }
 
@@ -1175,28 +1175,26 @@ function recalcBlurb(row,view){
     const defMostPct=defShots[defMost];
     const defLeastPct=defShots[defLeast];
 
-    // FG% tiers for defense — note: for defense, HIGH pct = opponents shooting poorly = GOOD
-    // So elite rim def = dfgRim >= 0.85 (holding opponents to very low FG% at rim)
-    // Poor rim def = dfgRim <= 0.15 (opponents finishing well)
+    // FG% tiers for defense — HIGH pct = opponents shooting poorly = GOOD
     function defFGPhrase(shotName,fgPct,context){
       // context: 'qualifier' (appended to main desc) or 'standalone'
       const t=fgTier(fgPct);
       if(shotName==='rim'){
-        if(t==='elite')return context==='standalone'?'hold opponents to an elite FG% at the rim':' and hold opponents to a very low FG% at the rim';
-        if(t==='abvavg')return context==='standalone'?'limit opponents to a low FG% at the rim':' and limit opponents to a below average FG% at the rim';
-        if(t==='slightabv')return context==='standalone'?'hold opponents to an above average FG% at the rim':' while holding opponents to an above average FG% inside';
+        if(t==='elite')return context==='standalone'?'they hold opponents to an elite FG% at the rim':' and hold opponents to a very low FG% at the rim';
+        if(t==='abvavg')return context==='standalone'?'they limit opponents to a below average FG% at the rim':' and limit opponents to a below average FG% at the rim';
+        if(t==='slightabv')return context==='standalone'?'they hold opponents to an above average FG% inside':' while holding opponents to an above average FG% inside';
         if(t==='avg')return'';
-        if(t==='blwavg')return context==='standalone'?'opponents have above average success finishing at the rim':', though opponents convert at an above average rate at the rim';
-        if(t==='poor')return context==='standalone'?'opponents have strong success finishing at the rim':', and opponents finish well at the rim';
-        if(t==='terrible')return context==='standalone'?'opponents are highly effective finishing at the rim':', and opponents finish at a very high rate at the rim';
+        if(t==='blwavg')return context==='standalone'?'opponents have above average success finishing at the rim':', though they convert at an above average rate';
+        if(t==='poor')return context==='standalone'?'opponents finish well at the rim':', and they finish well';
+        if(t==='terrible')return context==='standalone'?'opponents are highly effective at the rim':', and they finish at a very high rate';
       } else if(shotName==='threes'){
-        if(t==='elite')return context==='standalone'?'hold opponents to an elite FG% from three':' and hold opponents to a very low FG% from three';
-        if(t==='abvavg')return context==='standalone'?'limit opponents to a low three-point percentage':' and limit opponents to a low three-point percentage';
-        if(t==='slightabv')return context==='standalone'?'hold opponents to an above average three-point percentage':' while holding opponents to an above average percentage from three';
+        if(t==='elite')return context==='standalone'?'they hold opponents to an elite FG% from three':' and hold opponents to a very low FG% from three';
+        if(t==='abvavg')return context==='standalone'?'they limit opponents to a low three-point percentage':' and limit opponents to a low three-point percentage';
+        if(t==='slightabv')return context==='standalone'?'they hold opponents to an above average percentage from three':' while holding opponents to an above average percentage from three';
         if(t==='avg')return'';
-        if(t==='blwavg')return context==='standalone'?'opponents have above average success from three':', though opponents convert from three at an above average rate';
-        if(t==='poor')return context==='standalone'?'opponents shoot well from three-point range':', and opponents convert from deep at a high rate';
-        if(t==='terrible')return context==='standalone'?'opponents are highly effective from three-point range':', and opponents shoot a very high percentage from three';
+        if(t==='blwavg')return context==='standalone'?'opponents have above average success from three':', though they convert from three at an above average rate';
+        if(t==='poor')return context==='standalone'?'opponents shoot well from three-point range':', and they convert from deep at a high rate';
+        if(t==='terrible')return context==='standalone'?'opponents shoot at a very high percentage from three':', and they shoot at a very high percentage from three';
       }
       return'';
     }
@@ -1279,7 +1277,7 @@ function recalcBlurb(row,view){
       if(p)defAddons.push(p);
     }
     if(defAddons.length>0){
-      if(defDesc)defDesc+='; additionally, they '+defAddons.join(' and ');
+      if(defDesc)defDesc+='; additionally, '+defAddons.join(' and ');
       else defDesc=defAddons.join(' and ');
     }
 
@@ -1294,14 +1292,15 @@ function recalcBlurb(row,view){
     }
 
     // ── GRAMMAR: build final sentence ───────────────────────────────────────
-    const defStartsWithOpponent=defDesc.startsWith('opponents')||defDesc.startsWith('allow')||defDesc.startsWith('hold')||defDesc.startsWith('force')||defDesc.startsWith('funnel')||defDesc.startsWith('limit')||defDesc.startsWith('struggle')||defDesc.startsWith('play');
-    const defClause=defStartsWithOpponent?defDesc:'they '+defDesc;
+    // Determine if defDesc already starts with a subject/verb or needs "they"
+    const defNeedsThey=!defDesc.startsWith('opponents')&&!defDesc.startsWith('allow')&&!defDesc.startsWith('hold')&&!defDesc.startsWith('force')&&!defDesc.startsWith('funnel')&&!defDesc.startsWith('limit')&&!defDesc.startsWith('struggle')&&!defDesc.startsWith('play')&&!defDesc.startsWith('they');
+    const defClause=defNeedsThey?'they '+defDesc:defDesc;
 
     // Split into two sentences if both parts are long
     const offLen=offDesc.length;
     const defLen=defDesc.length;
     if(offLen>120||defLen>120){
-      blurb=`${nm} ${offDesc}. Defensively, ${defClause.charAt(0).toUpperCase()+defClause.slice(1)}.`;
+      blurb=`${nm} ${offDesc}. Defensively, ${defClause}.`;
     } else {
       blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
     }
@@ -1550,7 +1549,7 @@ function renderProfile(){
   const sp=document.createElement('div');sp.className='stat-card shot-profile-wrap';
   try{
     const blurbText=window._shotBlurb||'';
-    const contextLabel=cView==='conf'?(cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
+    const contextLabel=cView==='conf'?('vs. '+cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
     const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText}</div></div>`:'';
     sp.innerHTML=`<div class="stat-card-title" style="display:flex;align-items:center;justify-content:space-between">Shot Profile Summary<span class="shot-blurb-context">${contextLabel}</span></div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
   }catch(e){
