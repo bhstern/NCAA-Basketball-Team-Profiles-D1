@@ -1002,8 +1002,6 @@ function updateBanner(row){
 }
 
 function recalcBlurb(row,view){
-  // ── Shot profile sentence ────────────────────────────────────────────────
-    // Use view-specific percentiles for blurb
   const pctSuffix=view==='conf'?'_conf_pct':view==='sub'?'_sub_pct':'_pct';
   const offThreeR=parseFloat(row['off_threes_rate_total'+pctSuffix]);
   const offRimR=parseFloat(row['off_rim_rate_total'+pctSuffix]);
@@ -1019,24 +1017,87 @@ function recalcBlurb(row,view){
   const dfg3=parseFloat(row['def_threes_fg'+pctSuffix]);
   const dfgRim=parseFloat(row['def_rim_fg'+pctSuffix]);
   const dfgMid=parseFloat(row['def_long_twos_fg'+pctSuffix]);
+  // Dunk metrics (always D1 pct for specificity)
+  const offDunkR=parseFloat(row.off_dunks_rate_total_pct);
+  const offDunkFG=parseFloat(row.off_dunks_fg_pct);
+  // eFG% for fallbacks
+  const efgOff=parseFloat(row['efg_rate_off'+pctSuffix]);
+  const efgDef=parseFloat(row['efg_rate_def'+pctSuffix]);
   const nm=row.team_name;
   let blurb='';
 
   if(!isNaN(offThreeR)&&!isNaN(offRimR)&&!isNaN(offMidR)){
-    // ── OFFENSE ────────────────────────────────────────────────────────
-    // Find dominant (highest pct) and avoided (lowest pct)
+
+    // ── FG% HELPER ──────────────────────────────────────────────────────────
+    function fgTier(pct){
+      if(isNaN(pct))return'avg';
+      if(pct>=0.85)return'elite';
+      if(pct>=0.70)return'abvavg';
+      if(pct>=0.60)return'slightabv';
+      if(pct>=0.40)return'avg';
+      if(pct>=0.30)return'blwavg';
+      if(pct>=0.15)return'poor';
+      return'terrible';
+    }
+    // Off FG% modifier phrase for a dominant shot
+    function offFGMod(shotName,fgPct){
+      const t=fgTier(fgPct);
+      if(shotName==='threes'){
+        if(t==='elite')return', converting at an elite rate from deep';
+        if(t==='abvavg')return', shooting it with above average efficiency';
+        if(t==='slightabv')return', converting at an above average clip';
+        if(t==='avg')return', though converting at only an inconsistent rate';
+        if(t==='blwavg')return', but struggling to convert from deep';
+        if(t==='poor')return', though converting at a poor rate from deep';
+        if(t==='terrible')return', converting at a very poor rate from deep';
+      } else if(shotName==='rim'){
+        if(t==='elite')return' and finishes at an elite rate at the rim';
+        if(t==='abvavg')return' and finishes with above average efficiency';
+        if(t==='slightabv')return' and converts at an above average clip at the rim';
+        if(t==='avg')return' but converts at only an inconsistent rate at the rim';
+        if(t==='blwavg')return' but struggles to finish at the rim';
+        if(t==='poor')return' but finishes at a poor rate at the rim';
+        if(t==='terrible')return' but rarely converts at the rim';
+      } else {
+        if(t==='elite')return', shooting midrange at an elite rate';
+        if(t==='abvavg')return', shooting midrange with above average efficiency';
+        if(t==='avg')return', though converting at only an inconsistent rate';
+        if(t==='blwavg')return', but struggling on midrange attempts';
+        if(t==='poor')return', converting midrange at a poor rate';
+        if(t==='terrible')return', converting midrange at a very poor rate';
+      }
+      return'';
+    }
+
+    // ── OFFENSE ─────────────────────────────────────────────────────────────
     const offShots={threes:offThreeR,rim:offRimR,mid:offMidR};
     const domName=Object.keys(offShots).reduce((a,b)=>offShots[a]>offShots[b]?a:b);
     const avoName=Object.keys(offShots).reduce((a,b)=>offShots[a]<offShots[b]?a:b);
     const domPct=offShots[domName];
     const avoPct=offShots[avoName];
-    // Is dominant also the highest raw rate?
     const rawMax=Math.max(offRimRaw,offThreeRaw,offMidRaw);
     const domIsTopRaw=(domName==='rim'&&offRimRaw===rawMax)||(domName==='threes'&&offThreeRaw===rawMax)||(domName==='mid'&&offMidRaw===rawMax);
 
-    // Two shots both very high
+    // Rate language helpers
+    function rateWord(pct,isHigh){
+      if(isHigh){
+        if(pct>=0.85)return'very frequently';
+        if(pct>=0.75)return'frequently';
+        return'often';
+      } else {
+        if(pct<=0.15)return'rarely';
+        if(pct<=0.25)return'seldom';
+        return'tends to avoid';
+      }
+    }
+
+    // Avoided shot label
+    const avoLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
+    const avoLabelsDef={threes:'the three-point line',rim:'the rim',mid:'the midrange'};
+
     const highShots=Object.keys(offShots).filter(k=>offShots[k]>=0.75);
     let offDesc='';
+
     if(highShots.length>=2){
       if(highShots.includes('threes')&&highShots.includes('mid')&&!highShots.includes('rim'))
         offDesc='generates a high volume of both three-point and midrange attempts while rarely attacking the rim';
@@ -1046,130 +1107,205 @@ function recalcBlurb(row,view){
         offDesc='scores predominantly through interior and midrange attempts while rarely shooting from three';
       else
         offDesc='generates high volume across all shot types';
+      // Add FG% modifier for dominant shot in two-high case
+      offDesc+=offFGMod(domName,domName==='threes'?fg3:fgRim);
     } else if(domPct>=0.80&&avoPct<=0.30){
-      // Clear dominant + clear avoided
-      if(domName==='threes'&&avoName==='rim')
-        offDesc=domIsTopRaw?'lives beyond the arc and rarely attacks the rim':'shoots threes at a high rate while rarely attacking the rim';
-      else if(domName==='threes'&&avoName==='mid')
-        offDesc=domIsTopRaw?'lives beyond the arc while avoiding the midrange':'shoots threes at a high rate while avoiding the midrange';
-      else if(domName==='rim'&&avoName==='threes')
-        offDesc=domIsTopRaw?'heavily attacks the rim while rarely shooting from three':'attacks the rim at a high rate while rarely shooting from three';
-      else if(domName==='rim'&&avoName==='mid')
-        offDesc=domIsTopRaw?'heavily attacks the rim while avoiding the midrange':'attacks the rim at a high rate while avoiding the midrange';
-      else if(domName==='mid'&&avoName==='rim')
-        offDesc=domIsTopRaw?'relies heavily on midrange attempts while almost never attacking the rim':'shoots midrange at a much higher rate than most teams while almost never attacking the rim';
-      else if(domName==='mid'&&avoName==='threes')
-        offDesc=domIsTopRaw?'relies heavily on midrange and interior attempts while rarely shooting from three':'shoots midrange at a much higher rate than most teams while rarely shooting from three';
+      if(domName==='threes'&&avoName==='rim'){
+        offDesc=domIsTopRaw?'lives beyond the arc and rarely attacks the rim':'shoots threes very frequently while rarely attacking the rim';
+        offDesc+=offFGMod('threes',fg3);
+      } else if(domName==='threes'&&avoName==='mid'){
+        offDesc=domIsTopRaw?'lives beyond the arc while avoiding the midrange':'shoots threes very frequently while avoiding the midrange';
+        offDesc+=offFGMod('threes',fg3);
+      } else if(domName==='rim'&&avoName==='threes'){
+        offDesc=domIsTopRaw?'very frequently attacks the rim while rarely shooting from three':'attacks the rim at a high rate while rarely shooting from three';
+        offDesc+=offFGMod('rim',fgRim);
+      } else if(domName==='rim'&&avoName==='mid'){
+        offDesc=domIsTopRaw?'very frequently attacks the rim while avoiding the midrange':'attacks the rim at a high rate while avoiding the midrange';
+        offDesc+=offFGMod('rim',fgRim);
+      } else if(domName==='mid'&&avoName==='rim'){
+        offDesc=domIsTopRaw?'relies heavily on midrange attempts while almost never attacking the rim':'shoots midrange at a high rate while almost never attacking the rim';
+        offDesc+=offFGMod('mid',parseFloat(row['off_long_twos_fg'+pctSuffix]));
+      } else if(domName==='mid'&&avoName==='threes'){
+        offDesc=domIsTopRaw?'relies heavily on midrange and interior attempts while rarely shooting from three':'shoots midrange at a high rate while rarely shooting from three';
+        offDesc+=offFGMod('mid',parseFloat(row['off_long_twos_fg'+pctSuffix]));
+      }
     } else if(domPct>=0.75){
-      if(domName==='threes') offDesc=domIsTopRaw?'leans heavily on the three-point line':'shoots threes at a high rate';
-      else if(domName==='rim') offDesc=domIsTopRaw?'heavily attacks the rim':'attacks the rim at a high rate';
-      else offDesc=domIsTopRaw?'relies heavily on midrange attempts':'shoots midrange at a higher rate than most teams';
-      if(avoPct<=0.25){
-        const avoLabels={threes:'the three-point line',rim:'the rim',mid:'the midrange'};
-        offDesc+=' while avoiding '+avoLabels[avoName];
-      }
+      if(domName==='threes'){offDesc=domIsTopRaw?'frequently attacks the three-point line':'shoots threes at a high rate';offDesc+=offFGMod('threes',fg3);}
+      else if(domName==='rim'){offDesc=domIsTopRaw?'frequently attacks the rim':'attacks the rim at a high rate';offDesc+=offFGMod('rim',fgRim);}
+      else{offDesc=domIsTopRaw?'frequently looks to the midrange':'shoots midrange at a higher rate than most teams';offDesc+=offFGMod('mid',parseFloat(row['off_long_twos_fg'+pctSuffix]));}
+      if(avoPct<=0.25)offDesc+=' while '+rateWord(avoPct,false)+' '+avoLabels[avoName];
     } else if(domPct>=0.65){
-      if(domName==='threes') offDesc='favors the three-point line';
-      else if(domName==='rim') offDesc='favors attacking the rim';
-      else offDesc=domIsTopRaw?'favors the midrange':'relies on the midrange more than most teams';
-      if(avoPct<=0.25){
-        const avoLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
-        offDesc+=' while notably avoiding '+avoLabels[avoName];
-      }
+      if(domName==='threes'){offDesc='favors the three-point line';offDesc+=offFGMod('threes',fg3);}
+      else if(domName==='rim'){offDesc='favors attacking the rim';offDesc+=offFGMod('rim',fgRim);}
+      else{offDesc=domIsTopRaw?'favors the midrange':'leans on midrange more than most teams';offDesc+=offFGMod('mid',parseFloat(row['off_long_twos_fg'+pctSuffix]));}
+      if(avoPct<=0.25)offDesc+=' while '+rateWord(avoPct,false)+' taking '+avoLabels[avoName];
     } else if(avoPct<=0.25){
-      const avoLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
       offDesc='takes a balanced approach while notably avoiding '+avoLabels[avoName];
     } else {
-      offDesc='takes a balanced offensive approach';
+      // Fallback — gate on eFG% off
+      const et=fgTier(efgOff);
+      if(et==='elite')offDesc='takes a balanced and efficient offensive approach';
+      else if(et==='abvavg'||et==='slightabv')offDesc='takes a balanced offensive approach with above average efficiency';
+      else if(et==='avg')offDesc='takes a balanced offensive approach with average efficiency';
+      else if(et==='blwavg')offDesc='takes a balanced but below average offensive approach';
+      else offDesc='takes a balanced but inefficient offensive approach';
     }
 
-    // FG% modifier — dominant shot and standalone rim finishing
-    if(domPct>=0.65){
-      if(domName==='threes'&&fg3>=0.85) offDesc+=', converting at an elite rate from deep';
-      else if(domName==='rim'&&fgRim<=0.20) offDesc+=' though struggling to finish at the rim';
-      else if(domName==='rim'&&fgRim>=0.85) offDesc+=' and finishes at an elite rate';
+    // ── STANDALONE OFF FG% CALLOUTS (regardless of rate) ───────────────────
+    // Only fire if not already mentioned in offDesc
+    const offDescLower=offDesc.toLowerCase();
+    if(!offDescLower.includes('three')&&!offDescLower.includes('deep')){
+      if(fg3>=0.80)offDesc+='; additionally, converts three-point attempts at an elite rate when they do shoot from deep';
+      else if(fg3<=0.20)offDesc+='; however, they shoot three-pointers at a very poor rate';
     }
-    // Standalone rim FG% callout when rim is NOT dominant but team finishes at elite rate
-    if(domName!=='rim'&&!isNaN(fgRim)&&fgRim>=0.85&&!isNaN(offRimR)&&offRimR>=0.20){
-      offDesc+=' and finishes at an elite rate when attacking the rim';
+    if(!offDescLower.includes('rim')&&!offDescLower.includes('paint')){
+      if(fgRim>=0.80)offDesc+='; they also finish at an elite rate when attacking the rim';
+      else if(fgRim<=0.20)offDesc+='; however, they struggle significantly to finish at the rim';
     }
 
-    // ── DEFENSE ────────────────────────────────────────────────────────
+    // ── DUNK CALLOUT ────────────────────────────────────────────────────────
+    if(!isNaN(offDunkR)&&!isNaN(offDunkFG)&&offDunkR>=0.85&&offDunkFG>=0.85){
+      offDesc+=', and generates dunks at an elite rate';
+    }
+
+    // ── DEFENSE ─────────────────────────────────────────────────────────────
     const defShots={threes:defThreeR,rim:defRimR,mid:defMidR};
     const defMost=Object.keys(defShots).reduce((a,b)=>defShots[a]>defShots[b]?a:b);
     const defLeast=Object.keys(defShots).reduce((a,b)=>defShots[a]<defShots[b]?a:b);
     const defMostPct=defShots[defMost];
     const defLeastPct=defShots[defLeast];
 
-    // FG% suppression — notable even when volume is average
-    const eliteRimDef=!isNaN(dfgRim)&&dfgRim>=0.75;
-    const poorRimDef=!isNaN(dfgRim)&&dfgRim<=0.20;
-    const elite3Def=!isNaN(dfg3)&&dfg3>=0.75;
-    const poor3Def=!isNaN(dfg3)&&dfg3<=0.20;
+    // FG% tiers for defense — note: for defense, HIGH pct = opponents shooting poorly = GOOD
+    // So elite rim def = dfgRim >= 0.85 (holding opponents to very low FG% at rim)
+    // Poor rim def = dfgRim <= 0.15 (opponents finishing well)
+    function defFGPhrase(shotName,fgPct,context){
+      // context: 'qualifier' (appended to main desc) or 'standalone'
+      const t=fgTier(fgPct);
+      if(shotName==='rim'){
+        if(t==='elite')return context==='standalone'?'hold opponents to an elite FG% at the rim':' and hold opponents to a very low FG% at the rim';
+        if(t==='abvavg')return context==='standalone'?'limit opponents to a low FG% at the rim':' and limit opponents to a below average FG% at the rim';
+        if(t==='slightabv')return context==='standalone'?'hold opponents to an above average FG% at the rim':' while holding opponents to an above average FG% inside';
+        if(t==='avg')return'';
+        if(t==='blwavg')return context==='standalone'?'opponents have above average success finishing at the rim':', though opponents convert at an above average rate at the rim';
+        if(t==='poor')return context==='standalone'?'opponents have strong success finishing at the rim':', and opponents finish well at the rim';
+        if(t==='terrible')return context==='standalone'?'opponents are highly effective finishing at the rim':', and opponents finish at a very high rate at the rim';
+      } else if(shotName==='threes'){
+        if(t==='elite')return context==='standalone'?'hold opponents to an elite FG% from three':' and hold opponents to a very low FG% from three';
+        if(t==='abvavg')return context==='standalone'?'limit opponents to a low three-point percentage':' and limit opponents to a low three-point percentage';
+        if(t==='slightabv')return context==='standalone'?'hold opponents to an above average three-point percentage':' while holding opponents to an above average percentage from three';
+        if(t==='avg')return'';
+        if(t==='blwavg')return context==='standalone'?'opponents have above average success from three':', though opponents convert from three at an above average rate';
+        if(t==='poor')return context==='standalone'?'opponents shoot well from three-point range':', and opponents convert from deep at a high rate';
+        if(t==='terrible')return context==='standalone'?'opponents are highly effective from three-point range':', and opponents shoot a very high percentage from three';
+      }
+      return'';
+    }
+
+    // Use funnel only if rim FG% allowed is >= 0.60 (holding them reasonably)
+    const canFunnel=!isNaN(dfgRim)&&dfgRim>=0.60;
 
     let defDesc='';
     const defBothThresh=defLeast==='threes'?0.28:defLeast==='mid'?0.22:0.20;
+
     if(defMostPct>=0.80&&defLeastPct<=defBothThresh){
       if(defMost==='threes'&&defLeast==='rim'){
         defDesc='force opponents away from the rim and into perimeter attempts';
-        if(elite3Def) defDesc+=', holding them to a low FG% from three';
-        else if(poor3Def) defDesc+=', though opponents convert from deep at a high rate';
+        const q=defFGPhrase('threes',dfg3,'qualifier');
+        if(q)defDesc+=q;
       } else if(defMost==='rim'&&defLeast==='threes'){
-        defDesc='funnel opponents toward the paint while limiting three-point attempts';
-        if(poorRimDef) defDesc+=', though opponents finish well at the rim';
-        else if(eliteRimDef) defDesc+=', holding opponents to a low FG% inside';
+        defDesc=canFunnel?'funnel opponents toward the paint while limiting three-point attempts':'allow opponents to attack the paint while limiting three-point attempts';
+        const q=defFGPhrase('rim',dfgRim,'qualifier');
+        if(q)defDesc+=q;
       } else if(defMost==='mid'&&defLeast==='rim'){
         defDesc='force opponents into midrange attempts while limiting rim attacks';
-        if(eliteRimDef) defDesc+=', and hold opponents to a low FG% at the rim';
+        const q=defFGPhrase('rim',dfgRim,'qualifier');
+        if(q)defDesc+=q;
       } else if(defMost==='threes'&&defLeast==='mid'){
         defDesc='force opponents away from midrange and into three-point attempts';
-        if(poor3Def) defDesc+=', though opponents convert from deep at a high rate';
-        else if(elite3Def) defDesc+=', holding them to a low FG% from three';
+        const q=defFGPhrase('threes',dfg3,'qualifier');
+        if(q)defDesc+=q;
       } else if(defMost==='rim'&&defLeast==='mid'){
-        defDesc='funnel opponents to the paint while limiting midrange attempts';
-        if(poorRimDef) defDesc+=', though opponents finish well at the rim';
-        else if(eliteRimDef) defDesc+=', contesting rim attempts effectively';
+        defDesc=canFunnel?'funnel opponents to the paint while limiting midrange attempts':'opponents attack the paint while rarely taking midrange shots';
+        const q=defFGPhrase('rim',dfgRim,'qualifier');
+        if(q)defDesc+=q;
       } else if(defMost==='mid'&&defLeast==='threes'){
-        defDesc='force opponents into midrange attempts while limiting three-point looks';
+        const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
+        if(midIsHighest){
+          const mfg=fgTier(dfgMid);
+          if(mfg==='elite'||mfg==='abvavg')defDesc='force opponents into midrange attempts and hold them to a low FG% there';
+          else if(mfg==='slightabv'||mfg==='avg')defDesc='force opponents into midrange attempts while limiting three-point looks';
+          else defDesc='allow opponents to attack from midrange while limiting three-point looks';
+        }
       }
     } else if((defMost==='rim'&&defMostPct>=0.78)||(defMost==='threes'&&defMostPct>=0.78)||(defMost==='mid'&&defMostPct>=0.75)){
       if(defMost==='rim'){
         defDesc='opponents attack the paint frequently';
-        if(eliteRimDef) defDesc+=', though they hold opponents to a low FG% at the rim';
-        else if(poorRimDef) defDesc+=' and finish at a high rate';
+        const q=defFGPhrase('rim',dfgRim,'qualifier');
+        if(q)defDesc+=q;
+        else if(!isNaN(dfgRim)&&dfgRim>=0.70)defDesc='opponents attack the paint frequently, though they contest the rim effectively';
       } else if(defMost==='threes'){
         defDesc='opponents generate a high volume of three-point attempts';
-        if(elite3Def) defDesc+=', though they hold opponents to a low shooting percentage';
-        else if(poor3Def) defDesc+=' and convert at a high rate';
+        const q=defFGPhrase('threes',dfg3,'qualifier');
+        if(q)defDesc+=q;
       } else {
-        // High midrange — only meaningful if mid is highest def rate AND fg% is decent
         const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
         if(midIsHighest){
-          if(!isNaN(dfgMid)&&dfgMid>=0.75) defDesc='force opponents into midrange attempts and hold them to a low FG% there';
-          else if(!isNaN(dfgMid)&&dfgMid>=0.50) defDesc='force opponents into midrange attempts';
+          const mfg=fgTier(dfgMid);
+          if(mfg==='elite'||mfg==='abvavg')defDesc='force opponents into midrange attempts and hold them to a low FG% there';
+          else if(mfg==='slightabv'||mfg==='avg')defDesc='force opponents into midrange attempts';
         }
       }
     } else if(defLeastPct<=0.25){
       if(defLeast==='rim'){
         defDesc='limit opponent rim attempts';
-        if(eliteRimDef) defDesc+=', and contest the rim effectively when opponents do attack';
+        const q=defFGPhrase('rim',dfgRim,'qualifier');
+        if(q)defDesc+=q;
       } else if(defLeast==='threes'){
-        if(elite3Def) defDesc='hold opponents to both a low volume and low FG% from three';
-        else defDesc='hold opponents to a low volume of three-point attempts';
-      } else { defDesc=''; }
+        defDesc='hold opponents to a low volume of three-point attempts';
+        const q=defFGPhrase('threes',dfg3,'qualifier');
+        if(q)defDesc+=q;
+      }
     }
+
+    // ── STANDALONE DEF FG% CALLOUTS (regardless of rate) ───────────────────
+    const defDescLower=defDesc.toLowerCase();
+    let defAddons=[];
+    if(!defDescLower.includes('three')&&!defDescLower.includes('deep')&&!defDescLower.includes('perimeter')){
+      const p=defFGPhrase('threes',dfg3,'standalone');
+      if(p)defAddons.push(p);
+    }
+    if(!defDescLower.includes('rim')&&!defDescLower.includes('paint')&&!defDescLower.includes('inside')){
+      const p=defFGPhrase('rim',dfgRim,'standalone');
+      if(p)defAddons.push(p);
+    }
+    if(defAddons.length>0){
+      if(defDesc)defDesc+='; additionally, they '+defAddons.join(' and ');
+      else defDesc=defAddons.join(' and ');
+    }
+
+    // ── DEFENSE FALLBACK — gate on eFG% def ─────────────────────────────────
     if(!defDesc){
-      if(eliteRimDef) defDesc='hold opponents well below average FG% at the rim';
-      else if(poorRimDef) defDesc='struggle to contest shots at the rim';
-      else if(poor3Def) defDesc='allow opponents to shoot a high percentage from three';
-      else if(elite3Def) defDesc='hold opponents to a low FG% from three-point range';
-      else defDesc='play a sound defensive scheme without a clear tendency';
+      const et=fgTier(efgDef);
+      if(et==='elite')defDesc='play a sound defensive scheme without a clear tendency';
+      else if(et==='abvavg'||et==='slightabv')defDesc='play an above average defensive scheme without a clear tendency';
+      else if(et==='avg')defDesc='play defense without a clear tendency, allowing average efficiency overall';
+      else if(et==='blwavg')defDesc='allow above average efficiency without a clear tendency';
+      else defDesc='struggle defensively without a clear identifiable tendency';
     }
-    const defOpponent=defDesc.startsWith('opponents')||defDesc.startsWith('allow')||defDesc.startsWith('hold')||defDesc.startsWith('force')||defDesc.startsWith('funnel')||defDesc.startsWith('limit')||defDesc.startsWith('struggle');
-    const defClause=defOpponent?defDesc:'they '+defDesc;
-    blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
+
+    // ── GRAMMAR: build final sentence ───────────────────────────────────────
+    const defStartsWithOpponent=defDesc.startsWith('opponents')||defDesc.startsWith('allow')||defDesc.startsWith('hold')||defDesc.startsWith('force')||defDesc.startsWith('funnel')||defDesc.startsWith('limit')||defDesc.startsWith('struggle')||defDesc.startsWith('play');
+    const defClause=defStartsWithOpponent?defDesc:'they '+defDesc;
+
+    // Split into two sentences if both parts are long
+    const offLen=offDesc.length;
+    const defLen=defDesc.length;
+    if(offLen>120||defLen>120){
+      blurb=`${nm} ${offDesc}. Defensively, ${defClause.charAt(0).toUpperCase()+defClause.slice(1)}.`;
+    } else {
+      blurb=`${nm} ${offDesc}; defensively, ${defClause}.`;
+    }
   }
-  // Store blurb for use in renderProfile — element no longer in banner
   window._shotBlurb=blurb;
 }
 
@@ -1416,7 +1552,7 @@ function renderProfile(){
     const blurbText=window._shotBlurb||'';
     const contextLabel=cView==='conf'?(cRow.conference):cView==='sub'?(isPower(cRow)?'vs. Power Conf':'vs. Mid Major'):'vs. All D1';
     const blurbHtml=blurbText?`<div class="shot-blurb-wrap"><div class="shot-blurb-text">${blurbText}</div></div>`:'';
-    sp.innerHTML=`<div class="stat-card-title" style="display:flex;align-items:center;gap:10px">Shot Profile Summary<span class="shot-blurb-context">${contextLabel}</span></div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
+    sp.innerHTML=`<div class="stat-card-title" style="display:flex;align-items:center;justify-content:space-between">Shot Profile Summary<span class="shot-blurb-context">${contextLabel}</span></div>${blurbHtml}${renderShotProfile(cRow,cView)}`;
   }catch(e){
     sp.innerHTML=`<div class="stat-card-title">Shot Profile — Offense & Defense</div><div style="padding:20px;color:var(--text4);font-size:12px">Shot profile error: ${e.message}</div>`;
     console.error('Shot profile error:',e);
