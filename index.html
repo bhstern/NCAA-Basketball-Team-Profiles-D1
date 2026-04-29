@@ -1051,7 +1051,7 @@ function recalcBlurb(row,view){
     // Score = average of rate extremity + FG% extremity, weighted by location
     // Location weights: rim=1.0, threes=0.85, mid=0.60
     // Used for BOTH offense and defense to rank which shot type leads
-    const locWeights={rim:1.0,threes:0.85,mid:0.60};
+    const locWeights={rim:1.0,threes:1.0,mid:0.75};
     function extremity(pct){return Math.abs(pct-0.5)*2;}
     function shotScore(ratePct,fgPct,shot){
       return (extremity(ratePct)+extremity(fgPct))/2*locWeights[shot];
@@ -1133,10 +1133,10 @@ function recalcBlurb(row,view){
       }
       if(!fgQ)return{clause:rPhrase,usedWhile};
 
-      if(highRate&&isNeg(t)){const v=defNegVerb();const forceConn=rPhrase.includes('force opponents')?'while':conn;return{clause:rPhrase+' '+forceConn+' '+v+'ing '+fgQ,usedWhile:true};}
+      if(highRate&&isNeg(t)){const v=defNegVerb();return{clause:rPhrase+' while '+v+'ing '+fgQ,usedWhile:true};}
       if(highRate&&isPos(t)){const v=defPosVerb();return{clause:rPhrase+' but '+v+' '+fgQ,usedWhile};}
       if(lowRate&&isPos(t)){const v=defPosVerb();return{clause:rPhrase+' and '+v+' '+fgQ,usedWhile};}
-      if(lowRate&&isNeg(t)){const v=defNegVerb();return{clause:rPhrase+' but '+v+'ing '+fgQ,usedWhile};}
+      if(lowRate&&isNeg(t)){const v=defNegVerb();return{clause:rPhrase+' while '+v+'ing '+fgQ,usedWhile:true};}
       const v=defNegVerb();return{clause:rPhrase+' '+conn+' '+v+'ing '+fgQ,usedWhile:true};
     }
 
@@ -1297,7 +1297,8 @@ function recalcBlurb(row,view){
           }[offSecondary];
           offDesc+=' while '+secVerb;
           const secMod=offFGMod(offSecondary,offSecFG,offSecRate);
-          if(secMod)offDesc+=secMod;
+          // Convert finite verb to gerund for natural flow after "while also X-ing"
+          if(secMod)offDesc+=secMod.replace(' and converts',' and converting').replace(' and shoots',' and shooting').replace(' and knocks',' and knocking').replace(' and finishes',' and finishing').replace(' and makes',' and making').replace(', but converts',', but converting').replace(', but shoots',', but shooting').replace(', but struggles',', but struggling').replace(', but rarely',', but rarely').replace(', though they convert',', converting at an average rate').replace(', though they shoot',', shooting at an average rate');
         }
       }
     } else if(!offPrimRateNotable&&offPrimFGNotable&&offPrimary!=='mid'){
@@ -1413,6 +1414,26 @@ function recalcBlurb(row,view){
       }
     }
 
+    // ── MID FORCE CALLOUT — fires after primary/secondary if conditions met ────
+    // "force opponents into midrange" is a positive defensive identity worth stating
+    // even if we already have primary + secondary clauses
+    const midForceCondition=defMidR>=0.65&&defRimR<=0.60&&defThreeR<=0.60;
+    const midAlreadyMentioned=defDesc.toLowerCase().includes('midrange')||defDesc.toLowerCase().includes('mid');
+    if(midForceCondition&&!midAlreadyMentioned&&defClauseCount<=2){
+      const midForcePhrase=defMidR>=0.85?'force opponents into a very high volume of midrange attempts':
+                           defMidR>=0.75?'frequently force opponents into midrange attempts':
+                           'tend to force opponents into midrange attempts';
+      const midFGQ=defFGQuality('mid',defFGMap['mid']);
+      const midFGT=fgTier(defFGMap['mid']);
+      let midClause=midForcePhrase;
+      if(midFGQ&&isNeg(midFGT))midClause+=', though they show '+midFGQ;
+      else if(midFGQ&&isPos(midFGT))midClause+=' while maintaining '+midFGQ;
+      // Mid force gets its own sentence — avoids run-on with primary+secondary
+      defDesc+=' They also '+midClause+'.';
+      defClauseCount++;
+      defClauseCount++;
+    }
+
     // ── STANDALONE DEF FG% CALLOUTS ──────────────────────────────────────────
     // Cap: only add standalones if defense has fewer than 3 clauses (primary + 1 secondary max)
     const defDescLower=defDesc.toLowerCase();
@@ -1438,8 +1459,8 @@ function recalcBlurb(row,view){
       }
     }
     if(defAddons.length>0){
-      if(defDesc)defDesc+='; additionally, '+defAddons.join('; additionally, ');
-      else defDesc=defAddons.join('; additionally, ');
+      if(defDesc)defDesc+='; additionally, '+defAddons[0]+(defAddons.length>1?' They also '+defAddons.slice(1).join(' They also '):'');
+      else defDesc=defAddons.join(' They also ');
       defClauseCount+=defAddons.length;
     }
 
@@ -1448,7 +1469,8 @@ function recalcBlurb(row,view){
 
     // ── FINAL SENTENCE — clause-count splitting ───────────────────────────────
     const totalClauses=offClauseCount+defClauseCount;
-    const shouldSplit=totalClauses>=4||offClauseCount>=3||defClauseCount>=3;
+    const defHasMultiSentence=defDesc.includes('. They');
+    const shouldSplit=totalClauses>=4||offClauseCount>=3||defClauseCount>=3||defHasMultiSentence;
     const defNeedsThey=!defDesc.startsWith('opponents')&&!defDesc.startsWith('force')&&
       !defDesc.startsWith('funnel')&&!defDesc.startsWith('limit')&&
       !defDesc.startsWith('struggle')&&!defDesc.startsWith('they');
