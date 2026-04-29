@@ -1241,6 +1241,13 @@ function recalcBlurb(row,view){
     const rawMax=Math.max(offRimRaw,offThreeRaw,offMidRaw);
     const domIsTopRaw=(domName==='rim'&&offRimRaw===rawMax)||(domName==='threes'&&offThreeRaw===rawMax)||(domName==='mid'&&offMidRaw===rawMax);
     const avoLabels={threes:'three-point attempts',rim:'rim attempts',mid:'midrange attempts'};
+    // Avoided shot needs verb: "rarely taking X" / "tending to avoid X" / "infrequently taking X"
+    function avoPhrase(pct,shotName){
+      const label=avoLabels[shotName];
+      if(pct<=0.15)return 'rarely taking '+label;
+      if(pct<=0.25)return 'infrequently taking '+label;
+      return 'tending to avoid '+label;
+    }
     const highShots=Object.keys(offShots).filter(k=>offShots[k]>=0.75);
     let offDesc='';
     let offClauseCount=1;
@@ -1283,7 +1290,7 @@ function recalcBlurb(row,view){
       if(domName==='threes'){offDesc='frequently attacks the three-point line';offDesc+=offFGMod('threes',fg3,offThreeR);}
       else if(domName==='rim'){offDesc='frequently attacks the rim';offDesc+=offFGMod('rim',fgRim,offRimR);}
       else if(domName==='mid'&&domIsTopRaw){offDesc='frequently looks to the midrange';offDesc+=offFGMod('mid',fgM,offMidR);}
-      if(avoPct<=0.25){offDesc+=' while '+offRateWord(avoPct)+' '+avoLabels[avoName];offClauseCount=3;}
+      if(avoPct<=0.25){offDesc+=' while '+avoPhrase(avoPct,avoName);offClauseCount=3;}
     } else if(domPct>=0.65){
       offClauseCount=2;
       const fgM=parseFloat(row['off_long_twos_fg'+pctSuffix]);
@@ -1291,9 +1298,9 @@ function recalcBlurb(row,view){
       if(domName==='threes'){offDesc='favors shooting from three';offDesc+=offFGMod('threes',fg3,offThreeR);}
       else if(domName==='rim'){offDesc='favors attacking the rim';offDesc+=offFGMod('rim',fgRim,offRimR);}
       else if(domName==='mid'&&domIsTopRaw){offDesc='favors the midrange';offDesc+=offFGMod('mid',fgM,offMidR);}
-      if(avoPct<=0.25){offDesc+=' while '+offRateWord(avoPct)+' '+avoLabels[avoName];offClauseCount=3;}
+      if(avoPct<=0.25){offDesc+=' while '+avoPhrase(avoPct,avoName);offClauseCount=3;}
     } else if(avoPct<=0.25){
-      offDesc='takes a balanced approach while '+offRateWord(avoPct)+' taking '+avoLabels[avoName];
+      offDesc='takes a balanced approach while '+avoPhrase(avoPct,avoName);
     } else {
       offDesc=efgOffDesc(efgOff);
     }
@@ -1378,11 +1385,19 @@ function recalcBlurb(row,view){
           defDesc=r.clause;
         }
         defUsedWhile=r.usedWhile;
-      } else if(defMost==='mid'&&defLeast==='threes'&&!suppressMidRate){
-        const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
-        if(midIsHighest){
-          const r=buildDefClause('mid',defMidR,dfgMid,defUsedWhile);
-          defDesc=r.clause+' while limiting three-point looks';defUsedWhile=r.usedWhile;
+      } else if(defMost==='mid'&&defLeast==='threes'){
+        if(!suppressMidRate){
+          const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
+          if(midIsHighest){
+            const r=buildDefClause('mid',defMidR,dfgMid,defUsedWhile);
+            defDesc=r.clause+' while limiting three-point looks';defUsedWhile=r.usedWhile;
+          }
+        } else {
+          // Mid suppressed — use rim if notable, since threes is the least
+          if(defRimR>=0.65){
+            const r=buildDefClause('rim',defRimR,dfgRim,defUsedWhile);
+            defDesc=r.clause+' while limiting three-point attempts';defUsedWhile=r.usedWhile;
+          }
         }
       }
     } else if(defMostPct>=0.65){
@@ -1453,8 +1468,8 @@ function recalcBlurb(row,view){
       }
     }
     if(defAddons.length>0){
-      if(defDesc)defDesc+='; additionally, '+defAddons.join(' and ');
-      else defDesc=defAddons.join(' and ');
+      if(defDesc)defDesc+='; additionally, '+defAddons.join('; additionally, ');
+      else defDesc=defAddons.join('; additionally, ');
       defClauseCount+=defAddons.length;
     }
 
