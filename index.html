@@ -1363,10 +1363,20 @@ function recalcBlurb(row,view){
         defDesc=r.clause+' while limiting rim attacks';defUsedWhile=true;
       } else if(defMost==='threes'&&defLeast==='mid'){
         const r=buildDefClause('threes',defThreeR,dfg3,defUsedWhile);
-        defDesc=r.clause+' while limiting midrange attempts';defUsedWhile=r.usedWhile;
+        if(!suppressMidRate){
+          defDesc=r.clause+' while limiting midrange attempts';
+        } else {
+          defDesc=r.clause;
+        }
+        defUsedWhile=r.usedWhile;
       } else if(defMost==='rim'&&defLeast==='mid'){
         const r=buildDefClause('rim',defRimR,dfgRim,defUsedWhile);
-        defDesc=canFunnel?r.clause+' while limiting midrange attempts':r.clause+' while rarely allowing midrange attempts';
+        // Only mention midrange tail if not suppressed (i.e. rim or threes not already dominant)
+        if(!suppressMidRate){
+          defDesc=canFunnel?r.clause+' while limiting midrange attempts':r.clause+' while rarely allowing midrange attempts';
+        } else {
+          defDesc=r.clause;
+        }
         defUsedWhile=r.usedWhile;
       } else if(defMost==='mid'&&defLeast==='threes'&&!suppressMidRate){
         const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
@@ -1403,18 +1413,36 @@ function recalcBlurb(row,view){
     }
 
     // ── STANDALONE DEF FG% CALLOUTS — "display", never midrange if suppressed ─
+    // If the shot type's rate is >=70th pct, combine rate + FG% in one clause
+    // Otherwise FG% standalone only ("they display X")
     const defDescLower=defDesc.toLowerCase();
     let defAddons=[];
     if(!defDescLower.includes('three')&&!defDescLower.includes('deep')&&!defDescLower.includes('perimeter')){
       if(dfg3>=stHi||dfg3<=stLo){
-        const p=defFGStandalone('threes',dfg3,defThreeR);
-        if(p)defAddons.push(p);
+        const fgQ=defFGQuality('threes',dfg3);
+        if(fgQ){
+          if(defThreeR>=0.70){
+            // Rate is notable — combine rate + FG% in one clause
+            const rPhrase=defRatePhrase(defThreeR,'three-point attempts');
+            defAddons.push('they '+rPhrase+' and display '+fgQ);
+          } else {
+            // Rate not notable enough — FG% standalone only
+            defAddons.push('they display '+fgQ);
+          }
+        }
       }
     }
     if(!defDescLower.includes('rim')&&!defDescLower.includes('paint')&&!defDescLower.includes('rim protection')){
       if(dfgRim>=stHi||dfgRim<=stLo){
-        const p=defFGStandalone('rim',dfgRim,defRimR);
-        if(p)defAddons.push(p);
+        const fgQ=defFGQuality('rim',dfgRim);
+        if(fgQ){
+          if(defRimR>=0.70){
+            const rPhrase=defRatePhrase(defRimR,'rim attacks');
+            defAddons.push('they '+rPhrase+' and display '+fgQ);
+          } else {
+            defAddons.push('they display '+fgQ);
+          }
+        }
       }
     }
     // Midrange standalone suppressed when rim or threes already high
