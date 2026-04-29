@@ -1028,7 +1028,7 @@ function recalcBlurb(row,view){
 
   if(!isNaN(offThreeR)&&!isNaN(offRimR)&&!isNaN(offMidR)){
 
-    // FG% tier — view-aware boundaries
+    // ── FG% TIER — view-aware ────────────────────────────────────────────────
     // D1:       >=85 elite, >=75 strong, >=65 abvavg, 35-65 neutral, >=25 blwavg, >=15 poor, <15 verypoor
     // Conf/Sub: >=80 elite, >=70 strong, >=60 abvavg, 40-60 neutral, >=30 blwavg, >=20 poor, <20 verypoor
     function fgTier(pct){
@@ -1045,7 +1045,7 @@ function recalcBlurb(row,view){
     function isPos(t){return t==='elite'||t==='strong'||t==='abvavg';}
     function isNeg(t){return t==='blwavg'||t==='poor'||t==='verypoor';}
 
-    // RATE language — volume only, never implies quality
+    // ── OFFENSE RATE — volume only ───────────────────────────────────────────
     function offRateWord(pct){
       if(pct>=0.85)return 'very frequently';
       if(pct>=0.75)return 'frequently';
@@ -1054,31 +1054,115 @@ function recalcBlurb(row,view){
       if(pct<=0.25)return 'infrequently';
       return 'tends to avoid';
     }
+
+    // ── DEFENSE RATE — plural verb forms (subject is always "they") ──────────
     function defRatePhrase(pct,shotLabel){
-      if(pct>=0.85)return 'allows a very high volume of '+shotLabel;
-      if(pct>=0.75)return 'frequently allows '+shotLabel;
-      if(pct>=0.65)return 'tends to allow '+shotLabel;
-      if(pct<=0.15)return 'rarely allows '+shotLabel;
-      if(pct<=0.25)return 'infrequently allows '+shotLabel;
-      return 'tends to limit '+shotLabel;
+      if(pct>=0.85)return 'allow a very high volume of '+shotLabel;
+      if(pct>=0.75)return 'frequently allow '+shotLabel;
+      if(pct>=0.65)return 'tend to allow '+shotLabel;
+      if(pct<=0.15)return 'rarely allow '+shotLabel;
+      if(pct<=0.25)return 'infrequently allow '+shotLabel;
+      return 'tend to limit '+shotLabel;
     }
 
-    // FG% language — quality only, never implies volume
-    // Each entry is a complete phrase for that tier — no verb+percentage concatenation
-    // Positive tiers: verb takes a percentage suffix naturally
-    // Negative tiers: self-contained phrases that read naturally on their own
+    // ── DEFENSE FG% QUALITY — consistent ladder, always OUR defensive identity
+    // elite -> strong -> solid -> [neutral] -> below average -> poor -> very poor
+    // Same noun structure throughout — no mixing of frames
+    function defFGQuality(shotName,fgPct){
+      const t=fgTier(fgPct);
+      if(shotName==='rim'){
+        if(t==='elite')return 'elite rim protection';
+        if(t==='strong')return 'strong rim protection';
+        if(t==='abvavg')return 'solid rim protection';
+        if(t==='neutral')return '';
+        if(t==='blwavg')return 'below average rim protection';
+        if(t==='poor')return 'poor rim protection';
+        if(t==='verypoor')return 'very poor rim protection';
+      } else if(shotName==='threes'){
+        if(t==='elite')return 'elite three-point defense';
+        if(t==='strong')return 'strong three-point defense';
+        if(t==='abvavg')return 'solid three-point defense';
+        if(t==='neutral')return '';
+        if(t==='blwavg')return 'below average three-point defense';
+        if(t==='poor')return 'poor three-point defense';
+        if(t==='verypoor')return 'very poor three-point defense';
+      } else {
+        if(t==='elite')return 'elite midrange defense';
+        if(t==='strong')return 'strong midrange defense';
+        if(t==='abvavg')return 'solid midrange defense';
+        if(t==='neutral')return '';
+        if(t==='blwavg')return 'below average midrange defense';
+        if(t==='poor')return 'poor midrange defense';
+        if(t==='verypoor')return 'very poor midrange defense';
+      }
+      return '';
+    }
+
+    // ── BUILD DEF CLAUSE — rate + FG% combined naturally ────────────────────
+    // Rate describes volume, FG% describes quality
+    // "with" for same direction good, "while" for mixed/bad, "but" for opposite
+    function buildDefClause(shotName,ratePct,fgPct){
+      const rateLabel=shotName==='rim'?'rim attacks':shotName==='threes'?'three-point attempts':'midrange attempts';
+      const rPhrase=defRatePhrase(ratePct,rateLabel);
+      const t=fgTier(fgPct);
+      const fgQ=defFGQuality(shotName,fgPct);
+      const highRate=ratePct>=0.65;
+      const lowRate=ratePct<=0.35;
+
+      // Neutral FG% only fires when rate is high
+      if(t==='neutral'){
+        if(highRate){
+          const neutralLabel=shotName==='rim'?'an average FG% at the rim':shotName==='threes'?'an average three-point percentage':'an average midrange percentage';
+          return rPhrase+' while allowing '+neutralLabel;
+        }
+        return rPhrase;
+      }
+      if(!fgQ)return rPhrase;
+
+      const fgGood=isPos(t);
+      const fgBad=isNeg(t);
+
+      if(highRate&&fgBad){
+        // High rate allowed + bad FG% defense = both bad = "while showing"
+        return rPhrase+' while showing '+fgQ;
+      } else if(highRate&&fgGood){
+        // High rate allowed + good FG% defense = opposite = "but showing"
+        return rPhrase+' but showing '+fgQ;
+      } else if(lowRate&&fgGood){
+        // Low rate + good FG% = both good = "and showing"
+        return rPhrase+' and showing '+fgQ;
+      } else if(lowRate&&fgBad){
+        // Low rate + bad FG% = opposite = "but showing"
+        return rPhrase+' but showing '+fgQ;
+      }
+      return rPhrase+' while showing '+fgQ;
+    }
+
+    // ── STANDALONE DEF FG% — natural complete phrases ────────────────────────
+    function defFGStandalone(shotName,fgPct,ratePct){
+      const t=fgTier(fgPct);
+      if(t==='neutral')return '';
+      const fgQ=defFGQuality(shotName,fgPct);
+      if(!fgQ)return '';
+      const rHigh=!isNaN(ratePct)&&ratePct>=0.65;
+      const rLow=!isNaN(ratePct)&&ratePct<=0.35;
+      const rCtx=rHigh?' against a high volume of attempts':rLow?' even on a limited number of attempts':'';
+      return 'they show '+fgQ+rCtx;
+    }
+
+    // ── OFF FG% INLINE — phrase pools with variety, no awkward concatenation ─
+    // Positive: verb takes percentage naturally
+    // Negative: self-contained phrases
     let usedOffPhrases=[];
     function offFGMod(shotName,fgPct,ratePct){
       const t=fgTier(fgPct);
       const highRate=!isNaN(ratePct)&&ratePct>=0.70;
+      if(t==='neutral'&&!highRate)return '';
 
-      // Phrase pools: each array entry is the full tail of the sentence after the rate clause
-      // pos phrases end naturally with a percentage descriptor
-      // neg phrases are self-contained
       const phrases={
         threes:{
           elite:[' and shoot at an elite percentage from deep',' and knock them down at an elite rate from deep',' and convert at an elite clip from three'],
-          strong:[' and shoot at a strong percentage from deep',' and knock them down at a strong rate',' and convert at a strong clip from three'],
+          strong:[' and shoot at a strong percentage from deep',' and knock them down at a strong rate from deep',' and convert at a strong clip from three'],
           abvavg:[' and shoot at an above average percentage from deep',' and convert at an above average rate from deep'],
           neutral:[', though they shoot at an average percentage from deep',', though they convert from three at an average rate'],
           blwavg:[', but shoot a below average percentage from deep',', but convert from three at a below average rate'],
@@ -1107,145 +1191,37 @@ function recalcBlurb(row,view){
 
       const pool=phrases[shotName];
       if(!pool)return '';
-      if(t==='neutral'&&!highRate)return '';
-
       const tierKey=t==='neutral'?'neutral':t;
       const arr=pool[tierKey];
       if(!arr||!arr.length)return '';
-      // Pick first phrase not already used
       const pick=arr.find(p=>!usedOffPhrases.includes(p))||arr[0];
       usedOffPhrases.push(pick);
       return pick;
     }
 
-    // Def FG% inline — framed as OUR team identity
-    // "while" joins rate+FG% since they describe different dimensions
-    function defFGQuality(shotName,fgPct){
-      const t=fgTier(fgPct);
-      if(shotName==='rim'){
-        if(t==='elite')return 'elite rim protection';
-        if(t==='strong')return 'strong rim protection';
-        if(t==='abvavg')return 'solid rim protection';
-        if(t==='neutral')return '';
-        if(t==='blwavg')return 'below average rim protection';
-        if(t==='poor')return 'poor rim protection';
-        if(t==='verypoor')return 'a very high FG% allowed at the rim';
-      } else if(shotName==='threes'){
-        if(t==='elite')return 'elite three-point defense';
-        if(t==='strong')return 'strong three-point defense';
-        if(t==='abvavg')return 'solid three-point defense';
-        if(t==='neutral')return '';
-        if(t==='blwavg')return 'a below average three-point percentage allowed';
-        if(t==='poor')return 'poor three-point defense';
-        if(t==='verypoor')return 'a very high three-point percentage allowed';
-      } else {
-        if(t==='elite')return 'elite midrange defense';
-        if(t==='strong')return 'strong midrange defense';
-        if(t==='abvavg')return 'solid midrange defense';
-        if(t==='neutral')return '';
-        if(t==='blwavg')return 'a below average midrange percentage allowed';
-        if(t==='poor')return 'poor midrange defense';
-        if(t==='verypoor')return 'a very high midrange percentage allowed';
-      }
-      return '';
-    }
-
-    // Combine rate + FG% for defense into one natural clause
-    // Rate describes volume, FG% describes quality — joined with natural connectors
-    function buildDefClause(shotName,ratePct,fgPct){
-      const rateLabel=shotName==='rim'?'rim attacks':shotName==='threes'?'three-point attempts':'midrange attempts';
-      const rPhrase=defRatePhrase(ratePct,rateLabel);
-      const t=fgTier(fgPct);
-      const highRate=ratePct>=0.65;
-
-      // Natural FG% tail phrases — complete and readable after the rate phrase
-      function fgTail(sn,tier){
-        if(sn==='rim'){
-          if(tier==='elite')return ' with elite rim protection';
-          if(tier==='strong')return ' with strong rim protection';
-          if(tier==='abvavg')return ' with solid rim protection';
-          if(tier==='neutral')return highRate?' while allowing an average FG% at the rim':'';
-          if(tier==='blwavg')return ' while giving up a below average FG% at the rim';
-          if(tier==='poor')return ' while struggling to protect the rim';
-          if(tier==='verypoor')return ' while giving up a very high FG% at the rim';
-        } else if(sn==='threes'){
-          if(tier==='elite')return ' with elite three-point defense';
-          if(tier==='strong')return ' with strong three-point defense';
-          if(tier==='abvavg')return ' with solid three-point defense';
-          if(tier==='neutral')return highRate?' while allowing an average three-point percentage':'';
-          if(tier==='blwavg')return ' while giving up a below average three-point percentage';
-          if(tier==='poor')return ' while struggling to defend the three-point line';
-          if(tier==='verypoor')return ' while giving up a very high three-point percentage';
-        } else {
-          if(tier==='elite')return ' with elite midrange defense';
-          if(tier==='strong')return ' with strong midrange defense';
-          if(tier==='abvavg')return ' with solid midrange defense';
-          if(tier==='neutral')return highRate?' while allowing an average midrange percentage':'';
-          if(tier==='blwavg')return ' while giving up a below average midrange percentage';
-          if(tier==='poor')return ' while struggling to defend the midrange';
-          if(tier==='verypoor')return ' while giving up a very high midrange percentage';
-        }
-        return '';
-      }
-
-      const tail=fgTail(shotName,t);
-      return rPhrase+tail;
-    }
-
-    // Standalone def FG% phrase — complete natural sentences, rate context woven in naturally
-    function defFGStandalone(shotName,fgPct,ratePct){
-      const t=fgTier(fgPct);
-      if(t==='neutral')return '';
-      const rHigh=!isNaN(ratePct)&&ratePct>=0.65;
-      const rLow=!isNaN(ratePct)&&ratePct<=0.35;
-      // Rate context phrased naturally for each shot type
-      const highCtxRim='against frequent rim attacks';
-      const highCtxThree='against a high volume of three-point attempts';
-      const lowCtxRim='even on limited rim attempts';
-      const lowCtxThree='even on limited three-point attempts';
-      if(shotName==='rim'){
-        const rCtx=rHigh?' '+highCtxRim:rLow?' '+lowCtxRim:'';
-        if(t==='elite')return 'they show elite rim protection'+rCtx;
-        if(t==='strong')return 'they show strong rim protection'+rCtx;
-        if(t==='abvavg')return 'they show solid rim protection'+rCtx;
-        if(t==='blwavg')return 'they give up a below average FG% at the rim'+rCtx;
-        if(t==='poor')return 'they struggle to protect the rim'+(rHigh?' against a high volume of rim attacks':rLow?' even on limited rim attempts':'');
-        if(t==='verypoor')return 'they give up a very high FG% at the rim'+(rHigh?' against a high volume of rim attacks':'');
-      } else if(shotName==='threes'){
-        const rCtx=rHigh?' '+highCtxThree:rLow?' '+lowCtxThree:'';
-        if(t==='elite')return 'they show elite three-point defense'+rCtx;
-        if(t==='strong')return 'they show strong three-point defense'+rCtx;
-        if(t==='abvavg')return 'they show solid three-point defense'+rCtx;
-        if(t==='blwavg')return 'they give up a below average three-point percentage'+rCtx;
-        if(t==='poor')return 'they struggle to defend the three-point line'+(rHigh?' against a high volume of attempts':rLow?' even on limited attempts':'');
-        if(t==='verypoor')return 'they give up a very high three-point percentage'+(rHigh?' against a high volume of attempts':'');
-      }
-      return '';
-    }
-
-    // eFG% fallback — same tier system
+    // ── eFG% FALLBACK — "overall" added throughout ───────────────────────────
     function efgOffDesc(pct){
       const t=fgTier(pct);
-      if(t==='elite')return 'takes a balanced offensive approach with elite shooting efficiency';
-      if(t==='strong')return 'takes a balanced offensive approach with strong shooting efficiency';
-      if(t==='abvavg')return 'takes a balanced offensive approach with above average shooting efficiency';
-      if(t==='blwavg')return 'takes a balanced offensive approach with below average shooting efficiency';
-      if(t==='poor')return 'takes a balanced offensive approach with poor shooting efficiency';
-      if(t==='verypoor')return 'takes a balanced offensive approach with very poor shooting efficiency';
-      return 'takes a balanced offensive approach with average shooting efficiency';
+      if(t==='elite')return 'takes a balanced offensive approach with elite overall shooting efficiency';
+      if(t==='strong')return 'takes a balanced offensive approach with strong overall shooting efficiency';
+      if(t==='abvavg')return 'takes a balanced offensive approach with above average overall shooting efficiency';
+      if(t==='blwavg')return 'takes a balanced offensive approach with below average overall shooting efficiency';
+      if(t==='poor')return 'takes a balanced offensive approach with poor overall shooting efficiency';
+      if(t==='verypoor')return 'takes a balanced offensive approach with very poor overall shooting efficiency';
+      return 'takes a balanced offensive approach with average overall shooting efficiency';
     }
     function efgDefDesc(pct){
       const t=fgTier(pct);
-      if(t==='elite')return 'they defend without a clear tendency, limiting opponents to elite shooting efficiency';
-      if(t==='strong')return 'they defend without a clear tendency, limiting opponents to strong shooting efficiency';
-      if(t==='abvavg')return 'they defend without a clear tendency, allowing above average shooting efficiency';
-      if(t==='blwavg')return 'they defend without a clear tendency, allowing below average shooting efficiency';
-      if(t==='poor')return 'they defend without a clear tendency, allowing poor shooting efficiency';
-      if(t==='verypoor')return 'they defend without a clear tendency, giving up very poor shooting efficiency';
-      return 'they defend without a clear tendency, allowing average shooting efficiency';
+      if(t==='elite')return 'they defend without a clear tendency, limiting opponents to elite overall shooting efficiency';
+      if(t==='strong')return 'they defend without a clear tendency, limiting opponents to strong overall shooting efficiency';
+      if(t==='abvavg')return 'they defend without a clear tendency, allowing above average overall shooting efficiency';
+      if(t==='blwavg')return 'they defend without a clear tendency, allowing below average overall shooting efficiency';
+      if(t==='poor')return 'they defend without a clear tendency, allowing poor overall shooting efficiency';
+      if(t==='verypoor')return 'they defend without a clear tendency, giving up very poor overall shooting efficiency';
+      return 'they defend without a clear tendency, allowing average overall shooting efficiency';
     }
 
-    // OFFENSE
+    // ── OFFENSE ──────────────────────────────────────────────────────────────
     const offShots={threes:offThreeR,rim:offRimR,mid:offMidR};
     const domName=Object.keys(offShots).reduce((a,b)=>offShots[a]>offShots[b]?a:b);
     const avoName=Object.keys(offShots).reduce((a,b)=>offShots[a]<offShots[b]?a:b);
@@ -1310,7 +1286,7 @@ function recalcBlurb(row,view){
       offDesc=efgOffDesc(efgOff);
     }
 
-    // Standalone off FG% callouts — natural complete phrases, no verb concatenation
+    // ── STANDALONE OFF FG% CALLOUTS ──────────────────────────────────────────
     const offDescLower=offDesc.toLowerCase();
     let offStandalones=[];
     if(!offDescLower.includes('three')&&!offDescLower.includes('deep')){
@@ -1340,12 +1316,12 @@ function recalcBlurb(row,view){
       offClauseCount+=offStandalones.length;
     }
 
-    // Dunk callout
+    // ── DUNK CALLOUT ─────────────────────────────────────────────────────────
     if(!isNaN(offDunkR)&&!isNaN(offDunkFG)&&offDunkR>=0.85&&offDunkFG>=0.85){
       offDesc+=', and generate dunks at an elite rate';
     }
 
-    // DEFENSE
+    // ── DEFENSE ──────────────────────────────────────────────────────────────
     const defShots={threes:defThreeR,rim:defRimR,mid:defMidR};
     const defMost=Object.keys(defShots).reduce((a,b)=>defShots[a]>defShots[b]?a:b);
     const defLeast=Object.keys(defShots).reduce((a,b)=>defShots[a]<defShots[b]?a:b);
@@ -1356,45 +1332,65 @@ function recalcBlurb(row,view){
     let defClauseCount=1;
     const defBothThresh=defLeast==='threes'?0.28:defLeast==='mid'?0.22:0.20;
 
+    // Midrange rate suppressed on defense when rim or threes rate >= 65th
+    // Low midrange is implied and less interesting when other shots dominate
+    const suppressMidRate=(defRimR>=0.65||defThreeR>=0.65);
+
     if(defMostPct>=0.80&&defLeastPct<=defBothThresh){
       defClauseCount=2;
       if(defMost==='threes'&&defLeast==='rim'){
         defDesc=buildDefClause('threes',defThreeR,dfg3)+' while limiting rim attacks';
         const rimQ=defFGQuality('rim',dfgRim);
-        if(rimQ&&fgTier(dfgRim)!=='neutral')defDesc+=' and showing '+rimQ;
+        if(rimQ&&isNeg(fgTier(dfgRim)))defDesc+=' and showing '+rimQ;
       } else if(defMost==='rim'&&defLeast==='threes'){
-        const base=canFunnel?buildDefClause('rim',defRimR,dfgRim)+' while limiting three-point attempts':buildDefClause('rim',defRimR,dfgRim)+' while infrequently allowing three-point attempts';
-        defDesc=base;
-      } else if(defMost==='mid'&&defLeast==='rim'){
+        defDesc=canFunnel?buildDefClause('rim',defRimR,dfgRim)+' while limiting three-point attempts':buildDefClause('rim',defRimR,dfgRim)+' while infrequently allowing three-point attempts';
+      } else if(defMost==='mid'&&defLeast==='rim'&&!suppressMidRate){
         defDesc=buildDefClause('mid',defMidR,dfgMid)+' while limiting rim attacks';
       } else if(defMost==='threes'&&defLeast==='mid'){
         defDesc=buildDefClause('threes',defThreeR,dfg3)+' while limiting midrange attempts';
       } else if(defMost==='rim'&&defLeast==='mid'){
-        const base=canFunnel?buildDefClause('rim',defRimR,dfgRim)+' while limiting midrange attempts':buildDefClause('rim',defRimR,dfgRim)+' while rarely allowing midrange attempts';
-        defDesc=base;
-      } else if(defMost==='mid'&&defLeast==='threes'){
+        defDesc=canFunnel?buildDefClause('rim',defRimR,dfgRim)+' while limiting midrange attempts':buildDefClause('rim',defRimR,dfgRim)+' while rarely allowing midrange attempts';
+      } else if(defMost==='mid'&&defLeast==='threes'&&!suppressMidRate){
         const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
         if(midIsHighest)defDesc=buildDefClause('mid',defMidR,dfgMid)+' while limiting three-point looks';
       }
-    } else if((defMost==='rim'&&defMostPct>=0.78)||(defMost==='threes'&&defMostPct>=0.78)||(defMost==='mid'&&defMostPct>=0.75)){
+    } else if(defMostPct>=0.65){
+      // Lowered from 0.78 — any notable rate (>=65th) triggers main logic
       defClauseCount=2;
       if(defMost==='rim')defDesc=buildDefClause('rim',defRimR,dfgRim);
       else if(defMost==='threes')defDesc=buildDefClause('threes',defThreeR,dfg3);
-      else{const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;if(midIsHighest)defDesc=buildDefClause('mid',defMidR,dfgMid);}
+      else if(defMost==='mid'&&!suppressMidRate){
+        const midIsHighest=defMidR>=defThreeR&&defMidR>=defRimR;
+        if(midIsHighest)defDesc=buildDefClause('mid',defMidR,dfgMid);
+      }
     } else if(defLeastPct<=0.25){
       defClauseCount=2;
       if(defLeast==='rim')defDesc=buildDefClause('rim',defRimR,dfgRim);
       else if(defLeast==='threes')defDesc=buildDefClause('threes',defThreeR,dfg3);
     }
 
-    // Standalone def FG% callouts
+    // ── STANDALONE DEF FG% CALLOUTS ──────────────────────────────────────────
+    // Midrange suppressed when rim or threes rate is high — low mid rate is implied
     const defDescLower=defDesc.toLowerCase();
     let defAddons=[];
     if(!defDescLower.includes('three')&&!defDescLower.includes('deep')&&!defDescLower.includes('perimeter')){
-      if(dfg3>=stHi||dfg3<=stLo){const p=defFGStandalone('threes',dfg3,defThreeR);if(p)defAddons.push(p);}
+      if(dfg3>=stHi||dfg3<=stLo){
+        const p=defFGStandalone('threes',dfg3,defThreeR);
+        if(p)defAddons.push(p);
+      }
     }
-    if(!defDescLower.includes('rim')&&!defDescLower.includes('paint')&&!defDescLower.includes('inside')&&!defDescLower.includes('rim protection')){
-      if(dfgRim>=stHi||dfgRim<=stLo){const p=defFGStandalone('rim',dfgRim,defRimR);if(p)defAddons.push(p);}
+    if(!defDescLower.includes('rim')&&!defDescLower.includes('paint')&&!defDescLower.includes('rim protection')){
+      if(dfgRim>=stHi||dfgRim<=stLo){
+        const p=defFGStandalone('rim',dfgRim,defRimR);
+        if(p)defAddons.push(p);
+      }
+    }
+    // Never add midrange standalone when rim or threes already mentioned
+    if(!suppressMidRate&&!defDescLower.includes('midrange')&&!defDescLower.includes('mid')){
+      if(dfgMid>=stHi||dfgMid<=stLo){
+        const p=defFGStandalone('mid',dfgMid,defMidR);
+        if(p)defAddons.push(p);
+      }
     }
     if(defAddons.length>0){
       if(defDesc)defDesc+='; additionally, '+defAddons.join(' and ');
@@ -1402,19 +1398,13 @@ function recalcBlurb(row,view){
       defClauseCount+=defAddons.length;
     }
 
-    // Defense fallback
+    // ── DEFENSE FALLBACK ─────────────────────────────────────────────────────
+    // Only fires when nothing is >=65th pct — truly no clear tendency
     if(!defDesc){
-      let fallback=efgDefDesc(efgDef);
-      if(defMostPct>=0.65){
-        const shotLabel=defMost==='rim'?'rim attacks':defMost==='threes'?'three-point attempts':'midrange attempts';
-        const fgKey=defMost==='rim'?dfgRim:defMost==='threes'?dfg3:dfgMid;
-        fallback=buildDefClause(defMost,defShots[defMost],fgKey)+'; '+fallback;
-        defClauseCount=2;
-      }
-      defDesc=fallback;
+      defDesc=efgDefDesc(efgDef);
     }
 
-    // Final sentence — clause-count based splitting
+    // ── FINAL SENTENCE — clause-count splitting ───────────────────────────────
     const totalClauses=offClauseCount+defClauseCount;
     const shouldSplit=totalClauses>=4||offClauseCount>=3||defClauseCount>=3;
     const defNeedsThey=!defDesc.startsWith('opponents')&&!defDesc.startsWith('force')&&!defDesc.startsWith('funnel')&&!defDesc.startsWith('limit')&&!defDesc.startsWith('struggle')&&!defDesc.startsWith('they');
