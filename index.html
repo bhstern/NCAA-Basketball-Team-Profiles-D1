@@ -1331,34 +1331,88 @@ function recalcBlurb(row,view){
       if(midFGIsExtreme&&midRateOK){
         // Use a new sentence if current offDesc is already long (avoids run-ons)
         const useSentence=offDesc.length>80||offClauseCount>=2;
+        // Check if three FG% is also extreme — combine into one clause if so
+        const threeFGT=fgTier(fg3);
+        const threeAlreadyMentioned=offDesc.toLowerCase().includes('three')||offDesc.toLowerCase().includes('deep');
+        const threeAlsoExtreme=(fg3>=stHi||fg3<=stLo)&&!threeAlreadyMentioned;
         if(midFGT==='elite'){
-          const midPhrase='convert midrange shots at an elite percentage'+rateCtxMid;
-          offDesc+=useSentence?' They also '+midPhrase+'.':'; they also '+midPhrase;
+          if(threeAlsoExtreme&&threeFGT==='elite'){
+            // Both elite — combine: "shoot at an elite percentage from deep and convert midrange shots at an elite rate"
+            offDesc+=useSentence?' They shoot at an elite percentage from deep and convert midrange shots at an elite percentage'+rateCtxMid+'.':'; they shoot at an elite percentage from deep and convert midrange shots at an elite percentage'+rateCtxMid;
+          } else if(threeAlsoExtreme&&isNeg(threeFGT)){
+            // Three poor, mid elite — combine with contrast
+            offDesc+=useSentence?' They convert midrange shots at an elite percentage'+rateCtxMid+', but struggle from three.':'; they convert midrange shots at an elite percentage'+rateCtxMid+', but struggle from three';
+          } else {
+            offDesc+=useSentence?' They also convert midrange shots at an elite percentage'+rateCtxMid+'.':'; they also convert midrange shots at an elite percentage'+rateCtxMid;
+          }
         } else {
-          const midPhrase='struggle with midrange conversion'+rateCtxMid;
-          offDesc+=useSentence?' They also '+midPhrase+'.':'; they also '+midPhrase;
+          if(threeAlsoExtreme&&isPos(threeFGT)){
+            // Three elite, mid poor — combine with contrast
+            offDesc+=useSentence?' They shoot at an elite percentage from deep, but struggle with midrange conversion'+rateCtxMid+'.':'; they shoot at an elite percentage from deep, but struggle with midrange conversion'+rateCtxMid;
+          } else {
+            offDesc+=useSentence?' They also struggle with midrange conversion'+rateCtxMid+'.':'; they also struggle with midrange conversion'+rateCtxMid;
+          }
         }
         offClauseCount++;
       }
     }
 
     // ── STANDALONE OFF FG% CALLOUTS ──────────────────────────────────────────
+    // Track connector usage to avoid repeating "they also"
+    // If offDesc ends with "." (from mid callout), use new sentence format
     const offDescLower=offDesc.toLowerCase();
     let offStandalones=[];
     if(!offDescLower.includes('three')&&!offDescLower.includes('deep')){
       const rCtx3=offThreeR>=0.65?' on a high volume of attempts':offThreeR<=0.35?' on a limited number of attempts':'';
       const t3=fgTier(fg3);
-      if(fg3>=stHi)offStandalones.push((t3==='elite'?'they also shoot at an elite percentage from deep':'they also shoot at a strong percentage from deep')+rCtx3);
-      else if(fg3<=stLo)offStandalones.push((t3==='verypoor'?'they also shoot a very poor percentage from deep':'they also struggle to knock down shots from deep')+rCtx3);
+      if(fg3>=stHi)offStandalones.push(t3==='elite'?'shoot at an elite percentage from deep'+rCtx3:'shoot at a strong percentage from deep'+rCtx3);
+      else if(fg3<=stLo)offStandalones.push(t3==='verypoor'?'shoot a very poor percentage from deep'+rCtx3:'struggle to knock them down from deep'+rCtx3);
     }
     if(!offDescLower.includes('rim')&&!offDescLower.includes('paint')){
       const rCtxR=offRimR>=0.65?' on frequent rim attempts':offRimR<=0.35?' despite rarely attacking the rim':'';
       const tr=fgTier(fgRim);
-      if(fgRim>=stHi)offStandalones.push((tr==='elite'?'they also finish at an elite percentage at the rim':'they also finish at a strong percentage at the rim')+rCtxR);
-      else if(fgRim<=stLo)offStandalones.push((tr==='verypoor'?'they also struggle significantly to finish at the rim':'they also struggle to finish at the rim')+rCtxR);
+      if(fgRim>=stHi)offStandalones.push(tr==='elite'?'finish at an elite percentage at the rim'+rCtxR:'finish at a strong percentage at the rim'+rCtxR);
+      else if(fgRim<=stLo)offStandalones.push(tr==='verypoor'?'struggle significantly to finish at the rim'+rCtxR:'struggle to finish at the rim'+rCtxR);
     }
     if(offStandalones.length>0){
-      offDesc+='; '+offStandalones.join('; ');
+      // Combine standalones into one sentence when possible
+      // Track direction: positive (elite/strong) vs negative (poor/verypoor)
+      const stanDirs=offStandalones.map(s=>{
+        const sl=s.toLowerCase();
+        return(sl.includes('elite')||sl.includes('strong')||sl.includes('above average'))
+          ?'pos':(sl.includes('struggle')||sl.includes('poor')||sl.includes('very poor'))
+          ?'neg':'neu';
+      });
+      const allPos=stanDirs.every(d=>d==='pos');
+      const allNeg=stanDirs.every(d=>d==='neg');
+      const endsWithPeriod=offDesc.trim().endsWith('.');
+      const intro=endsWithPeriod?' ':'; ';
+      const theyIntro=endsWithPeriod?'They ':'they ';
+      if(offStandalones.length===1){
+        offDesc+=endsWithPeriod?' They also '+offStandalones[0]+'.':'; they also '+offStandalones[0];
+      } else if(allPos){
+        // All positive — join with "and"
+        const joined=offStandalones.slice(0,-1).join(', ')+' and '+offStandalones[offStandalones.length-1];
+        offDesc+=endsWithPeriod?' They '+joined+'.':'; they '+joined;
+      } else if(allNeg){
+        // All negative — join with "and"
+        const joined=offStandalones.slice(0,-1).join(', ')+' and '+offStandalones[offStandalones.length-1];
+        offDesc+=endsWithPeriod?' They also '+joined+'.':'; they also '+joined;
+      } else {
+        // Mixed — split into pos sentence and neg sentence
+        const posItems=offStandalones.filter((_,i)=>stanDirs[i]==='pos');
+        const negItems=offStandalones.filter((_,i)=>stanDirs[i]==='neg');
+        let mixedResult='';
+        if(posItems.length>0){
+          const posJoined=posItems.length===1?posItems[0]:posItems.slice(0,-1).join(', ')+' and '+posItems[posItems.length-1];
+          mixedResult+=(endsWithPeriod?' They ':'; they ')+posJoined+(negItems.length>0?'.':'');
+        }
+        if(negItems.length>0){
+          const negJoined=negItems.length===1?negItems[0]:negItems.slice(0,-1).join(', ')+' and '+negItems[negItems.length-1];
+          mixedResult+=' However, they '+negJoined+'.';
+        }
+        offDesc+=mixedResult;
+      }
       offClauseCount+=offStandalones.length;
     }
 
