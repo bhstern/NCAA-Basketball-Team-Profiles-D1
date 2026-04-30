@@ -1507,7 +1507,7 @@ function recalcBlurb(row,view){
 
     // ── FINAL ASSEMBLY ───────────────────────────────────────────────────────
     const hasPeriod=offDesc.includes('.')||defDesc.includes('.');
-    const defNeedsThey=!['opponents','force','funnel','limit','struggle','they','chase','pack','rarely','infrequently','tend','frequently','allow'].some(w=>defDesc.startsWith(w));
+    const defNeedsThey=!['opponents','force','funnel','limit','struggle','they','chase','rarely','infrequently','tend','frequently','allow'].some(w=>defDesc.startsWith(w));
     const defClause=defNeedsThey?'they '+defDesc:defDesc;
     blurb=hasPeriod?
       nm+' '+offDesc+'. Defensively, '+defClause+'.':
