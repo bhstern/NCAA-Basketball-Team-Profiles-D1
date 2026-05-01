@@ -1133,6 +1133,10 @@ function recalcBlurb(row,view){
       if(!arr||!arr.length)return '';
       const pick=arr.find(p=>!usedOffPhrases.includes(p))||arr[0];
       usedOffPhrases.push(pick);
+      // Low rate + positive FG%: "but" not "and" — avoiding a shot then finishing well is a contrast
+      if(!isNaN(ratePct)&&ratePct<=0.35&&isPos(t)&&pick.startsWith(' and ')){
+        return pick.replace(/^ and /,' but ');
+      }
       return pick;
     }
 
