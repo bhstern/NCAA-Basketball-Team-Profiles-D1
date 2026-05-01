@@ -1295,14 +1295,24 @@ function recalcBlurb(row,view){
     }
     if(!offMentioned.has('mid')){
       // Mid standalone: FG% >=80/20 AND rate >=35th
+      // When mid rate is very high (>=90th), always mention it — it's a genuine identity
+      // When mid rate is high (>=85th), lower FG% threshold
       const tm=fgTier(fgMid);
-      if((fgMid>=stHi||fgMid<=stLo)&&offMidR>=0.35){
-        if(fgMid>=stHi)offStans.push({dir:'pos',phrase:'convert midrange shots at '+(tm==='elite'?'an elite':'a strong')+' percentage'});
+      const midFGHi=offMidR>=0.85?0.70:stHi;
+      const midFGLo=offMidR>=0.85?0.30:stLo;
+      if(offMidR>=0.90){
+        // Very extreme mid rate — mention rate regardless of FG%
+        const midRateDesc='rely heavily on midrange attempts';
+        if(fgMid>=midFGHi)offStans.push({dir:'pos',phrase:midRateDesc+', converting at '+(tm==='elite'?'an elite':'a strong')+' percentage'});
+        else if(fgMid<=midFGLo)offStans.push({dir:'neg',phrase:midRateDesc+', though they '+( tm==='verypoor'?'have very poor midrange conversion':'struggle to convert them')});
+        else offStans.push({dir:'neu',phrase:midRateDesc});
+      } else if((fgMid>=midFGHi||fgMid<=midFGLo)&&offMidR>=0.35){
+        if(fgMid>=midFGHi)offStans.push({dir:'pos',phrase:'convert midrange shots at '+(tm==='elite'?'an elite':'a strong')+' percentage'});
         else offStans.push({dir:'neg',phrase:tm==='verypoor'?'have very poor midrange conversion':'struggle with midrange conversion'});
       }
     }
     if(offStans.length>0){
-      const posI=offStans.filter(s=>s.dir==='pos').map(s=>s.phrase);
+      const posI=offStans.filter(s=>s.dir==='pos'||s.dir==='neu').map(s=>s.phrase);
       const negI=offStans.filter(s=>s.dir==='neg').map(s=>s.phrase);
       const ep=offDesc.trim().endsWith('.');
       const join=items=>items.length===1?items[0]:items.length===2?items[0]+' and '+items[1]:items.slice(0,-1).join(', ')+', and '+items[items.length-1];
