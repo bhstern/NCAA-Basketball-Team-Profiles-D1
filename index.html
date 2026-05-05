@@ -1519,8 +1519,8 @@ function recalcBlurb(row,view){
         if(defMentioned.has(s))continue;
         const fg=defFGMap[s];
         const rate=defRMap[s];
-        // Mid standalone: only fire if rate is high (>=65th) — low mid rate is not a defensive identity
-        if(s==='mid'&&rate<0.65)continue;
+        // Mid standalone: only fire if rate is high (>=65th positive, >=55th negative)
+        if(s==='mid'&&rate<0.65&&!(rate>=0.55&&fg<=stLo))continue;
         if(fg>=stHi){
           const fgQ=defFGQuality(s,fg);
           if(fgQ)defStans.push({dir:'pos',phrase:'display '+fgQ});
