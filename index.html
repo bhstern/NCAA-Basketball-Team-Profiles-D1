@@ -1362,13 +1362,15 @@ function recalcBlurb(row,view){
 
     // Mid can lead/appear in defense only with high rate
     function midDefCanAppear(asPrimary){
-      if(defRMap.mid<0.65)return false;
       if(asPrimary){
+        // Mid can only lead if rate is HIGH (>=65th) AND scores highest
+        // Low mid rate (<=20th) with great FG% is a standalone story, not a lead
+        if(defRMap.mid<0.65)return false;
         const rs=shotScore(defRimR,dfgRim,'rim'),ts=shotScore(defThreeR,dfg3,'threes'),ms=shotScore(defMidR,dfgMid,'mid');
         return ms>rs&&ms>ts;
       }
-      // Secondary: mid force condition
-      return defRimR<=0.60&&defThreeR<=0.60;
+      // Secondary: mid force condition — high rate with rim+three both limited
+      return defRMap.mid>=0.65&&defRimR<=0.60&&defThreeR<=0.60;
     }
 
     let defDesc='';
@@ -1466,13 +1468,24 @@ function recalcBlurb(row,view){
 
     } else {
       // ── STEPS 1+2: Normal priority ────────────────────────────────────────
-      const defPrimary=defRanked[0]==='mid'&&!midDefCanAppear(true)?defRanked[1]:defRanked[0];
+      // Primary must have non-neutral rate (not 35-65th)
+      // Neutral rate shots are FG%-only stories that belong in standalone
+      let defPrimaryIdx=defRanked[0]==='mid'&&!midDefCanAppear(true)?1:0;
+      while(defPrimaryIdx<defRanked.length){
+        const candidate=defRanked[defPrimaryIdx];
+        const cRate=defRMap[candidate];
+        // Skip if rate is neutral (35-65th) — FG% alone doesn't anchor a primary
+        if(cRate<0.35||cRate>0.65)break;
+        defPrimaryIdx++;
+      }
+      const defPrimary=defPrimaryIdx<defRanked.length?defRanked[defPrimaryIdx]:defRanked[0];
       const defPrimRate=defRMap[defPrimary];
       const defPrimFG=defFGMap[defPrimary];
       const defPrimRateNotable=defPrimRate>=0.65||defPrimRate<=0.35;
       const defPrimFGNotable=fgTier(defPrimFG)!=='neutral';
 
-      if(defPrimRateNotable||defPrimFGNotable){
+      // Primary must have notable rate — FG%-only stories go to standalone
+      if(defPrimRateNotable){
         defMentioned.add(defPrimary);
         const r=buildDefClause(defPrimary,defPrimRate,defPrimFG,false);
         defDesc=r.clause;
@@ -1484,7 +1497,8 @@ function recalcBlurb(row,view){
         for(const s of defSecOpts){
           if(s==='mid'&&!midDefCanAppear(false))continue;
           const sR=defRMap[s],sFG=defFGMap[s];
-          if(sR>=0.65||sR<=0.35||fgTier(sFG)!=='neutral'){defSec=s;break;}
+          // Only fire as secondary if rate is notable — FG%-only stories go to standalone
+          if(sR>=0.65||sR<=0.35){defSec=s;break;}
         }
         if(defSec){
           defMentioned.add(defSec);
@@ -1505,8 +1519,8 @@ function recalcBlurb(row,view){
         if(defMentioned.has(s))continue;
         const fg=defFGMap[s];
         const rate=defRMap[s];
-        // Mid standalone: rate >=35th
-        if(s==='mid'&&rate<0.35)continue;
+        // Mid standalone: only fire if rate is high (>=65th) — low mid rate is not a defensive identity
+        if(s==='mid'&&rate<0.65)continue;
         if(fg>=stHi){
           const fgQ=defFGQuality(s,fg);
           if(fgQ)defStans.push({dir:'pos',phrase:'display '+fgQ});
