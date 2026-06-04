@@ -10,8 +10,8 @@ import json
 import os
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-CSV_PATH = r'C:\Users\bstern\OneDrive - Harris Blitzer Sports & Entertainment\Desktop\CBB Analysis\2016-2026 CBB Dataset Team Profiles.csv'
-OUTPUT_DIR = r'C:\Users\bstern\OneDrive - Harris Blitzer Sports & Entertainment\Desktop\CBB Analysis\Team Profiles Website\cbb_site\data'
+CSV_PATH = '/Users/benjstern/Documents/CBB Analytics/Data/Master Datasets/2016-2026 CBB Dataset Team Profiles.csv'
+OUTPUT_DIR = '/Users/benjstern/Documents/CBB Analytics/NCAA-Basketball-Team-Profiles-D1/data'
 
 # ── Load ──────────────────────────────────────────────────────────────────────
 print('Loading CSV...')
@@ -36,11 +36,11 @@ df = df.where(pd.notnull(df), None)
 # ── Save one file per year ────────────────────────────────────────────────────
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-years = sorted(df['year_stats'].unique())
+years = sorted(df['year'].unique())
 print(f'\nWriting {len(years)} year files...')
 
 for year in years:
-    yr_df = df[df['year_stats'] == year]
+    yr_df = df[df['year'] == year]
     records = yr_df.to_dict(orient='records')
     filepath = os.path.join(OUTPUT_DIR, f'cbb_{year}.json')
     with open(filepath, 'w') as f:
@@ -51,7 +51,7 @@ for year in years:
 # ── Save team/year index ──────────────────────────────────────────────────────
 index = {}
 for year in years:
-    yr_df = df[df['year_stats'] == year]
+    yr_df = df[df['year'] == year]
     index[str(year)] = sorted(yr_df['team_name'].tolist())
 
 index_path = os.path.join(OUTPUT_DIR, 'index.json')
