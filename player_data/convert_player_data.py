@@ -279,11 +279,12 @@ for year in years:
         team_df = team_df.sort_values(['_tier_sort', 'minutes_per_game'],
                                        ascending=[True, False])
         team_df = team_df.drop(columns=['_tier_sort'])
-        roster_dict[team] = team_df.to_dict(orient='records')
+        records = team_df.to_dict(orient='records')
+        roster_dict[team] = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
 
     filepath = os.path.join(ROSTERS_DIR, f'rosters_{year}.json')
     with open(filepath, 'w') as f:
-        json.dump(roster_dict, f, separators=(',', ':'))
+        json.dump(roster_dict, f, separators=(',', ':'), default=lambda x: None)
 
     size_kb = os.path.getsize(filepath) / 1024
     print(f"  rosters_{year}.json — {yr_df['team'].nunique()} teams, {size_kb:.0f} KB")
