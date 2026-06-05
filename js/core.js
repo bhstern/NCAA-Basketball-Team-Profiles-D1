@@ -1,3 +1,5 @@
+const TDIR='logos/teams/', CDIR='logos/conferences/';
+let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
 let cView='d1', cHistCat='Overview', cHistComp='d1conf', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile'; let cTrendWindow=1;
 
 function isPower(row){return row&&row.power_mid==='Power';}
