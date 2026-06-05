@@ -99,7 +99,8 @@
   <div id="profile-subtab-roster" style="display:none;padding:22px 28px">
     <div id="roster-empty" class="empty-state">Select a team and season above</div>
     <div id="roster-loading" class="loading-state" style="display:none">Loading roster...</div>
-    <div id="roster-content" style="display:none">
+    <!-- Controls always visible once loaded -->
+    <div id="roster-controls-wrap" style="display:none">
       <div class="roster-controls">
         <div style="display:flex;gap:3px" id="roster-stat-tabs">
           <button class="hist-cat-btn active" onclick="setRosterStatTab('overview',this)">Overview</button>
@@ -112,6 +113,8 @@
         </div>
       </div>
     </div>
+    <!-- Table renders here separately so controls aren't overwritten -->
+    <div id="roster-content" style="display:none"></div>
   </div>
 
 </div>

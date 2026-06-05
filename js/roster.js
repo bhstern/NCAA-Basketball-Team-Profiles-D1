@@ -54,14 +54,14 @@ const ROSTER_FROZEN = [
 
 const ROSTER_STAT_TABS = {
   overview: [
-    {key:'ppg',         label:'PPG',    fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'rebpg',       label:'REB',    fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'astpg',       label:'AST',    fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'stlpg',       label:'STL',    fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'blkpg',       label:'BLK',    fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'ts',          label:'TS%',    fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'usage_pct',   label:'USG%',   fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'prpg',        label:'PR',     fmt:v=>parseFloat(v).toFixed(1)},
+    {key:'ppg',         label:'PTS/G',  fmt:v=>parseFloat(v).toFixed(1)},
+    {key:'rebpg',       label:'REB/G',  fmt:v=>parseFloat(v).toFixed(1)},
+    {key:'astpg',       label:'AST/G',  fmt:v=>parseFloat(v).toFixed(1)},
+    {key:'stlpg',       label:'STL/G',  fmt:v=>parseFloat(v).toFixed(1)},
+    {key:'blkpg',       label:'BLK/G',  fmt:v=>parseFloat(v).toFixed(1)},
+    {key:'ts',          label:'TS%',    fmt:v=>fmtPct(v)},
+    {key:'usage_pct',   label:'USG%',   fmt:v=>fmtPct(v)},
+    {key:'prpg',        label:'PRPG',   fmt:v=>parseFloat(v).toFixed(2)},
     {key:'bpm',         label:'BPM',    fmt:v=>(parseFloat(v)>0?'+':'')+parseFloat(v).toFixed(1)},
     {key:'obpm',        label:'OBPM',   fmt:v=>(parseFloat(v)>0?'+':'')+parseFloat(v).toFixed(1)},
     {key:'dbpm',        label:'DBPM',   fmt:v=>(parseFloat(v)>0?'+':'')+parseFloat(v).toFixed(1)},
@@ -72,28 +72,38 @@ const ROSTER_STAT_TABS = {
     {key:'drtg',        label:'DRtg',   fmt:v=>parseFloat(v).toFixed(1)},
     {key:'drtg_delta_team', label:'DRtg vs Team', fmt:v=>(parseFloat(v)>0?'+':'')+(-parseFloat(v)).toFixed(1)},
     {key:'ppp_used',    label:'PPP',    fmt:v=>parseFloat(v).toFixed(3)},
-    {key:'or_pct',      label:'OR%',    fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'dr_pct',      label:'DR%',    fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'ast_pct',     label:'AST%',   fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'tov_pct',     label:'TOV%',   fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'blk_pct',     label:'BLK%',   fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'stl_pct',     label:'STL%',   fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
+    {key:'or_pct',      label:'OR%',    fmt:v=>fmtPct(v)},
+    {key:'dr_pct',      label:'DR%',    fmt:v=>fmtPct(v)},
+    {key:'ast_pct',     label:'AST%',   fmt:v=>fmtPct(v)},
+    {key:'tov_pct',     label:'TOV%',   fmt:v=>fmtPct(v)},
+    {key:'blk_pct',     label:'BLK%',   fmt:v=>fmtPct(v)},
+    {key:'stl_pct',     label:'STL%',   fmt:v=>fmtPct(v)},
     {key:'ast_tov_ratio',label:'A/T',   fmt:v=>parseFloat(v).toFixed(2)},
     {key:'foul_sensitivity', label:'Foul Sens', fmt:v=>parseFloat(v).toFixed(2)},
   ],
   shooting: [
-    {key:'ts',          label:'TS%',    fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'rim_rate',    label:'Rim Rate', fmt:v=>(parseFloat(v)*100).toFixed(1)+'%', pctKey:'rim_rate_pct'},
-    {key:'rim_fg_pct',  label:'Rim FG%', fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'midrange_rate', label:'Mid Rate', fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'midrange_fg_pct', label:'Mid FG%', fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'three_rate',  label:'3PT Rate', fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'three_fg_pct',label:'3PT%',   fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
+    {key:'ts',          label:'TS%',    fmt:v=>fmtPct(v)},
+    {key:'rim_rate',    label:'Rim Rate', fmt:v=>fmtPct(v), pctKey:'rim_rate_pct'},
+    {key:'rim_fg_pct',  label:'Rim FG%', fmt:v=>fmtPct(v)},
+    {key:'midrange_rate', label:'Mid Rate', fmt:v=>fmtPct(v)},
+    {key:'midrange_fg_pct', label:'Mid FG%', fmt:v=>fmtPct(v)},
+    {key:'three_rate',  label:'3PT Rate', fmt:v=>fmtPct(v)},
+    {key:'three_fg_pct',label:'3PT%',   fmt:v=>fmtPct(v)},
     {key:'three_att_pg',label:'3PA/G',  fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'ft_rate',     label:'FT Rate', fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
-    {key:'ft_pct',      label:'FT%',    fmt:v=>(parseFloat(v)*100).toFixed(1)+'%'},
+    {key:'ft_rate',     label:'FT Rate', fmt:v=>fmtPct(v)},
+    {key:'ft_pct',      label:'FT%',    fmt:v=>fmtPct(v)},
   ],
 };
+
+// Smart percentage formatter — handles both decimal (0.45) and whole-number (45.0) storage
+function fmtPct(v, decimals=1) {
+  const n = parseFloat(v);
+  if (isNaN(n)) return '—';
+  // If value > 1, already stored as percentage (e.g. 39.9 = 39.9%)
+  // If value <= 1, stored as decimal (e.g. 0.399 = 39.9%)
+  const pct = n > 1 ? n : n * 100;
+  return pct.toFixed(decimals) + '%';
+}
 
 // Keys that have no percentile (display strings, deltas, etc)
 const NO_PCT_KEYS = new Set([
@@ -158,6 +168,8 @@ async function renderRoster() {
       empty.textContent = `No roster data for ${cTeam} in ${cYear}.`;
       return;
     }
+    const controlsWrap = document.getElementById('roster-controls-wrap');
+    if (controlsWrap) controlsWrap.style.display = 'block';
     wrap.style.display = 'block';
     renderRosterTable(players);
   } catch(e) {
@@ -254,11 +266,7 @@ function renderRosterTable(playersArg) {
 
   html += `</tbody></table></div>`;
 
-  // Tier 2 footnote
-  const hasTier2 = players.some(p => p.percentile_tier === 'Tier 2');
-  if (hasTier2) {
-    html += `<div class="roster-footnote">* Fringe rotation player (5–10 MPG) — percentiles shown alongside full-rotation players for reference only</div>`;
-  }
+  // Tier 2 footnote removed — info is in tier header row
 
   wrap.innerHTML = html;
 }
@@ -272,7 +280,7 @@ function rosterStatCell(p, stat, mode, noPercentile, isTier2) {
   const isDrtgDelta = DRTG_DELTA_KEYS.has(stat.key);
   const fmtRaw = () => {
     const v = parseFloat(rawVal);
-    if (isNaN(v)) return rawVal ?? '—';
+    if (isNaN(v) || rawVal === null || rawVal === undefined) return '—';
     // drtg delta: flip sign so positive = better defense
     if (isDrtgDelta) {
       const flipped = -v;
