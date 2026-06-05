@@ -20,7 +20,7 @@ const ROSTER_TIPS = {
   ortg:           'Offensive Rating — points produced per 100 possessions used. Measures individual scoring and creation efficiency.',
   ortg_delta_team:'Player ORtg minus team adjusted offensive efficiency. Positive = player is more offensively efficient than his team overall.',
   drtg:           'Defensive Rating — points allowed per 100 possessions while the player is on the floor. Lower is better.',
-  drtg_delta_team:'How many points per 100 possessions better this player defends relative to team average. Positive = better defender than team average. (Sign is flipped from raw DRtg — lower DRtg is better, so a negative delta becomes a positive display value.)',,
+  drtg_delta_team:'How many points per 100 possessions better this player defends relative to team average. Positive = better defender than team average. (Sign is flipped from raw DRtg — lower DRtg is better, so a negative delta becomes a positive display value.)',
   ppp_used:       'Points per possession used — total points scored divided by usage-weighted possessions. Measures scoring output on possessions this player ends.',
   or_pct:         'Offensive Rebound % — share of available offensive rebounds secured while on the floor.',
   dr_pct:         'Defensive Rebound % — share of available defensive rebounds secured while on the floor.',
