@@ -110,11 +110,11 @@ const DRTG_DELTA_KEYS = new Set([
 ]);
 
 const MPG_TIER_LABELS = {
-  'Core Player':        {label:'Core Rotation (26+ MPG)',                                          color:'var(--accent)',  note:''},
-  'Primary Rotation':   {label:'Primary Rotation (18–26 MPG)',                                     color:'var(--text2)',   note:''},
-  'Bench Rotation':     {label:'Bench Rotation (10–18 MPG)',                                       color:'var(--text3)',   note:''},
-  'Fringe Rotation':    {label:'Fringe Rotation (5–10 MPG)',                                       color:'var(--text4)',   note:'Limited sample — percentiles shown for reference, not direct comparison to full-rotation players'},
-  'End of Bench':       {label:'End of Bench (<5 MPG)',                                            color:'var(--text4)',   note:'Too few minutes for reliable percentiles — raw stats only'},
+  'Core Player (26+ MPG)':        {label:'Core Rotation (26+ MPG)',       color:'var(--accent)',  note:''},
+  'Primary Rotation (18–26 MPG)':  {label:'Primary Rotation (18–26 MPG)', color:'var(--text2)',   note:''},
+  'Bench Rotation (10–18 MPG)':    {label:'Bench Rotation (10–18 MPG)',   color:'var(--text3)',   note:''},
+  'Fringe Rotation (5–10 MPG)':    {label:'Fringe Rotation (5–10 MPG)',   color:'var(--text4)',   note:'Limited sample — percentiles shown for reference, not direct comparison to full-rotation players'},
+  'End of Bench (0–5 MPG)':        {label:'End of Bench (0–5 MPG)',       color:'var(--text4)',   note:'Too few minutes for reliable percentiles — raw stats only'},
 };
 
 async function loadRoster(team, year) {
@@ -184,7 +184,7 @@ function renderRosterTable(playersArg) {
   const mode = cRosterDisplayMode;
 
   // Group by MPG tier
-  const tierOrder = ['Core Player','Primary Rotation','Bench Rotation','Fringe Rotation','End of Bench'];
+  const tierOrder = ['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)','End of Bench (0–5 MPG)'];
   const grouped = {};
   tierOrder.forEach(t => grouped[t] = []);
   players.forEach(p => {
