@@ -11,6 +11,15 @@ function updateURL(){
   history.replaceState(null,'','?'+params.toString());
 }
 
+function switchProfileSubTab(sub, btn) {
+  document.querySelectorAll('#profile-subtab-nav .hist-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('profile-subtab-stats').style.display = sub === 'stats' ? 'block' : 'none';
+  document.getElementById('profile-subtab-roster').style.display = sub === 'roster' ? 'block' : 'none';
+  if (sub === 'roster' && cTeam && cYear) renderRoster();
+  if (sub === 'stats' && cRow) renderProfile();
+}
+
 function switchTab(tab,btn){
   cTab=tab;
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));

@@ -74,16 +74,46 @@
 
 <!-- PROFILE TAB -->
 <div id="tab-profile" class="tab-content active">
-  <div id="profile-empty" class="empty-state">Select a team and season above</div>
-  <div id="profile-loading" class="loading-state" style="display:none">Loading...</div>
-  <div id="profile-content" style="display:none">
-    <div class="view-toggle">
-      <button class="view-btn active" onclick="setView('d1',this)">All D1</button>
-      <button class="view-btn" onclick="setView('conf',this)">Conference Rank</button>
-      <button class="view-btn" onclick="setView('sub',this)" id="sub-view-btn">vs. Power Conf</button>
-    </div>
-    <div class="profile-grid" id="profile-grid"></div>
+
+  <!-- Profile sub-tab nav -->
+  <div id="profile-subtab-nav" style="display:flex;gap:2px;padding:10px 28px 0;border-bottom:1px solid var(--border);background:var(--surface);">
+    <button class="hist-cat-btn active" id="pst-stats" onclick="switchProfileSubTab('stats',this)">Team Stats</button>
+    <button class="hist-cat-btn" id="pst-roster" onclick="switchProfileSubTab('roster',this)">Roster</button>
   </div>
+
+  <!-- Team Stats sub-tab -->
+  <div id="profile-subtab-stats" style="padding:22px 28px">
+    <div id="profile-empty" class="empty-state">Select a team and season above</div>
+    <div id="profile-loading" class="loading-state" style="display:none">Loading...</div>
+    <div id="profile-content" style="display:none">
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="setView('d1',this)">All D1</button>
+        <button class="view-btn" onclick="setView('conf',this)">Conference Rank</button>
+        <button class="view-btn" onclick="setView('sub',this)" id="sub-view-btn">vs. Power Conf</button>
+      </div>
+      <div class="profile-grid" id="profile-grid"></div>
+    </div>
+  </div>
+
+  <!-- Roster sub-tab -->
+  <div id="profile-subtab-roster" style="display:none;padding:22px 28px">
+    <div id="roster-empty" class="empty-state">Select a team and season above</div>
+    <div id="roster-loading" class="loading-state" style="display:none">Loading roster...</div>
+    <div id="roster-content" style="display:none">
+      <div class="roster-controls">
+        <div style="display:flex;gap:3px" id="roster-stat-tabs">
+          <button class="hist-cat-btn active" onclick="setRosterStatTab('overview',this)">Overview</button>
+          <button class="hist-cat-btn" onclick="setRosterStatTab('advanced',this)">Role / Advanced</button>
+          <button class="hist-cat-btn" onclick="setRosterStatTab('shooting',this)">Shooting</button>
+        </div>
+        <div class="view-toggle" style="margin-bottom:0" id="roster-display-toggle">
+          <button class="view-btn" onclick="setRosterDisplayMode('raw',this)">Raw</button>
+          <button class="view-btn active" onclick="setRosterDisplayMode('percentile',this)">Percentile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- CONFERENCE TAB -->
@@ -158,6 +188,35 @@
     </div>
     <div id="hist-caveat" style="display:none;margin-bottom:10px;font-size:11px;color:var(--text4);font-style:italic;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;"></div>
     <div id="hist-table-container"></div>
+  </div>
+</div>
+
+<!-- ROSTER TAB -->
+<div id="tab-roster" class="tab-content">
+  <div id="roster-empty" class="empty-state">Select a team and season above</div>
+  <div id="roster-loading" class="loading-state" style="display:none">Loading roster...</div>
+  <div id="roster-content" style="display:none">
+    <div class="roster-controls">
+      <div class="roster-subtab-bar" id="roster-subtab-bar">
+        <button class="roster-subtab-btn active" onclick="setRosterSubTab('overview',this)">Overview</button>
+        <button class="roster-subtab-btn" onclick="setRosterSubTab('advanced',this)">Role / Advanced</button>
+        <button class="roster-subtab-btn" onclick="setRosterSubTab('shooting',this)">Shooting</button>
+      </div>
+      <div class="view-toggle" id="roster-view-toggle" style="margin-bottom:0">
+        <button class="view-btn active" onclick="setRosterView('raw',this)">Raw</button>
+        <button class="view-btn" onclick="setRosterView('pct',this)">Percentile</button>
+        <button class="view-btn" onclick="setRosterView('rank',this)">Rank</button>
+      </div>
+    </div>
+    <div class="roster-table-wrap" id="roster-table-wrap"></div>
+    <div class="roster-legend">
+      <span class="roster-legend-item"><span class="pct-elite">■</span> Elite (85th+)</span>
+      <span class="roster-legend-item"><span class="pct-good">■</span> Above Avg (65–85th)</span>
+      <span class="roster-legend-item"><span class="pct-avg">■</span> Average (40–65th)</span>
+      <span class="roster-legend-item"><span class="pct-below">■</span> Below Avg (20–40th)</span>
+      <span class="roster-legend-item"><span class="pct-poor">■</span> Poor (&lt;20th)</span>
+      <span class="roster-legend-item" style="margin-left:8px;color:var(--text4)">* = limited minutes sample (Tier 2)</span>
+    </div>
   </div>
 </div>
 
@@ -360,6 +419,7 @@
 </script>
 
 <script src="js/core.js"></script>
+<script src="js/roster.js"></script>
 <script src="js/team.js"></script>
 <script src="js/h2h.js"></script>
 <script src="js/nav.js"></script>

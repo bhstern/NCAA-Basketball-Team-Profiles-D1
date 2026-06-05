@@ -57,14 +57,14 @@ async function onSelectionChange(){
 }
 
 function showLoading(){
-  ['profile','conference','historical'].forEach(t=>{
+  ['profile','conference','historical','roster'].forEach(t=>{
     const e=document.getElementById(`${t}-empty`);if(e)e.style.display='none';
     const l=document.getElementById(`${t}-loading`);if(l)l.style.display='flex';
     const c=document.getElementById(`${t}-content`);if(c)c.style.display='none';
   });
 }
 function showEmpty(msg){
-  ['profile','conference','historical'].forEach(t=>{
+  ['profile','conference','historical','roster'].forEach(t=>{
     const l=document.getElementById(`${t}-loading`);if(l)l.style.display='none';
     const e=document.getElementById(`${t}-empty`);if(e){e.textContent=msg;e.style.display='flex';}
   });
