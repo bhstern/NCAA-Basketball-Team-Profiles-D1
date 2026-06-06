@@ -38,10 +38,17 @@ const ROSTER_TIPS = {
 };
 
 // Smart pct formatter — handles decimal (0.45) and whole-number (45.0) storage
+// Whole-number % storage (e.g. ts=59.56, usage_pct=25.7, or_pct=6.7)
 function fmtPct(v, decimals=1) {
   const n = parseFloat(v);
   if (isNaN(n) || v === null || v === undefined) return '—';
   return n.toFixed(decimals) + '%';
+}
+// Decimal % storage (e.g. rim_rate=0.324, rim_fg_pct=0.571, ft_pct=0.796)
+function fmtPctDec(v, decimals=1) {
+  const n = parseFloat(v);
+  if (isNaN(n) || v === null || v === undefined) return '—';
+  return (n * 100).toFixed(decimals) + '%';
 }
 
 function fmtSign(v, decimals=1) {
@@ -105,19 +112,19 @@ const ROSTER_STAT_TABS = {
     {key:'foul_sensitivity', label:'Foul\nSensitivity',fmt:v=>parseFloat(v).toFixed(2)},
   ],
   shooting: [
-    {key:'ts',              label:'TS%',          fmt:v=>fmtPct(v)},
-    {key:'rim_rate',        label:'Rim\nRate',   fmt:v=>fmtPct(v)},
-    {key:'rim_fg_pct',      label:'Rim\nFG%',   fmt:v=>fmtPct(v)},
-    {key:'_rim_ma',         label:'Rim\nM/A',   fmt:(v,p)=>fmtMA(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true},
-    {key:'midrange_rate',   label:'Mid\nRate',   fmt:v=>fmtPct(v)},
-    {key:'midrange_fg_pct', label:'Mid\nFG%',   fmt:v=>fmtPct(v)},
-    {key:'_mid_ma',         label:'Mid\nM/A',   fmt:(v,p)=>fmtMA(p,'midrange_made_pg','midrange_att_pg'), noBar:true, computed:true},
-    {key:'three_rate',      label:'3PT\nRate',   fmt:v=>fmtPct(v)},
-    {key:'three_fg_pct',    label:'3PT%',         fmt:v=>fmtPct(v)},
-    {key:'_three_ma',       label:'3PT\nM/A',   fmt:(v,p)=>fmtMA(p,'three_made_pg','three_att_pg'), noBar:true, computed:true},
-    {key:'ft_rate',         label:'FT\nRate',    fmt:v=>fmtPct(v)},
-    {key:'ft_pct',          label:'FT%',          fmt:v=>fmtPct(v)},
-    {key:'_ft_ma',          label:'FT\nM/A',    fmt:(v,p)=>fmtMA(p,'ft_made_pg','ft_att_pg'), noBar:true, computed:true},
+    {key:'ts',              label:'TS%',               fmt:v=>fmtPct(v)},
+    {key:'rim_rate',        label:'Rim\nRate',        fmt:v=>fmtPctDec(v)},
+    {key:'rim_fg_pct',      label:'Rim\nFG%',        fmt:v=>fmtPctDec(v)},
+    {key:'_rim_ma',         label:'Rim\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true},
+    {key:'midrange_rate',   label:'Mid\nRate',        fmt:v=>fmtPctDec(v)},
+    {key:'midrange_fg_pct', label:'Mid\nFG%',        fmt:v=>fmtPctDec(v)},
+    {key:'_mid_ma',         label:'Mid\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'midrange_made_pg','midrange_att_pg'), noBar:true, computed:true},
+    {key:'three_rate',      label:'3PT\nRate',        fmt:v=>fmtPctDec(v)},
+    {key:'three_fg_pct',    label:'3PT%',              fmt:v=>fmtPctDec(v)},
+    {key:'_three_ma',       label:'3PT\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'three_made_pg','three_att_pg'), noBar:true, computed:true},
+    {key:'ft_rate',         label:'FT\nRate',         fmt:v=>fmtPctDec(v)},
+    {key:'ft_pct',          label:'FT%',               fmt:v=>fmtPctDec(v)},
+    {key:'_ft_ma',          label:'FTM/FTA',           fmt:(v,p)=>fmtMA(p,'ft_made_pg','ft_att_pg'), noBar:true, computed:true},
   ],
 };
 
