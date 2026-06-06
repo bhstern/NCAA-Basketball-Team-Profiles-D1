@@ -50,9 +50,16 @@ function fmtSign(v, decimals=1) {
   return (n > 0 ? '+' : '') + n.toFixed(decimals);
 }
 
+function fmtMA(p, madeKey, attKey) {
+  const m = parseFloat(p[madeKey]);
+  const a = parseFloat(p[attKey]);
+  if (isNaN(m) || isNaN(a)) return '—';
+  return m.toFixed(1) + '/' + a.toFixed(1);
+}
+
 // Keys that are display strings — no percentile bar, white text
 const STRING_KEYS = new Set([
-  'rim_made_att_str','midrange_made_att_str','three_made_att_str','ft_made_att_str'
+  '_rim_ma','_mid_ma','_three_ma','_ft_ma',
 ]);
 
 // drtg delta keys — flip sign on display so positive = better defense
@@ -98,19 +105,19 @@ const ROSTER_STAT_TABS = {
     {key:'foul_sensitivity', label:'Foul\nSensitivity',fmt:v=>parseFloat(v).toFixed(2)},
   ],
   shooting: [
-    {key:'ts',                  label:'TS%',        fmt:v=>fmtPct(v)},
-    {key:'rim_rate',            label:'Rim Rate',   fmt:v=>fmtPct(v)},
-    {key:'rim_fg_pct',          label:'Rim FG%',    fmt:v=>fmtPct(v)},
-    {key:'rim_made_att_str',    label:'Rim M/A',    fmt:v=>v??'—', noBar:true},
-    {key:'midrange_rate',       label:'Mid Rate',   fmt:v=>fmtPct(v)},
-    {key:'midrange_fg_pct',     label:'Mid FG%',    fmt:v=>fmtPct(v)},
-    {key:'midrange_made_att_str',label:'Mid M/A',   fmt:v=>v??'—', noBar:true},
-    {key:'three_rate',          label:'3PT Rate',   fmt:v=>fmtPct(v)},
-    {key:'three_fg_pct',        label:'3PT%',       fmt:v=>fmtPct(v)},
-    {key:'three_made_att_str',  label:'3PT M/A',    fmt:v=>v??'—', noBar:true},
-    {key:'ft_rate',             label:'FT Rate',    fmt:v=>fmtPct(v)},
-    {key:'ft_pct',              label:'FT%',        fmt:v=>fmtPct(v)},
-    {key:'ft_made_att_str',     label:'FT M/A',     fmt:v=>v??'—', noBar:true},
+    {key:'ts',              label:'TS%',          fmt:v=>fmtPct(v)},
+    {key:'rim_rate',        label:'Rim\nRate',   fmt:v=>fmtPct(v)},
+    {key:'rim_fg_pct',      label:'Rim\nFG%',   fmt:v=>fmtPct(v)},
+    {key:'_rim_ma',         label:'Rim\nM/A',   fmt:(v,p)=>fmtMA(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true},
+    {key:'midrange_rate',   label:'Mid\nRate',   fmt:v=>fmtPct(v)},
+    {key:'midrange_fg_pct', label:'Mid\nFG%',   fmt:v=>fmtPct(v)},
+    {key:'_mid_ma',         label:'Mid\nM/A',   fmt:(v,p)=>fmtMA(p,'midrange_made_pg','midrange_att_pg'), noBar:true, computed:true},
+    {key:'three_rate',      label:'3PT\nRate',   fmt:v=>fmtPct(v)},
+    {key:'three_fg_pct',    label:'3PT%',         fmt:v=>fmtPct(v)},
+    {key:'_three_ma',       label:'3PT\nM/A',   fmt:(v,p)=>fmtMA(p,'three_made_pg','three_att_pg'), noBar:true, computed:true},
+    {key:'ft_rate',         label:'FT\nRate',    fmt:v=>fmtPct(v)},
+    {key:'ft_pct',          label:'FT%',          fmt:v=>fmtPct(v)},
+    {key:'_ft_ma',          label:'FT\nM/A',    fmt:(v,p)=>fmtMA(p,'ft_made_pg','ft_att_pg'), noBar:true, computed:true},
   ],
 };
 
@@ -229,9 +236,11 @@ function renderRosterTable(playersArg) {
   ROSTER_FROZEN.forEach(col => {
     html += `<th class="roster-frozen-th">${col.label}${col.stacked ? rosterTip(col.key) : ''}</th>`;
   });
-  stats.forEach(s => {
+  const totalStats = stats.length;
+  stats.forEach((s, i) => {
     const lbl = s.label.replace('\n','<br>');
-    html += `<th class="roster-stat-th">${lbl}${rosterTip(s.key)}</th>`;
+    const tipDir = i >= totalStats - 4 ? 'tip-left' : '';
+    html += `<th class="roster-stat-th ${tipDir}">${lbl}${rosterTip(s.key)}</th>`;
   });
   html += `</tr></thead><tbody>`;
 
@@ -244,14 +253,16 @@ function renderRosterTable(playersArg) {
       ? `<span class="roster-tier-note">${tierCfg.note}</span>`
       : '';
     html += `<tr class="roster-tier-row">
-      <td colspan="${totalCols}" style="color:${tierCfg.color}">
-        ${tierCfg.label}<span class="roster-tier-mpg">${tierCfg.mpg}</span>${noteHtml}
+      <td colspan="${totalCols}">
+        <span class="roster-tier-label" style="color:${tierCfg.color}">${tierCfg.label}</span>
+        <span class="roster-tier-mpg">${tierCfg.mpg}</span>
+        ${noteHtml}
       </td>
     </tr>`;
 
     group.forEach(p => {
       const isTier2 = p.percentile_tier === 'Tier 2';
-      const noPercentile = !p.percentile_eligible;
+      const noPercentile = !p.percentile_eligible || p.percentile_eligible === 'False' || p.percentile_eligible === false;
       const rowCls = isTier2 ? 'roster-row roster-tier2' : 'roster-row';
 
       html += `<tr class="${rowCls}">`;
@@ -278,11 +289,11 @@ function renderRosterTable(playersArg) {
 
       // Stat cells
       stats.forEach(s => {
-        const rawVal = p[s.key];
+        const rawVal = s.computed ? null : p[s.key];
         const isString = STRING_KEYS.has(s.key) || s.noBar;
 
         if (isString) {
-          const display = s.fmt(rawVal);
+          const display = s.computed ? s.fmt(null, p) : s.fmt(rawVal);
           html += `<td class="roster-stat-td"><span class="roster-raw-white">${display ?? '—'}</span></td>`;
           return;
         }
