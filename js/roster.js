@@ -132,7 +132,7 @@ const MPG_TIER_LABELS = {
   'Core Player (26+ MPG)':       {label:'Core Rotation',       mpg:'26+ MPG',    color:'var(--accent)',  note:''},
   'Primary Rotation (18\u201326 MPG)':{label:'Primary Rotation',   mpg:'18\u201326 MPG', color:'var(--text2)',   note:''},
   'Bench Rotation (10\u201318 MPG)':  {label:'Bench Rotation',      mpg:'10\u201318 MPG', color:'var(--text2)',   note:''},
-  'Fringe Rotation (5\u201310 MPG)':  {label:'Fringe Rotation',     mpg:'5\u201310 MPG',  color:'var(--text3)',   note:'Limited minutes \u2014 percentiles shown for reference \u00b7 requires 5+ games'},
+  'Fringe Rotation (5\u201310 MPG)':  {label:'Fringe Rotation',     mpg:'5\u201310 MPG',  color:'var(--text3)',   note:'Limited minutes \u2014 ranked on full-rotation scale (10+ MPG, 10+ games) \u00b7 5+ games required'},
   'End of Bench (0\u20135 MPG)':      {label:'End of Bench',        mpg:'0\u20135 MPG',   color:'var(--text4)',   note:'Too few minutes for reliable percentiles \u2014 raw stats only'},
 };
 
