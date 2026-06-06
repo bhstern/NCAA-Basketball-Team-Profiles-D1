@@ -238,7 +238,7 @@ function renderRosterTable(playersArg) {
 
   const totalCols = ROSTER_FROZEN.length + stats.length;
 
-  let html = `<div class="roster-table-wrap"><table class="roster-table"><thead><tr>`;
+  let html = `<div class="roster-scroll-wrap"><div class="roster-table-wrap"><table class="roster-table"><thead><tr>`;
 
   ROSTER_FROZEN.forEach(col => {
     html += `<th class="roster-frozen-th">${col.label}${col.stacked ? rosterTip(col.key) : ''}</th>`;
@@ -331,6 +331,6 @@ function renderRosterTable(playersArg) {
     });
   });
 
-  html += `</tbody></table></div>`;
+  html += `</tbody></table></div></div>`;
   wrap.innerHTML = html;
 }
