@@ -313,22 +313,29 @@ select:focus{border-color:var(--accent);}
 .roster-frozen-th:first-child{min-width:150px;}
 .roster-table tbody tr:last-child td{border-bottom:none;}
 .roster-frozen-td{position:sticky;left:0;background:var(--surface);z-index:1;padding:8px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border2);color:var(--text2);font-size:12px;}
-.roster-stat-td{padding:8px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;min-width:80px;}
+.roster-frozen-stacked{min-width:72px;text-align:center!important;vertical-align:middle;}
+.roster-stat-td{padding:8px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;min-width:82px;}
 .roster-name-cell{font-size:13px;font-weight:500;min-width:150px;}
-.roster-tier-row td{background:var(--surface2);font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);padding:10px 14px;border-bottom:1px solid var(--border);border-top:2px solid var(--border2);}
+.roster-tier-row td{background:var(--surface2);font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);border-top:2px solid var(--border2);}
+.roster-tier-mpg{font-size:10px;font-weight:400;letter-spacing:0.04em;color:var(--text4);margin-left:8px;text-transform:none;}
+.roster-tier-note{font-size:10px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--text4);font-style:italic;margin-left:12px;}
 .roster-tier2 .roster-frozen-td{opacity:0.75;}
 .roster-tier2 .roster-stat-td{opacity:0.75;}
-.roster-tier2-mark{font-size:9px;color:var(--text4);margin-left:2px;vertical-align:super;}
-.roster-raw{font-family:var(--font-mono);font-size:12px;color:var(--text2);}
-.roster-pct-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.roster-pct-val{font-family:var(--font-mono);font-size:13px;font-weight:500;}
-.roster-pct-bar-wrap{width:52px;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+/* Stacked cell — raw value on top, percentile+bar below */
+.roster-pct-cell{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.roster-raw-val{font-family:var(--font-mono);font-size:13px;font-weight:600;}
+.roster-raw-white{font-family:var(--font-mono);font-size:13px;color:var(--text1);}
+.roster-pct-row{display:flex;align-items:center;gap:4px;}
+.roster-pct-num{font-family:var(--font-mono);font-size:10px;font-weight:500;min-width:18px;text-align:right;}
+.roster-pct-bar-wrap{width:40px;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;}
 .roster-pct-bar{height:100%;border-radius:2px;}
-.tier2-pct .roster-pct-val{opacity:0.65;}
-.roster-footnote{font-size:10px;color:var(--text4);font-style:italic;margin-top:6px;padding:0 2px;}
-/* Muted color variants for tier2 */
+.tier2-pct .roster-raw-val{opacity:0.7;}
+.tier2-pct .roster-pct-num{opacity:0.7;}
+.tier2-pct .roster-pct-bar{opacity:0.7;}
+/* Percentile color classes */
+.pct-elite{color:#3dba7a;} .pct-good{color:#7ec87a;} .pct-avg{color:#e0c060;} .pct-below{color:#e09040;} .pct-poor{color:#e05040;}
+.pct-elite-bar{background:#3dba7a;} .pct-good-bar{background:#7ec87a;} .pct-avg-bar{background:#e0c060;} .pct-below-bar{background:#e09040;} .pct-poor-bar{background:#e05040;}
 .pct-elite-muted{color:#6bbf8e;} .pct-good-muted{color:#6b9e7a;} .pct-avg-muted{color:#b89a30;} .pct-below-muted{color:#b07030;} .pct-poor-muted{color:#b04030;}
 .pct-elite-muted-bar{background:#6bbf8e;} .pct-good-muted-bar{background:#6b9e7a;} .pct-avg-muted-bar{background:#b89a30;} .pct-below-muted-bar{background:#b07030;} .pct-poor-muted-bar{background:#b04030;}
-/* Tooltip fix for roster table — ensure tooltips appear above sticky headers */
-.roster-table th .tooltip{z-index:100;top:28px;left:0;}
-.roster-tier-note{font-size:9px;font-weight:400;letter-spacing:0.02em;text-transform:none;color:var(--text4);font-style:italic;margin-left:10px;opacity:0.85;}
+/* Tooltip positioning fix for sticky headers */
+.roster-table th .tooltip{z-index:100;top:28px;left:0;transform:none;}
