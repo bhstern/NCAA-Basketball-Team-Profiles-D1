@@ -41,8 +41,7 @@ const ROSTER_TIPS = {
 function fmtPct(v, decimals=1) {
   const n = parseFloat(v);
   if (isNaN(n) || v === null || v === undefined) return '—';
-  const pct = n > 1 ? n : n * 100;
-  return pct.toFixed(decimals) + '%';
+  return n.toFixed(decimals) + '%';
 }
 
 function fmtSign(v, decimals=1) {

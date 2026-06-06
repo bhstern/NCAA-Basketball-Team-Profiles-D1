@@ -90,16 +90,18 @@ ROSTER_TAB2_STATS = [
 # Tab 3 — Shooting stats (raw + national pct where applicable)
 ROSTER_TAB3_STATS = [
     'ts',
-    'rim_rate', 'rim_fg_pct', 'rim_made_att_str',
-    'midrange_rate', 'midrange_fg_pct', 'midrange_made_att_str',
-    'three_rate', 'three_fg_pct', 'three_made_att_str', 'three_att_pg',
-    'ft_rate', 'ft_pct', 'ft_made_att_str',
+    'rim_rate', 'rim_fg_pct', 'rim_made_pg', 'rim_att_pg',
+    'midrange_rate', 'midrange_fg_pct', 'midrange_made_pg', 'midrange_att_pg',
+    'three_rate', 'three_fg_pct', 'three_made_pg', 'three_att_pg',
+    'ft_rate', 'ft_pct', 'ft_made_pg', 'ft_att_pg',
 ]
 
 # String columns — display only, no percentile
 ROSTER_STRING_COLS = [
-    'rim_made_att_str', 'midrange_made_att_str',
-    'three_made_att_str', 'ft_made_att_str',
+    'rim_made_pg', 'rim_att_pg',
+    'midrange_made_pg', 'midrange_att_pg',
+    'three_made_pg', 'three_att_pg',
+    'ft_made_pg', 'ft_att_pg',
 ]
 
 ALL_ROSTER_STATS = list(dict.fromkeys(
@@ -279,12 +281,11 @@ for year in years:
         team_df = team_df.sort_values(['_tier_sort', 'minutes_per_game'],
                                        ascending=[True, False])
         team_df = team_df.drop(columns=['_tier_sort'])
-        records = team_df.to_dict(orient='records')
-        roster_dict[team] = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
+        roster_dict[team] = team_df.to_dict(orient='records')
 
     filepath = os.path.join(ROSTERS_DIR, f'rosters_{year}.json')
     with open(filepath, 'w') as f:
-        json.dump(roster_dict, f, separators=(',', ':'), default=lambda x: None)
+        json.dump(roster_dict, f, separators=(',', ':'))
 
     size_kb = os.path.getsize(filepath) / 1024
     print(f"  rosters_{year}.json — {yr_df['team'].nunique()} teams, {size_kb:.0f} KB")
