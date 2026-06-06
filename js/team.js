@@ -53,6 +53,11 @@ async function onSelectionChange(){
     cRow=row;
     updateBanner(row);updateSubLabels(row);
     renderTab();
+    // If roster sub-tab is active, re-render roster for new team/year
+    const rosterSubTab = document.getElementById('profile-subtab-roster');
+    if (rosterSubTab && rosterSubTab.style.display !== 'none') {
+      renderRoster();
+    }
   }catch(e){showEmpty('Error: '+e.message);console.error(e);}
 }
 
@@ -62,6 +67,8 @@ function showLoading(){
     const l=document.getElementById(`${t}-loading`);if(l)l.style.display='flex';
     const c=document.getElementById(`${t}-content`);if(c)c.style.display='none';
   });
+  // Hide roster controls while loading new team/year
+  const cw=document.getElementById('roster-controls-wrap');if(cw)cw.style.display='none';
 }
 function showEmpty(msg){
   ['profile','conference','historical','roster'].forEach(t=>{
