@@ -169,9 +169,12 @@ EXPLORER_RANKED_STATS = [
     # Deltas — conf
     'ortg_delta_conf', 'drtg_delta_conf', 'ts_delta_conf',
     'efg_delta_conf', 'rim_rate_delta_conf', 'three_rate_delta_conf',
+    # Deltas — sub
+    'ortg_delta_sub', 'drtg_delta_sub', 'ts_delta_sub',
+    'efg_delta_sub', 'rim_rate_delta_sub', 'three_rate_delta_sub',
 ]
 
-EXPLORER_PCT_SUFFIXES = ['_pct', '_conf_pct', '_sub_pct', '_pos_pct', '_pos_sub_pct']
+EXPLORER_PCT_SUFFIXES = ['_pct', '_conf_pct', '_sub_pct', '_pos_pct', '_pos_conf_pct', '_pos_sub_pct']
 
 def get_explorer_cols(df_cols):
     """Build Layer 2 column list — identifiers + raw + 4 pct contexts per stat."""

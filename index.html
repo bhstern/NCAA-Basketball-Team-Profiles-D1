@@ -254,16 +254,16 @@
       <div class="explorer-filter-group">
         <span class="selector-label">Search Player</span>
         <input type="text" id="ef-name-search" placeholder="Player name..." class="mf-search-input"
-          oninput="cExplorerNameSearch=this.value;onExplorerFilterChange()">
+          oninput="EF.name=this.value;onExplorerFilterChange()">
       </div>
 
       <!-- Position buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">Position</span>
         <div id="mf-position" class="mf-btn-group">
-          <button class="mf-btn active" data-value="Guard" onclick="togglePositionFilter('Guard',this)">Guard</button>
-          <button class="mf-btn active" data-value="Wing" onclick="togglePositionFilter('Wing',this)">Wing</button>
-          <button class="mf-btn active" data-value="Big" onclick="togglePositionFilter('Big',this)">Big</button>
+          <button class="mf-btn active" data-value="Guard" onclick="togglePosition('Guard',this)">Guard</button>
+          <button class="mf-btn active" data-value="Wing" onclick="togglePosition('Wing',this)">Wing</button>
+          <button class="mf-btn active" data-value="Big" onclick="togglePosition('Big',this)">Big</button>
         </div>
       </div>
 
@@ -271,12 +271,12 @@
       <div class="explorer-filter-group">
         <span class="selector-label">Level</span>
         <div id="mf-level" class="mf-btn-group">
-          <button class="mf-btn active" data-value="Power" onclick="toggleLevelFilter('Power',this)">Power</button>
-          <button class="mf-btn active" data-value="Mid-Major" onclick="toggleLevelFilter('Mid-Major',this)">Mid-Major</button>
+          <button class="mf-btn active" data-value="Power" onclick="toggleLevel('Power',this)">Power</button>
+          <button class="mf-btn active" data-value="Mid-Major" onclick="toggleLevel('Mid-Major',this)">Mid-Major</button>
         </div>
       </div>
 
-      <!-- Conference dropdown -->
+      <!-- Conference checkbox dropdown -->
       <div class="explorer-filter-group">
         <span class="selector-label">Conference</span>
         <div id="mf-conference" class="mf-dropdown-wrap"></div>
@@ -285,29 +285,37 @@
       <!-- Class buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">Class</span>
-        <div id="mf-class" class="mf-btn-group"></div>
+        <div id="mf-class" class="mf-btn-group">
+          <button class="mf-btn active" data-value="FR" onclick="toggleClass('FR',this)">FR</button>
+          <button class="mf-btn active" data-value="SO" onclick="toggleClass('SO',this)">SO</button>
+          <button class="mf-btn active" data-value="JR" onclick="toggleClass('JR',this)">JR</button>
+          <button class="mf-btn active" data-value="SR" onclick="toggleClass('SR',this)">SR</button>
+          <button class="mf-btn active" data-value="GR" onclick="toggleClass('GR',this)">GR</button>
+        </div>
       </div>
 
       <!-- MPG Tier buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">MPG Tier</span>
-        <div id="mf-mpg-tier" class="mf-btn-group"></div>
+        <div id="mf-mpg-tier" class="mf-btn-group">
+          <button class="mf-btn active" data-value="Core Player (26+ MPG)" onclick="toggleTier('Core Player (26+ MPG)',this)">Core (26+)</button>
+          <button class="mf-btn active" data-value="Primary Rotation (18–26 MPG)" onclick="toggleTier('Primary Rotation (18–26 MPG)',this)">Primary</button>
+          <button class="mf-btn active" data-value="Bench Rotation (10–18 MPG)" onclick="toggleTier('Bench Rotation (10–18 MPG)',this)">Bench</button>
+          <button class="mf-btn active" data-value="Fringe Rotation (5–10 MPG)" onclick="toggleTier('Fringe Rotation (5–10 MPG)',this)">Fringe</button>
+          <button class="mf-btn" data-value="End of Bench (0–5 MPG)" onclick="toggleTier('End of Bench (0–5 MPG)',this)">End of Bench</button>
+        </div>
       </div>
 
-      <!-- Role single select -->
+      <!-- Role -->
       <div class="explorer-filter-group">
         <span class="selector-label">Role</span>
-        <select id="ef-role" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-        </select>
+        <select id="ef-role" onchange="onExplorerFilterChange()"><option value="">All</option></select>
       </div>
 
       <!-- Yrs D1 -->
       <div class="explorer-filter-group">
         <span class="selector-label">Yrs D1</span>
-        <select id="ef-years-d1" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-        </select>
+        <select id="ef-years-d1" onchange="onExplorerFilterChange()"><option value="">All</option></select>
       </div>
 
       <!-- Min Games -->
@@ -315,13 +323,23 @@
         <span class="selector-label">Min Games</span>
         <input type="number" id="ef-min-games" value="5" min="0" max="40"
           style="width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:5px 8px;border-radius:4px;font-size:12px;"
-          oninput="cExplorerMinGames=parseInt(this.value)||0;onExplorerFilterChange()">
+          oninput="EF.minGames=parseInt(this.value)||0;onExplorerFilterChange()">
       </div>
 
-      <!-- Height slider -->
+      <!-- Height -->
       <div class="explorer-filter-group">
         <span class="selector-label">Height</span>
-        <div id="mf-height" class="mf-height-wrap"></div>
+        <div class="mf-height-wrap">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+            <span id="height-label" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <input type="range" id="slider-min-height" min="60" max="90" value="60" class="mf-slider"
+              oninput="updateHeightLabel()">
+            <input type="range" id="slider-max-height" min="60" max="90" value="90" class="mf-slider"
+              oninput="updateHeightLabel()">
+          </div>
+        </div>
       </div>
 
     </div>
