@@ -98,6 +98,12 @@ const STRING_KEYS_E = new Set(['_fgm_fga','_two_ma','_rim_ma','_close_two_ma','_
 
 const EXPLORER_STAT_TABS = {
   overview: [
+    {key:'bpm',       label:'BPM',      fmt:v=>fmtSignE(v)},
+    {key:'obpm',      label:'Off\nBPM', fmt:v=>fmtSignE(v)},
+    {key:'dbpm',      label:'Def\nBPM', fmt:v=>fmtSignE(v)},
+    {key:'prpg',      label:'PRPG',     fmt:v=>fmtNumE(v,2)},
+    {key:'oprpg',     label:'Off\nPRPG',fmt:v=>fmtNumE(v,2)},
+    {key:'dprpg',     label:'Def\nPRPG',fmt:v=>fmtNumE(v,2)},
     {key:'ppg',       label:'PTS/G',    fmt:v=>fmtNumE(v)},
     {key:'rebpg',     label:'REB/G',    fmt:v=>fmtNumE(v)},
     {key:'astpg',     label:'AST/G',    fmt:v=>fmtNumE(v)},
@@ -105,12 +111,6 @@ const EXPLORER_STAT_TABS = {
     {key:'blkpg',     label:'BLK/G',    fmt:v=>fmtNumE(v)},
     {key:'ts',        label:'TS%',      fmt:v=>fmtPctE(v)},
     {key:'usage_pct', label:'USG%',     fmt:v=>fmtPctE(v)},
-    {key:'prpg',      label:'PRPG',     fmt:v=>fmtNumE(v,2)},
-    {key:'oprpg',     label:'Off\nPRPG',fmt:v=>fmtNumE(v,2)},
-    {key:'dprpg',     label:'Def\nPRPG',fmt:v=>fmtNumE(v,2)},
-    {key:'bpm',       label:'BPM',      fmt:v=>fmtSignE(v)},
-    {key:'obpm',      label:'Off\nBPM', fmt:v=>fmtSignE(v)},
-    {key:'dbpm',      label:'Def\nBPM', fmt:v=>fmtSignE(v)},
   ],
   advanced: [
     {key:'ortg',             label:'Off\nRtg',         fmt:v=>fmtNumE(v,1)},
@@ -123,11 +123,11 @@ const EXPLORER_STAT_TABS = {
     {key:'dr_pct',           label:'DR%',              fmt:v=>fmtPctE(v)},
     {key:'ast_pct',          label:'AST%',             fmt:v=>fmtPctE(v)},
     {key:'tov_pct',          label:'TOV%',             fmt:v=>fmtPctE(v)},
-    {key:'tov_sensitivity',  label:'TOV\nSens',        fmt:v=>fmtNumE(v,3)},
+    {key:'tov_sensitivity',  label:'TOV%\nSens',        fmt:v=>fmtNumE(v,3)},
     {key:'blk_pct',          label:'BLK%',             fmt:v=>fmtPctE(v)},
     {key:'stl_pct',          label:'STL%',             fmt:v=>fmtPctE(v)},
     {key:'ast_tov_ratio',    label:'AST/\nTOV',        fmt:v=>fmtNumE(v,2)},
-    {key:'foul_sensitivity', label:'Foul\nSens',       fmt:v=>fmtNumE(v,2)},
+    {key:'foul_sensitivity', label:'Foul\nSensitivity',       fmt:v=>fmtNumE(v,2)},
   ],
   shooting: [
     // Overall
@@ -189,9 +189,9 @@ const EXPLORER_STAT_TABS = {
 
 // ── FROZEN IDENTITY COLUMNS ───────────────────────────────────────────────────
 const EXPLORER_FROZEN = [
-  {key:'name',         label:'Player',   frozen:true,  fmt:v=>v??'—'},
-  {key:'team',         label:'Team',     frozen:true,  fmt:v=>v??'—'},
-  {key:'position',     label:'Pos',      frozen:true,  fmt:v=>v??'—'},
+  {key:'name',         label:'Player',   frozen:true,  width:160, left:32,  fmt:v=>v??'—'},
+  {key:'team',         label:'Team',     frozen:true,  width:130, left:192, fmt:v=>v??'—'},
+  {key:'position',     label:'Pos',      frozen:true,  width:55,  left:322, fmt:v=>v??'—'},
   {key:'class',        label:'Yr',       frozen:false, fmt:v=>v??'—'},
   {key:'height_in',    label:'Ht',       frozen:false, fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',        label:'G',        frozen:false, fmt:v=>v??'—'},
@@ -271,8 +271,16 @@ function applyExplorerFilters() {
   if (conf) data = data.filter(p => p.conference === conf);
   if (sub)  data = data.filter(p => p.power_mid === sub);
   if (cls)  data = data.filter(p => p.class === cls);
-  if (tier) data = data.filter(p => p.mpg_tier === tier);
+  const defaultTiers = new Set(['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)']);
+  if (tier) {
+    data = data.filter(p => p.mpg_tier === tier);
+  } else {
+    data = data.filter(p => defaultTiers.has(p.mpg_tier));
+  }
   if (role) data = data.filter(p => p.role === role);
+
+  const yrsD1 = document.getElementById('ef-years-d1')?.value;
+  if (yrsD1) data = data.filter(p => parseInt(p.years_in_d1) >= parseInt(yrsD1));
 
   // Stat threshold filters
   cExplorerStatFilters.forEach(f => {
@@ -435,26 +443,30 @@ function renderExplorerTable() {
   // Track current shooting section for section headers
   let currentSection = null;
 
-  let html = `<div class="roster-table-wrap"><table class="roster-table explorer-table"><thead><tr>`;
+  let html = `<div class="explorer-table-scroll-wrap"><div class="explorer-table-inner"><div class="roster-table-wrap"><table class="roster-table explorer-table"><thead><tr>`;
 
   // Rank column
-  html += `<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:3;">#</th>`;
+  html += `<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:3;min-width:32px;width:32px;">#</th>`;
 
   // Frozen identity columns
   EXPLORER_FROZEN.forEach(col => {
-    const frozenStyle = col.frozen ? 'position:sticky;z-index:3;' : '';
-    const thClass = col.frozen ? 'roster-frozen-th explorer-id-th' : 'roster-frozen-th roster-scroll-th';
     const lbl = col.label.replace('\n','<br>');
-    html += `<th class="${thClass}" style="${frozenStyle}">${lbl}</th>`;
+    if (col.frozen) {
+      html += `<th class="roster-frozen-th explorer-id-th" style="position:sticky;left:${col.left}px;z-index:3;min-width:${col.width}px;max-width:${col.width}px;background:var(--surface2);">${lbl}</th>`;
+    } else {
+      html += `<th class="roster-frozen-th roster-scroll-th">${lbl}</th>`;
+    }
   });
 
   // Stat headers
   stats.forEach((s, i) => {
     const lbl = s.label.replace('\n','<br>');
     const tipDir = i >= stats.length - 4 ? 'tip-left' : '';
-    const sortIcon = cExplorerSort.key === s.key ? (cExplorerSort.dir === 'desc' ? ' ▾' : ' ▴') : '';
-    const clickable = !s.computed && !s.noBar ? `onclick="setExplorerSort('${s.key}')" style="cursor:pointer;"` : '';
-    html += `<th class="roster-stat-th ${tipDir}" ${clickable}>${lbl}${sortIcon}${explorerTip(s.key)}</th>`;
+    const isSorted = cExplorerSort.key === s.key;
+    const sortIcon = isSorted ? (cExplorerSort.dir === 'desc' ? ' ▾' : ' ▴') : '';
+    const sortedCls = isSorted ? ' explorer-col-sorted' : '';
+    const clickable = !s.computed && !s.noBar ? 'onclick="setExplorerSort(\'' + s.key + '\')" style="cursor:pointer;"' : '';
+    html += '<th class="roster-stat-th ' + tipDir + sortedCls + '" ' + clickable + '>' + lbl + sortIcon + explorerTip(s.key) + '</th>';
   });
 
   html += `</tr></thead><tbody>`;
@@ -470,13 +482,11 @@ function renderExplorerTable() {
     html += `<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:1;">${idx+1}</td>`;
 
     // Frozen identity cells
-    let stickyLeft = 32; // after rank cell
     EXPLORER_FROZEN.forEach(col => {
       const val = p[col.key];
       const display = col.fmt ? col.fmt(val) : (val ?? '—');
       if (col.frozen) {
-        html += `<td class="roster-frozen-td explorer-id-cell" style="position:sticky;left:${stickyLeft}px;z-index:1;background:var(--surface);">${display}</td>`;
-        stickyLeft += col.key === 'name' ? 150 : col.key === 'team' ? 130 : 60;
+        html += `<td class="roster-frozen-td explorer-id-cell" style="position:sticky;left:${col.left}px;z-index:1;min-width:${col.width}px;max-width:${col.width}px;overflow:hidden;text-overflow:ellipsis;background:var(--surface);">${display}</td>`;
       } else {
         html += `<td class="roster-frozen-td roster-scroll-td">${display}</td>`;
       }
@@ -521,8 +531,9 @@ function renderExplorerTable() {
     html += `<tr><td colspan="999" class="explorer-more-row">Showing top 200 of ${cExplorerFiltered.length.toLocaleString()} players — add filters to narrow results</td></tr>`;
   }
 
-  html += `</tbody></table></div>`;
-  wrap.innerHTML = html;
+  html += `</tbody></table></div></div></div>`;
+  const hint = '<div class="explorer-sort-hint">Click any column header to sort</div>';
+  wrap.innerHTML = hint + html;
 
   // Update count
   const countEl = document.getElementById('explorer-count');

@@ -90,18 +90,16 @@ ROSTER_TAB2_STATS = [
 # Tab 3 — Shooting stats (raw + national pct where applicable)
 ROSTER_TAB3_STATS = [
     'ts',
-    'rim_rate', 'rim_fg_pct', 'rim_made_pg', 'rim_att_pg',
-    'midrange_rate', 'midrange_fg_pct', 'midrange_made_pg', 'midrange_att_pg',
-    'three_rate', 'three_fg_pct', 'three_made_pg', 'three_att_pg',
-    'ft_rate', 'ft_pct', 'ft_made_pg', 'ft_att_pg',
+    'rim_rate', 'rim_fg_pct', 'rim_made_att_str',
+    'midrange_rate', 'midrange_fg_pct', 'midrange_made_att_str',
+    'three_rate', 'three_fg_pct', 'three_made_att_str', 'three_att_pg',
+    'ft_rate', 'ft_pct', 'ft_made_att_str',
 ]
 
 # String columns — display only, no percentile
 ROSTER_STRING_COLS = [
-    'rim_made_pg', 'rim_att_pg',
-    'midrange_made_pg', 'midrange_att_pg',
-    'three_made_pg', 'three_att_pg',
-    'ft_made_pg', 'ft_att_pg',
+    'rim_made_att_str', 'midrange_made_att_str',
+    'three_made_att_str', 'ft_made_att_str',
 ]
 
 ALL_ROSTER_STATS = list(dict.fromkeys(
@@ -125,7 +123,7 @@ EXPLORER_IDENTIFIERS = [
     'player_id', 'player_season_id', 'player_id_collision',
     'name', 'team', 'conference', 'power_mid', 'year',
     'position', 'role', 'class', 'years_in_d1',
-    'height_in', 'age', 'games',
+    'height_in', 'age', 'games', 'recruit_rank_clean',
     'minutes_per_game', 'mpg_tier', 'usage_tier', 'games_tier',
     'percentile_tier', 'percentile_eligible',
     'hometown_city', 'hometown_state',
@@ -145,11 +143,19 @@ EXPLORER_RANKED_STATS = [
     # Shooting %s
     'total_fg_pct', 'two_fg_pct', 'three_fg_pct', 'ft_pct',
     'rim_fg_pct', 'midrange_fg_pct',
+    'close_two_fg_pct', 'dunk_fg_pct',
     # Shot rates
-    'rim_rate', 'midrange_rate', 'three_rate',
+    'rim_rate', 'close_two_rate', 'dunk_rate',
+    'midrange_rate', 'three_rate',
+    # Ratios
+    'close_vs_mid_ratio', 'rim_vs_three_ratio',
     # Per game shooting
+    'fgm_pg', 'fga_pg',
+    'two_made_pg', 'two_att_pg',
     'three_att_pg', 'three_made_pg',
     'rim_att_pg', 'rim_made_pg',
+    'close_two_att_pg', 'close_two_made_pg',
+    'dunk_att_pg', 'dunk_made_pg',
     'midrange_att_pg', 'midrange_made_pg',
     'ft_att_pg', 'ft_made_pg',
     # Per 40
@@ -157,12 +163,15 @@ EXPLORER_RANKED_STATS = [
     'stl_per_40', 'blk_per_40', 'stocks_per_40', 'fc_40',
     # Advanced
     'ppp_used', 'tov_sensitivity', 'foul_sensitivity', 'three_p_per_100',
-    # Deltas
+    # Deltas — team
     'ortg_delta_team', 'drtg_delta_team', 'ts_delta_team',
+    'efg_delta_team', 'rim_rate_delta_team', 'three_rate_delta_team',
+    # Deltas — conf
     'ortg_delta_conf', 'drtg_delta_conf', 'ts_delta_conf',
+    'efg_delta_conf', 'rim_rate_delta_conf', 'three_rate_delta_conf',
 ]
 
-EXPLORER_PCT_SUFFIXES = ['_pct', '_sub_pct', '_pos_pct', '_pos_sub_pct']
+EXPLORER_PCT_SUFFIXES = ['_pct', '_conf_pct', '_sub_pct', '_pos_pct', '_pos_sub_pct']
 
 def get_explorer_cols(df_cols):
     """Build Layer 2 column list — identifiers + raw + 4 pct contexts per stat."""
@@ -281,8 +290,7 @@ for year in years:
         team_df = team_df.sort_values(['_tier_sort', 'minutes_per_game'],
                                        ascending=[True, False])
         team_df = team_df.drop(columns=['_tier_sort'])
-        records = team_df.to_dict(orient='records')
-        roster_dict[team] = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
+        roster_dict[team] = team_df.to_dict(orient='records')
 
     filepath = os.path.join(ROSTERS_DIR, f'rosters_{year}.json')
     with open(filepath, 'w') as f:
@@ -304,6 +312,7 @@ for year in years:
     yr_df = df_explorer[df_explorer['year'] == year]
     records = yr_df.to_dict(orient='records')
     records = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
+
     filepath = os.path.join(EXPLORER_DIR, f'players_{year}.json')
     with open(filepath, 'w') as f:
         json.dump(records, f, separators=(',', ':'))

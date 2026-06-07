@@ -386,3 +386,14 @@ select:focus{border-color:var(--accent);}
 .explorer-id-th{min-width:80px;}
 .explorer-id-cell{border-right:none;}
 .explorer-more-row{text-align:center;padding:12px;font-size:11px;color:var(--text4);font-style:italic;}
+.explorer-sort-hint{font-size:11px;color:var(--text4);margin-bottom:6px;font-style:italic;}
+.explorer-col-sorted{background:rgba(74,158,255,0.08)!important;}
+/* Explorer table scroll — bar at top AND bottom */
+.explorer-table-scroll-wrap{overflow-x:auto;transform:rotateX(180deg);}
+.explorer-table-inner{transform:rotateX(180deg);}
+.explorer-table-scroll-wrap::-webkit-scrollbar{height:8px;}
+.explorer-table-scroll-wrap::-webkit-scrollbar-track{background:var(--surface2);border-radius:4px;}
+.explorer-table-scroll-wrap::-webkit-scrollbar-thumb{background:#4a5568;border-radius:4px;}
+.explorer-table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#6b7280;}
+/* Explorer frozen col border */
+.explorer-id-cell:last-of-type{border-right:2px solid var(--border2);}
