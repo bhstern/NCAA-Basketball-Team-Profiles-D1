@@ -215,9 +215,18 @@ async function initExplorer() {
   const yearSel = document.getElementById('explorer-year-select');
   if (!yearSel) return;
 
-  // Populate year selector
-  const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
-  yearSel.innerHTML = years.map(y => `<option value="${y}" ${y===2026?'selected':''}>${yLabel(y)}</option>`).join('');
+  // Only populate once
+  if (yearSel.options.length === 0) {
+    const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
+    yearSel.innerHTML = years.map(y => `<option value="${y}" ${y===2026?'selected':''}>${yLabel(y)}</option>`).join('');
+  }
+
+  // Only load if not already loaded for this year
+  const year = parseInt(yearSel.value) || 2026;
+  if (cExplorerData.length > 0 && cExplorerYear === year) {
+    renderExplorerTable();
+    return;
+  }
 
   await loadAndRenderExplorer();
 }
