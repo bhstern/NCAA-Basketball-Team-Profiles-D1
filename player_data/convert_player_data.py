@@ -303,7 +303,7 @@ df_explorer = clean_for_json(df[explorer_cols].copy())
 for year in years:
     yr_df = df_explorer[df_explorer['year'] == year]
     records = yr_df.to_dict(orient='records')
-
+    records = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
     filepath = os.path.join(EXPLORER_DIR, f'players_{year}.json')
     with open(filepath, 'w') as f:
         json.dump(records, f, separators=(',', ':'))
