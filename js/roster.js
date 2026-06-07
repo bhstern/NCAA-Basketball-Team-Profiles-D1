@@ -80,7 +80,7 @@ const ROSTER_FROZEN = [
   {key:'height_in',        label:'Ht',      stacked:false, width:50,  left:254, fmt: v => { const i=parseInt(v); return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"'; }},
   {key:'games',            label:'G',       stacked:false, width:40,  left:304},
   {key:'minutes_per_game', label:'MPG',     stacked:false, width:58,  left:344, fmt: v => parseFloat(v).toFixed(1)},
-  {key:'usage_pct',        label:'USG%',    stacked:true,  width:72,  left:402, fmt: v => fmtPct(v), pctKey:'usage_pct_pct'},
+  {key:'usage_pct',        label:'USG%',    stacked:true,  width:68,  left:402, fmt: v => fmtPct(v), pctKey:'usage_pct_pct'},
 ];
 
 const ROSTER_STAT_TABS = {
@@ -260,7 +260,7 @@ function renderRosterTable(playersArg) {
       ? `<span class="roster-tier-note">${tierCfg.note}</span>`
       : '';
     html += `<tr class="roster-tier-row">
-      <td colspan="${totalCols}">
+      <td colspan="${totalCols}" style="position:sticky;left:0;">
         <span class="roster-tier-label" style="color:${tierCfg.color}">${tierCfg.label}</span>
         <span class="roster-tier-mpg">${tierCfg.mpg}</span>
         ${noteHtml}
