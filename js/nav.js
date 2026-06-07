@@ -27,11 +27,15 @@ function switchTab(tab,btn){
   document.getElementById(`tab-${tab}`).classList.add('active');
   if(btn)btn.classList.add('active');
   updateURL();
-  // Hide banner on About tab
-  document.getElementById('banner').style.display=tab==='about'?'none':'';
-  document.getElementById('page-desc').style.display=tab==='about'?'none':'';
-  updatePageDesc();
-  if(tab==='h2h')syncH2HTeamA();
+  // Hide banner and page desc on explorer and about tabs
+  const hideBanner = tab==='about' || tab==='explorer';
+  const bannerEl = document.getElementById('banner');
+  const descEl = document.getElementById('page-desc');
+  if(bannerEl) bannerEl.style.display = hideBanner ? 'none' : '';
+  if(descEl) descEl.style.display = hideBanner ? 'none' : '';
+  if(tab !== 'about' && tab !== 'explorer') updatePageDesc();
+  if(tab==='explorer') initExplorer();
+  if(tab==='h2h') syncH2HTeamA();
   if(cRow){
     if(tab==='profile')renderProfile();
     else if(tab==='conference')renderConference();
