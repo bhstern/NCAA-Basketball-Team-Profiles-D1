@@ -310,6 +310,10 @@ select:focus{border-color:var(--accent);}
 .roster-scroll-wrap{position:relative;display:block;}
 .roster-scroll-wrap::after{content:'';position:absolute;top:0;right:0;width:60px;height:calc(100% - 8px);background:linear-gradient(to right, transparent, var(--surface));pointer-events:none;z-index:10;border-radius:0 6px 0 0;}
 .roster-table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:6px;}
+.roster-table-wrap::-webkit-scrollbar{height:8px;}
+.roster-table-wrap::-webkit-scrollbar-track{background:var(--surface2);border-radius:4px;}
+.roster-table-wrap::-webkit-scrollbar-thumb{background:#4a5568;border-radius:4px;}
+.roster-table-wrap::-webkit-scrollbar-thumb:hover{background:#6b7280;}
 .roster-table{border-collapse:collapse;font-size:12px;white-space:nowrap;}
 .roster-table thead th{background:var(--surface2);font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);padding:9px 14px;border-bottom:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:2;}
 .roster-frozen-th{text-align:left!important;position:sticky;left:0;z-index:3;background:var(--surface2);}
@@ -343,14 +347,16 @@ select:focus{border-color:var(--accent);}
 .pct-elite-muted-bar{background:#6bbf8e;} .pct-good-muted-bar{background:#6b9e7a;} .pct-avg-muted-bar{background:#b89a30;} .pct-below-muted-bar{background:#b07030;} .pct-poor-muted-bar{background:#b04030;}
 /* Mobile roster — only freeze player name, unfreeze all other columns */
 @media (max-width: 768px) {
-  .roster-frozen-th:not(:first-child){position:static;background:var(--surface2);}
-  .roster-frozen-td:not(:first-child){position:static;background:var(--surface);border-right:none;}
+  .roster-frozen-th:not(:first-child){position:static!important;background:var(--surface2);}
+  .roster-frozen-td:not(:first-child){position:static!important;background:var(--surface);border-right:none;}
   .roster-frozen-stacked{text-align:center!important;}
-  .roster-table thead th{font-size:10px;padding:7px 8px;}
-  .roster-frozen-th:first-child{min-width:110px;}
+  .roster-table thead th{font-size:10px;padding:7px 8px;position:static!important;}
+  .roster-frozen-th:first-child{min-width:110px;position:sticky!important;left:0!important;}
+  .roster-frozen-th:first-child.roster-frozen-th{z-index:3;}
   .roster-name-cell{min-width:110px;font-size:12px;}
   .roster-stat-td{padding:7px 8px;min-width:70px;}
   .roster-frozen-td{padding:7px 8px;}
+  .roster-frozen-td:first-child{position:sticky!important;left:0!important;z-index:1;}
   .roster-tier-label{font-size:12px;}
   .roster-tier-mpg{font-size:10px;}
   .roster-tier-note{font-size:9px;display:block;margin-left:0;margin-top:3px;}
