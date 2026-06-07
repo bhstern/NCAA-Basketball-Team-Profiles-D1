@@ -29,6 +29,7 @@
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('profile',this)">Team Profile</button>
     <button class="nav-tab" onclick="switchTab('conference',this)">Conference Context</button>
+    <button class="nav-tab" onclick="switchTab('explorer',this)">Player Explorer</button>
     <button class="nav-tab" onclick="switchTab('historical',this)">Historical Trends</button>
     <button class="nav-tab" onclick="switchTab('h2h',this)">Head to Head</button>
     <button class="nav-tab" onclick="switchTab('about',this)">About</button>
@@ -216,6 +217,109 @@
       <span class="roster-legend-item"><span class="pct-poor">■</span> Poor (&lt;20th)</span>
       <span class="roster-legend-item" style="margin-left:8px;color:var(--text4)">* = limited minutes sample (Tier 2)</span>
     </div>
+  </div>
+</div>
+
+
+<!-- PLAYER EXPLORER TAB -->
+<div id="tab-explorer" class="tab-content">
+  <div class="explorer-wrap">
+
+    <!-- Top controls row -->
+    <div class="explorer-controls-top">
+      <div class="selector-group">
+        <span class="selector-label">Season</span>
+        <select id="explorer-year-select" onchange="loadAndRenderExplorer()"></select>
+      </div>
+      <div id="explorer-count" class="explorer-count"></div>
+    </div>
+
+    <!-- Percentile context toggle -->
+    <div class="explorer-pct-row">
+      <span class="selector-label" style="margin-right:8px">Percentile Context</span>
+      <div id="explorer-pct-toggle" class="view-toggle" style="margin-bottom:0">
+        <button class="view-btn active" onclick="setExplorerPctContext('national',this)">National</button>
+        <button class="view-btn" onclick="setExplorerPctContext('conf',this)">Conference</button>
+        <button class="view-btn" onclick="setExplorerPctContext('sub',this)">Power/Mid</button>
+        <button class="view-btn" onclick="setExplorerPctContext('pos',this)">Position</button>
+      </div>
+    </div>
+
+    <!-- Dropdown filters -->
+    <div class="explorer-filters">
+      <div class="explorer-filter-group">
+        <span class="selector-label">Position</span>
+        <select id="ef-position" onchange="onExplorerFilterChange()">
+          <option value="">All</option>
+          <option value="Guard">Guard</option>
+          <option value="Wing">Wing</option>
+          <option value="Big">Big</option>
+        </select>
+      </div>
+      <div class="explorer-filter-group">
+        <span class="selector-label">Conference</span>
+        <select id="ef-conference" onchange="onExplorerFilterChange()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="explorer-filter-group">
+        <span class="selector-label">Level</span>
+        <select id="ef-sub" onchange="onExplorerFilterChange()">
+          <option value="">All</option>
+          <option value="Power">Power</option>
+          <option value="Mid-Major">Mid-Major</option>
+        </select>
+      </div>
+      <div class="explorer-filter-group">
+        <span class="selector-label">Class</span>
+        <select id="ef-class" onchange="onExplorerFilterChange()">
+          <option value="">All</option>
+          <option value="FR">FR</option>
+          <option value="SO">SO</option>
+          <option value="JR">JR</option>
+          <option value="SR">SR</option>
+          <option value="GR">GR</option>
+        </select>
+      </div>
+      <div class="explorer-filter-group">
+        <span class="selector-label">MPG Tier</span>
+        <select id="ef-tier" onchange="onExplorerFilterChange()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="explorer-filter-group">
+        <span class="selector-label">Role</span>
+        <select id="ef-role" onchange="onExplorerFilterChange()">
+          <option value="">All</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stat threshold filters -->
+    <div class="explorer-stat-filter-row">
+      <span class="selector-label" style="margin-right:8px">Stat Filter</span>
+      <select id="sf-stat-select" style="min-width:140px"><option value="">— Select Stat —</option></select>
+      <span class="selector-label" style="margin:0 6px">Min</span>
+      <input id="sf-min" type="number" step="any" placeholder="—" style="width:70px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:4px 8px;border-radius:4px;font-size:12px;">
+      <span class="selector-label" style="margin:0 6px">Max</span>
+      <input id="sf-max" type="number" step="any" placeholder="—" style="width:70px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:4px 8px;border-radius:4px;font-size:12px;">
+      <button class="view-btn" onclick="addStatFilter()" style="margin-left:8px">Add</button>
+    </div>
+    <div id="stat-filter-tags" class="stat-filter-tags"></div>
+
+    <!-- Stat category tabs -->
+    <div id="explorer-stat-tabs" style="display:flex;gap:3px;margin-bottom:12px">
+      <button class="hist-cat-btn active" onclick="setExplorerStatTab('overview',this)">Overview</button>
+      <button class="hist-cat-btn" onclick="setExplorerStatTab('advanced',this)">Advanced Stats</button>
+      <button class="hist-cat-btn" onclick="setExplorerStatTab('shooting',this)">Shooting</button>
+      <button class="hist-cat-btn" onclick="setExplorerStatTab('per40',this)">Per 40</button>
+      <button class="hist-cat-btn" onclick="setExplorerStatTab('context',this)">Context</button>
+    </div>
+
+    <div id="explorer-empty" class="empty-state" style="display:none">No players match the current filters.</div>
+    <div id="explorer-loading" class="loading-state" style="display:none">Loading players...</div>
+    <div id="explorer-table-wrap" style="display:none"></div>
+
   </div>
 </div>
 
@@ -419,6 +523,7 @@
 
 <script src="js/core.js"></script>
 <script src="js/roster.js"></script>
+<script src="js/explorer.js"></script>
 <script src="js/team.js"></script>
 <script src="js/h2h.js"></script>
 <script src="js/nav.js"></script>

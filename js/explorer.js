@@ -1,0 +1,521 @@
+// ── PLAYER EXPLORER ───────────────────────────────────────────────────────────
+let EXPLORER_CACHE = {};
+let cExplorerYear = 2026;
+let cExplorerStatTab = 'overview';
+let cExplorerPctContext = 'national'; // national | conf | sub | pos
+let cExplorerSort = {key: 'bpm', dir: 'desc'};
+let cExplorerFilters = {}; // dropdown filters
+let cExplorerStatFilters = []; // [{stat, min, max}]
+let cExplorerData = []; // full loaded dataset for year
+let cExplorerFiltered = []; // after filters applied
+
+// ── TOOLTIPS ─────────────────────────────────────────────────────────────────
+const EXPLORER_TIPS = {
+  ppg:'Points per game.',
+  rebpg:'Rebounds per game.',
+  astpg:'Assists per game.',
+  stlpg:'Steals per game.',
+  blkpg:'Blocks per game.',
+  ts:'True Shooting % — overall scoring efficiency accounting for 2PT, 3PT, and free throws.',
+  efg:'Effective FG% — weights 3-pointers appropriately. Formula: (FGM + 0.5×3PM) / FGA.',
+  usage_pct:'Usage % — share of team possessions used while on the floor.',
+  prpg:"Torvik's PRPG! — total player rating per game.",
+  oprpg:"Torvik's Offensive PRPG — offensive value added per game.",
+  dprpg:"Torvik's Defensive PRPG — defensive value added per game.",
+  bpm:'Box Plus/Minus — overall on-court impact per 100 possessions above average.',
+  obpm:'Offensive Box Plus/Minus.',
+  dbpm:'Defensive Box Plus/Minus.',
+  ortg:'Offensive Rating — points produced per 100 possessions used.',
+  ortg_delta_team:'Player ORtg minus team adjusted offense. Positive = more efficient than team.',
+  drtg:'Defensive Rating — points allowed per 100 possessions. Lower is better.',
+  drtg_delta_team:'How many pts/100 better this player defends vs team average. Positive = better than team.',
+  ppp_used:'Points per possession used — scoring efficiency on possessions this player ends.',
+  or_pct:'Offensive Rebound % — share of available ORBs secured.',
+  dr_pct:'Defensive Rebound % — share of available DRBs secured.',
+  ast_pct:'Assist % — % of teammate FGs assisted while on floor.',
+  tov_pct:'Turnover % — turnovers per possession used. Lower is better.',
+  tov_sensitivity:'Turnover % × usage — how damaging turnovers are given this player\'s role.',
+  blk_pct:'% of opponent 2PT attempts blocked.',
+  stl_pct:'% of opponent possessions ending in a steal.',
+  ast_tov_ratio:'Assist-to-turnover ratio.',
+  foul_sensitivity:'Fouls per minute played. Higher = more foul risk.',
+  total_fg_pct:'Overall FG% across all shot types.',
+  two_fg_pct:'2-point FG%.',
+  rim_rate:'Rim attempt rate — dunks + close 2s as share of total FGA.',
+  rim_fg_pct:'FG% at the rim — dunks + close 2s combined.',
+  close_two_rate:'Close 2-point attempt rate (non-dunk rim attempts) as share of total FGA.',
+  close_two_fg_pct:'FG% on close 2-point attempts (non-dunk).',
+  dunk_rate:'Dunk attempt rate as share of total FGA.',
+  dunk_fg_pct:'FG% on dunk attempts.',
+  midrange_rate:'Midrange attempt rate as share of total FGA.',
+  midrange_fg_pct:'Midrange FG%.',
+  three_rate:'3-point attempt rate as share of total FGA.',
+  three_fg_pct:'3-point FG%.',
+  three_p_per_100:'3-point attempts per 100 possessions.',
+  ft_rate:'Free throw rate — FTA per FGA.',
+  ft_pct:'Free throw percentage.',
+  close_vs_mid_ratio:'Rim attempts / midrange attempts. Higher = more paint-oriented.',
+  rim_vs_three_ratio:'Rim attempts / 3PT attempts. Higher = more rim pressure vs perimeter.',
+  pts_per_40:'Points per 40 minutes — scoring volume normalized for playing time.',
+  reb_per_40:'Rebounds per 40 minutes.',
+  ast_per_40:'Assists per 40 minutes.',
+  stl_per_40:'Steals per 40 minutes.',
+  blk_per_40:'Blocks per 40 minutes.',
+  stocks_per_40:'Steals + blocks per 40 minutes — total defensive activity.',
+  fc_40:'Fouls committed per 40 minutes.',
+  ortg_delta_conf:'Player ORtg minus conference average offense.',
+  drtg_delta_conf:'How many pts/100 better this player defends vs conference average.',
+  ts_delta_team:'Player TS% minus team TS%.',
+  ts_delta_conf:'Player TS% minus conference average TS%.',
+  efg_delta_team:'Player eFG% minus team eFG%.',
+  efg_delta_conf:'Player eFG% minus conference average eFG%.',
+  rim_rate_delta_team:'Player rim rate minus team rim rate.',
+  rim_rate_delta_conf:'Player rim rate minus conference average rim rate.',
+  three_rate_delta_team:'Player 3PT rate minus team 3PT rate.',
+  three_rate_delta_conf:'Player 3PT rate minus conference average 3PT rate.',
+  recruit_rank_clean:'Recruiting rank — lower is better. Blank = unranked.',
+  age:'Player age on Feb 1 of the season.',
+  years_in_d1:'Years of D1 experience.',
+};
+
+// ── PCT CONTEXT SUFFIX MAP ────────────────────────────────────────────────────
+const PCT_SUFFIX = {
+  national: '_pct',
+  conf:     '_conf_pct',
+  sub:      '_sub_pct',
+  pos:      '_pos_pct',
+};
+
+// ── STAT TABS ─────────────────────────────────────────────────────────────────
+function fmtPctE(v,d=1){const n=parseFloat(v);if(isNaN(n)||v===null||v===undefined)return'—';return n.toFixed(d)+'%';}
+function fmtPctDecE(v,d=1){const n=parseFloat(v);if(isNaN(n)||v===null||v===undefined)return'—';return(n*100).toFixed(d)+'%';}
+function fmtSignE(v,d=1){const n=parseFloat(v);if(isNaN(n)||v===null||v===undefined)return'—';return(n>0?'+':'')+n.toFixed(d);}
+function fmtMAE(p,mKey,aKey){const m=parseFloat(p[mKey]),a=parseFloat(p[aKey]);if(isNaN(m)||isNaN(a))return'—';return m.toFixed(1)+'/'+a.toFixed(1);}
+function fmtNumE(v,d=1){const n=parseFloat(v);if(isNaN(n)||v===null||v===undefined)return'—';return n.toFixed(d);}
+
+const DRTG_DELTA_KEYS_E = new Set(['drtg_delta_team','drtg_delta_conf','drtg_delta_sub']);
+const STRING_KEYS_E = new Set(['_fgm_fga','_two_ma','_rim_ma','_close_two_ma','_dunk_ma','_mid_ma','_three_ma','_ft_ma']);
+
+const EXPLORER_STAT_TABS = {
+  overview: [
+    {key:'ppg',       label:'PTS/G',    fmt:v=>fmtNumE(v)},
+    {key:'rebpg',     label:'REB/G',    fmt:v=>fmtNumE(v)},
+    {key:'astpg',     label:'AST/G',    fmt:v=>fmtNumE(v)},
+    {key:'stlpg',     label:'STL/G',    fmt:v=>fmtNumE(v)},
+    {key:'blkpg',     label:'BLK/G',    fmt:v=>fmtNumE(v)},
+    {key:'ts',        label:'TS%',      fmt:v=>fmtPctE(v)},
+    {key:'usage_pct', label:'USG%',     fmt:v=>fmtPctE(v)},
+    {key:'prpg',      label:'PRPG',     fmt:v=>fmtNumE(v,2)},
+    {key:'oprpg',     label:'Off\nPRPG',fmt:v=>fmtNumE(v,2)},
+    {key:'dprpg',     label:'Def\nPRPG',fmt:v=>fmtNumE(v,2)},
+    {key:'bpm',       label:'BPM',      fmt:v=>fmtSignE(v)},
+    {key:'obpm',      label:'Off\nBPM', fmt:v=>fmtSignE(v)},
+    {key:'dbpm',      label:'Def\nBPM', fmt:v=>fmtSignE(v)},
+  ],
+  advanced: [
+    {key:'ortg',             label:'Off\nRtg',         fmt:v=>fmtNumE(v,1)},
+    {key:'ortg_delta_team',  label:'Off Rtg\nvs Team',  fmt:v=>fmtSignE(v)},
+    {key:'drtg',             label:'Def\nRtg',         fmt:v=>fmtNumE(v,1)},
+    {key:'drtg_delta_team',  label:'Def Rtg\nvs Team',  fmt:v=>((-parseFloat(v))>0?'+':'')+(-parseFloat(v)).toFixed(1)},
+    {key:'ppp_used',         label:'PPP\nUsed',        fmt:v=>fmtNumE(v,3)},
+    {key:'efg',              label:'eFG%',             fmt:v=>fmtPctE(v)},
+    {key:'or_pct',           label:'OR%',              fmt:v=>fmtPctE(v)},
+    {key:'dr_pct',           label:'DR%',              fmt:v=>fmtPctE(v)},
+    {key:'ast_pct',          label:'AST%',             fmt:v=>fmtPctE(v)},
+    {key:'tov_pct',          label:'TOV%',             fmt:v=>fmtPctE(v)},
+    {key:'tov_sensitivity',  label:'TOV\nSens',        fmt:v=>fmtNumE(v,3)},
+    {key:'blk_pct',          label:'BLK%',             fmt:v=>fmtPctE(v)},
+    {key:'stl_pct',          label:'STL%',             fmt:v=>fmtPctE(v)},
+    {key:'ast_tov_ratio',    label:'AST/\nTOV',        fmt:v=>fmtNumE(v,2)},
+    {key:'foul_sensitivity', label:'Foul\nSens',       fmt:v=>fmtNumE(v,2)},
+  ],
+  shooting: [
+    // Overall
+    {key:'ts',              label:'TS%',           fmt:v=>fmtPctE(v),    section:'Overall'},
+    {key:'efg',             label:'eFG%',          fmt:v=>fmtPctE(v),    section:'Overall'},
+    {key:'total_fg_pct',    label:'FG%',           fmt:v=>fmtPctDecE(v), section:'Overall'},
+    {key:'_fgm_fga',        label:'FGM/\nFGA',     fmt:(v,p)=>fmtMAE(p,'fgm_pg','fga_pg'), noBar:true, computed:true, section:'Overall'},
+    {key:'two_fg_pct',      label:'2PT\nFG%',      fmt:v=>fmtPctDecE(v), section:'Overall'},
+    {key:'_two_ma',         label:'2PT\nM/A',      fmt:(v,p)=>fmtMAE(p,'two_made_pg','two_att_pg'), noBar:true, computed:true, section:'Overall'},
+    // Rim
+    {key:'rim_rate',        label:'Rim\nRate',     fmt:v=>fmtPctDecE(v), section:'Rim'},
+    {key:'rim_fg_pct',      label:'Rim\nFG%',      fmt:v=>fmtPctDecE(v), section:'Rim'},
+    {key:'_rim_ma',         label:'Rim\nFGM/FGA',  fmt:(v,p)=>fmtMAE(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true, section:'Rim'},
+    {key:'close_two_rate',  label:'C2\nRate',      fmt:v=>fmtPctDecE(v), section:'Rim'},
+    {key:'close_two_fg_pct',label:'C2\nFG%',       fmt:v=>fmtPctDecE(v), section:'Rim'},
+    {key:'_close_two_ma',   label:'C2\nM/A',       fmt:(v,p)=>fmtMAE(p,'close_two_made_pg','close_two_att_pg'), noBar:true, computed:true, section:'Rim'},
+    {key:'dunk_rate',       label:'Dunk\nRate',    fmt:v=>fmtPctDecE(v), section:'Rim'},
+    {key:'dunk_fg_pct',     label:'Dunk\nFG%',     fmt:v=>fmtPctDecE(v), section:'Rim'},
+    {key:'_dunk_ma',        label:'Dunk\nM/A',     fmt:(v,p)=>fmtMAE(p,'dunk_made_pg','dunk_att_pg'), noBar:true, computed:true, section:'Rim'},
+    // Mid
+    {key:'midrange_rate',   label:'Mid\nRate',     fmt:v=>fmtPctDecE(v), section:'Mid'},
+    {key:'midrange_fg_pct', label:'Mid\nFG%',      fmt:v=>fmtPctDecE(v), section:'Mid'},
+    {key:'_mid_ma',         label:'Mid\nM/A',      fmt:(v,p)=>fmtMAE(p,'midrange_made_pg','midrange_att_pg'), noBar:true, computed:true, section:'Mid'},
+    // 3PT
+    {key:'three_rate',      label:'3PT\nRate',     fmt:v=>fmtPctDecE(v), section:'3PT'},
+    {key:'three_fg_pct',    label:'3PT%',          fmt:v=>fmtPctDecE(v), section:'3PT'},
+    {key:'_three_ma',       label:'3PT\nM/A',      fmt:(v,p)=>fmtMAE(p,'three_made_pg','three_att_pg'), noBar:true, computed:true, section:'3PT'},
+    {key:'three_p_per_100', label:'3PA/\n100',     fmt:v=>fmtNumE(v,1),  section:'3PT'},
+    // FT
+    {key:'ft_rate',         label:'FT\nRate',      fmt:v=>fmtPctDecE(v), section:'FT'},
+    {key:'ft_pct',          label:'FT%',           fmt:v=>fmtPctDecE(v), section:'FT'},
+    {key:'_ft_ma',          label:'FTM/\nFTA',     fmt:(v,p)=>fmtMAE(p,'ft_made_pg','ft_att_pg'), noBar:true, computed:true, section:'FT'},
+    // Ratios
+    {key:'close_vs_mid_ratio', label:'Rim/\nMid',  fmt:v=>fmtNumE(v,2),  section:'Ratios'},
+    {key:'rim_vs_three_ratio', label:'Rim/\n3PT',  fmt:v=>fmtNumE(v,2),  section:'Ratios'},
+  ],
+  per40: [
+    {key:'pts_per_40',  label:'PTS\n/40',   fmt:v=>fmtNumE(v)},
+    {key:'reb_per_40',  label:'REB\n/40',   fmt:v=>fmtNumE(v)},
+    {key:'ast_per_40',  label:'AST\n/40',   fmt:v=>fmtNumE(v)},
+    {key:'stl_per_40',  label:'STL\n/40',   fmt:v=>fmtNumE(v)},
+    {key:'blk_per_40',  label:'BLK\n/40',   fmt:v=>fmtNumE(v)},
+    {key:'stocks_per_40',label:'Stocks\n/40',fmt:v=>fmtNumE(v)},
+    {key:'fc_40',       label:'FC\n/40',    fmt:v=>fmtNumE(v,2)},
+  ],
+  context: [
+    {key:'ortg_delta_conf',      label:'Off Rtg\nvs Conf',   fmt:v=>fmtSignE(v)},
+    {key:'drtg_delta_conf',      label:'Def Rtg\nvs Conf',   fmt:v=>((-parseFloat(v))>0?'+':'')+(-parseFloat(v)).toFixed(1)},
+    {key:'ts_delta_team',        label:'TS%\nvs Team',       fmt:v=>fmtSignE(v,2)},
+    {key:'ts_delta_conf',        label:'TS%\nvs Conf',       fmt:v=>fmtSignE(v,2)},
+    {key:'efg_delta_team',       label:'eFG%\nvs Team',      fmt:v=>fmtSignE(v,2)},
+    {key:'efg_delta_conf',       label:'eFG%\nvs Conf',      fmt:v=>fmtSignE(v,2)},
+    {key:'rim_rate_delta_team',  label:'Rim\nvs Team',       fmt:v=>fmtSignE(v,2)},
+    {key:'rim_rate_delta_conf',  label:'Rim\nvs Conf',       fmt:v=>fmtSignE(v,2)},
+    {key:'three_rate_delta_team',label:'3PT\nvs Team',       fmt:v=>fmtSignE(v,2)},
+    {key:'three_rate_delta_conf',label:'3PT\nvs Conf',       fmt:v=>fmtSignE(v,2)},
+  ],
+};
+
+// ── FROZEN IDENTITY COLUMNS ───────────────────────────────────────────────────
+const EXPLORER_FROZEN = [
+  {key:'name',         label:'Player',   frozen:true,  fmt:v=>v??'—'},
+  {key:'team',         label:'Team',     frozen:true,  fmt:v=>v??'—'},
+  {key:'position',     label:'Pos',      frozen:true,  fmt:v=>v??'—'},
+  {key:'class',        label:'Yr',       frozen:false, fmt:v=>v??'—'},
+  {key:'height_in',    label:'Ht',       frozen:false, fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
+  {key:'games',        label:'G',        frozen:false, fmt:v=>v??'—'},
+  {key:'minutes_per_game',label:'MPG',   frozen:false, fmt:v=>fmtNumE(v)},
+  {key:'age',          label:'Age',      frozen:false, fmt:v=>fmtNumE(v,1)},
+  {key:'recruit_rank_clean', label:'Recruit\nRank', frozen:false, fmt:v=>(v&&!isNaN(v))?parseInt(v):'—'},
+  {key:'years_in_d1',  label:'Yrs\nD1',  frozen:false, fmt:v=>v??'—'},
+];
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadExplorerYear(year) {
+  if (EXPLORER_CACHE[year]) return EXPLORER_CACHE[year];
+  const r = await fetch(`player_data/layer2_explorer/players_${year}.json`);
+  const data = await r.json();
+  EXPLORER_CACHE[year] = data;
+  return data;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function initExplorer() {
+  const yearSel = document.getElementById('explorer-year-select');
+  if (!yearSel) return;
+
+  // Populate year selector
+  const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
+  yearSel.innerHTML = years.map(y => `<option value="${y}" ${y===2026?'selected':''}>${yLabel(y)}</option>`).join('');
+
+  await loadAndRenderExplorer();
+}
+
+async function loadAndRenderExplorer() {
+  const wrap = document.getElementById('explorer-table-wrap');
+  const empty = document.getElementById('explorer-empty');
+  const loading = document.getElementById('explorer-loading');
+
+  empty.style.display = 'none';
+  loading.style.display = 'flex';
+  wrap.style.display = 'none';
+
+  try {
+    const year = parseInt(document.getElementById('explorer-year-select').value);
+    cExplorerYear = year;
+    cExplorerData = await loadExplorerYear(year);
+    applyExplorerFilters();
+    loading.style.display = 'none';
+    wrap.style.display = 'block';
+    renderExplorerTable();
+  } catch(e) {
+    loading.style.display = 'none';
+    empty.style.display = 'flex';
+    empty.textContent = 'Error loading player data: ' + e.message;
+  }
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function applyExplorerFilters() {
+  let data = [...cExplorerData];
+
+  // Dropdown filters
+  const pos = document.getElementById('ef-position')?.value;
+  const conf = document.getElementById('ef-conference')?.value;
+  const sub = document.getElementById('ef-sub')?.value;
+  const cls = document.getElementById('ef-class')?.value;
+  const tier = document.getElementById('ef-tier')?.value;
+  const role = document.getElementById('ef-role')?.value;
+
+  if (pos)  data = data.filter(p => p.position === pos);
+  if (conf) data = data.filter(p => p.conference === conf);
+  if (sub)  data = data.filter(p => p.power_mid === sub);
+  if (cls)  data = data.filter(p => p.class === cls);
+  if (tier) data = data.filter(p => p.mpg_tier === tier);
+  if (role) data = data.filter(p => p.role === role);
+
+  // Stat threshold filters
+  cExplorerStatFilters.forEach(f => {
+    data = data.filter(p => {
+      const v = parseFloat(p[f.stat]);
+      if (isNaN(v)) return false;
+      if (f.min !== '' && !isNaN(f.min) && v < parseFloat(f.min)) return false;
+      if (f.max !== '' && !isNaN(f.max) && v > parseFloat(f.max)) return false;
+      return true;
+    });
+  });
+
+  // Sort
+  data.sort((a, b) => {
+    const aVal = parseFloat(a[cExplorerSort.key]);
+    const bVal = parseFloat(b[cExplorerSort.key]);
+    if (isNaN(aVal) && isNaN(bVal)) return 0;
+    if (isNaN(aVal)) return 1;
+    if (isNaN(bVal)) return -1;
+    return cExplorerSort.dir === 'desc' ? bVal - aVal : aVal - bVal;
+  });
+
+  cExplorerFiltered = data;
+}
+
+function setExplorerSort(key) {
+  if (cExplorerSort.key === key) {
+    cExplorerSort.dir = cExplorerSort.dir === 'desc' ? 'asc' : 'desc';
+  } else {
+    cExplorerSort.key = key;
+    cExplorerSort.dir = 'desc';
+  }
+  applyExplorerFilters();
+  renderExplorerTable();
+}
+
+function setExplorerStatTab(tab, btn) {
+  cExplorerStatTab = tab;
+  document.querySelectorAll('#explorer-stat-tabs .hist-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExplorerTable();
+}
+
+function setExplorerPctContext(ctx, btn) {
+  cExplorerPctContext = ctx;
+  document.querySelectorAll('#explorer-pct-toggle .view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExplorerTable();
+}
+
+function onExplorerFilterChange() {
+  applyExplorerFilters();
+  renderExplorerTable();
+}
+
+function addStatFilter() {
+  const stat = document.getElementById('sf-stat-select').value;
+  const min = document.getElementById('sf-min').value;
+  const max = document.getElementById('sf-max').value;
+  if (!stat) return;
+  cExplorerStatFilters.push({stat, min, max});
+  renderStatFilterTags();
+  applyExplorerFilters();
+  renderExplorerTable();
+}
+
+function removeStatFilter(i) {
+  cExplorerStatFilters.splice(i, 1);
+  renderStatFilterTags();
+  applyExplorerFilters();
+  renderExplorerTable();
+}
+
+function renderStatFilterTags() {
+  const wrap = document.getElementById('stat-filter-tags');
+  if (!wrap) return;
+  wrap.innerHTML = cExplorerStatFilters.map((f, i) => {
+    const minStr = f.min !== '' ? ` ≥ ${f.min}` : '';
+    const maxStr = f.max !== '' ? ` ≤ ${f.max}` : '';
+    return `<span class="stat-filter-tag">${f.stat}${minStr}${maxStr} <span class="stat-filter-remove" onclick="removeStatFilter(${i})">×</span></span>`;
+  }).join('');
+}
+
+// ── POPULATE FILTER DROPDOWNS ─────────────────────────────────────────────────
+function populateExplorerDropdowns(data) {
+  const confs = [...new Set(data.map(p => p.conference).filter(Boolean))].sort();
+  const roles = [...new Set(data.map(p => p.role).filter(Boolean))].sort();
+  const tiers = ['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)','End of Bench (0–5 MPG)'];
+
+  const confSel = document.getElementById('ef-conference');
+  if (confSel && confSel.options.length <= 1) {
+    confs.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; confSel.appendChild(o); });
+  }
+  const roleSel = document.getElementById('ef-role');
+  if (roleSel && roleSel.options.length <= 1) {
+    roles.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; roleSel.appendChild(o); });
+  }
+  const tierSel = document.getElementById('ef-tier');
+  if (tierSel && tierSel.options.length <= 1) {
+    tiers.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; tierSel.appendChild(o); });
+  }
+
+  // Stat filter dropdown - all rankable stats
+  const sfSel = document.getElementById('sf-stat-select');
+  if (sfSel && sfSel.options.length <= 1) {
+    const allStats = Object.values(EXPLORER_STAT_TABS).flat().filter(s => !s.computed && !STRING_KEYS_E.has(s.key));
+    allStats.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.key;
+      o.textContent = s.label.replace('\n',' ');
+      sfSel.appendChild(o);
+    });
+  }
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+function explorerTip(key) {
+  const t = EXPLORER_TIPS[key];
+  if (!t) return '';
+  return `<span class="info-icon" onclick="toggleTip(event,this)" style="margin-left:3px">i<span class="tooltip">${t}</span></span>`;
+}
+
+function explorerPctCls(pct, dim=false) {
+  const suffix = dim ? '-muted' : '';
+  if (pct >= 0.85) return 'pct-elite' + suffix;
+  if (pct >= 0.65) return 'pct-good' + suffix;
+  if (pct >= 0.40) return 'pct-avg' + suffix;
+  if (pct >= 0.20) return 'pct-below' + suffix;
+  return 'pct-poor' + suffix;
+}
+
+function explorerStackedCell(rawDisplay, pctVal) {
+  const pct = parseFloat(pctVal);
+  if (isNaN(pct)) return `<span class="roster-raw-white">${rawDisplay}</span>`;
+  const cls = explorerPctCls(pct);
+  const pctDisplay = Math.round(pct * 100);
+  const barWidth = Math.round(pct * 100);
+  return `<div class="roster-pct-cell">
+    <span class="roster-raw-val ${cls}">${rawDisplay}</span>
+    <div class="roster-pct-row">
+      <span class="roster-pct-num ${cls}">${pctDisplay}</span>
+      <div class="roster-pct-bar-wrap"><div class="roster-pct-bar ${cls}-bar" style="width:${barWidth}%"></div></div>
+    </div>
+  </div>`;
+}
+
+function renderExplorerTable() {
+  const wrap = document.getElementById('explorer-table-wrap');
+  if (!wrap || !cExplorerFiltered.length) {
+    if (wrap) wrap.innerHTML = '<div class="empty-state">No players match the current filters.</div>';
+    return;
+  }
+
+  populateExplorerDropdowns(cExplorerData);
+
+  const stats = EXPLORER_STAT_TABS[cExplorerStatTab];
+  const pctSuffix = PCT_SUFFIX[cExplorerPctContext] || '_pct';
+  const display = cExplorerFiltered.slice(0, 200); // cap at 200 rows for performance
+
+  // Track current shooting section for section headers
+  let currentSection = null;
+
+  let html = `<div class="roster-table-wrap"><table class="roster-table explorer-table"><thead><tr>`;
+
+  // Rank column
+  html += `<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:3;">#</th>`;
+
+  // Frozen identity columns
+  EXPLORER_FROZEN.forEach(col => {
+    const frozenStyle = col.frozen ? 'position:sticky;z-index:3;' : '';
+    const thClass = col.frozen ? 'roster-frozen-th explorer-id-th' : 'roster-frozen-th roster-scroll-th';
+    const lbl = col.label.replace('\n','<br>');
+    html += `<th class="${thClass}" style="${frozenStyle}">${lbl}</th>`;
+  });
+
+  // Stat headers
+  stats.forEach((s, i) => {
+    const lbl = s.label.replace('\n','<br>');
+    const tipDir = i >= stats.length - 4 ? 'tip-left' : '';
+    const sortIcon = cExplorerSort.key === s.key ? (cExplorerSort.dir === 'desc' ? ' ▾' : ' ▴') : '';
+    const clickable = !s.computed && !s.noBar ? `onclick="setExplorerSort('${s.key}')" style="cursor:pointer;"` : '';
+    html += `<th class="roster-stat-th ${tipDir}" ${clickable}>${lbl}${sortIcon}${explorerTip(s.key)}</th>`;
+  });
+
+  html += `</tr></thead><tbody>`;
+
+  display.forEach((p, idx) => {
+    const isTier2 = p.percentile_tier === 'Tier 2';
+    const noPercentile = !p.percentile_eligible || p.percentile_eligible === false || p.percentile_eligible === 'False';
+    const rowCls = isTier2 ? 'roster-row roster-tier2' : 'roster-row';
+
+    html += `<tr class="${rowCls}">`;
+
+    // Rank
+    html += `<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:1;">${idx+1}</td>`;
+
+    // Frozen identity cells
+    let stickyLeft = 32; // after rank cell
+    EXPLORER_FROZEN.forEach(col => {
+      const val = p[col.key];
+      const display = col.fmt ? col.fmt(val) : (val ?? '—');
+      if (col.frozen) {
+        html += `<td class="roster-frozen-td explorer-id-cell" style="position:sticky;left:${stickyLeft}px;z-index:1;background:var(--surface);">${display}</td>`;
+        stickyLeft += col.key === 'name' ? 150 : col.key === 'team' ? 130 : 60;
+      } else {
+        html += `<td class="roster-frozen-td roster-scroll-td">${display}</td>`;
+      }
+    });
+
+    // Stat cells
+    stats.forEach(s => {
+      const rawVal = s.computed ? null : p[s.key];
+      const isString = STRING_KEYS_E.has(s.key) || s.noBar;
+
+      if (isString) {
+        const disp = s.computed ? s.fmt(null, p) : s.fmt(rawVal);
+        html += `<td class="roster-stat-td"><span class="roster-raw-white">${disp ?? '—'}</span></td>`;
+        return;
+      }
+
+      const isDrtgDelta = DRTG_DELTA_KEYS_E.has(s.key);
+      let rawDisplay;
+      if (isDrtgDelta) {
+        const v = parseFloat(rawVal);
+        rawDisplay = isNaN(v) ? '—' : (((-v)>0?'+':'') + (-v).toFixed(1));
+      } else {
+        rawDisplay = (rawVal === null || rawVal === undefined || isNaN(parseFloat(rawVal))) ? '—' : s.fmt(rawVal);
+      }
+
+      const pctKey = s.key + pctSuffix;
+      const pctVal = p[pctKey];
+      const hasPct = pctVal !== undefined && pctVal !== null;
+
+      if (noPercentile || !hasPct) {
+        html += `<td class="roster-stat-td"><span class="roster-raw-white">${rawDisplay}</span></td>`;
+        return;
+      }
+
+      html += `<td class="roster-stat-td">${explorerStackedCell(rawDisplay, pctVal)}</td>`;
+    });
+
+    html += `</tr>`;
+  });
+
+  if (cExplorerFiltered.length > 200) {
+    html += `<tr><td colspan="999" class="explorer-more-row">Showing top 200 of ${cExplorerFiltered.length.toLocaleString()} players — add filters to narrow results</td></tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+  wrap.innerHTML = html;
+
+  // Update count
+  const countEl = document.getElementById('explorer-count');
+  if (countEl) countEl.textContent = `${cExplorerFiltered.length.toLocaleString()} players`;
+}
