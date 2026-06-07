@@ -242,63 +242,88 @@
         <button class="view-btn" onclick="setExplorerPctContext('conf',this)">Conference</button>
         <button class="view-btn" onclick="setExplorerPctContext('sub',this)">Power/Mid</button>
         <button class="view-btn" onclick="setExplorerPctContext('pos',this)">Position</button>
+        <button class="view-btn" onclick="setExplorerPctContext('pos_conf',this)">Pos + Conf</button>
+        <button class="view-btn" onclick="setExplorerPctContext('pos_sub',this)">Pos + Sub</button>
       </div>
     </div>
 
-    <!-- Dropdown filters -->
+    <!-- Filter bar -->
     <div class="explorer-filters">
+
+      <!-- Name search -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Search Player</span>
+        <input type="text" id="ef-name-search" placeholder="Player name..." class="mf-search-input"
+          oninput="cExplorerNameSearch=this.value;onExplorerFilterChange()">
+      </div>
+
+      <!-- Position buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">Position</span>
-        <select id="ef-position" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-          <option value="Guard">Guard</option>
-          <option value="Wing">Wing</option>
-          <option value="Big">Big</option>
-        </select>
+        <div id="mf-position" class="mf-btn-group">
+          <button class="mf-btn active" data-value="Guard" onclick="togglePositionFilter('Guard',this)">Guard</button>
+          <button class="mf-btn active" data-value="Wing" onclick="togglePositionFilter('Wing',this)">Wing</button>
+          <button class="mf-btn active" data-value="Big" onclick="togglePositionFilter('Big',this)">Big</button>
+        </div>
       </div>
-      <div class="explorer-filter-group">
-        <span class="selector-label">Conference</span>
-        <select id="ef-conference" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-        </select>
-      </div>
+
+      <!-- Level buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">Level</span>
-        <select id="ef-sub" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-          <option value="Power">Power</option>
-          <option value="Mid-Major">Mid-Major</option>
-        </select>
+        <div id="mf-level" class="mf-btn-group">
+          <button class="mf-btn active" data-value="Power" onclick="toggleLevelFilter('Power',this)">Power</button>
+          <button class="mf-btn active" data-value="Mid-Major" onclick="toggleLevelFilter('Mid-Major',this)">Mid-Major</button>
+        </div>
       </div>
+
+      <!-- Conference dropdown -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Conference</span>
+        <div id="mf-conference" class="mf-dropdown-wrap"></div>
+      </div>
+
+      <!-- Class buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">Class</span>
-        <select id="ef-class" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-          <option value="FR">FR</option>
-          <option value="SO">SO</option>
-          <option value="JR">JR</option>
-          <option value="SR">SR</option>
-          <option value="GR">GR</option>
-        </select>
+        <div id="mf-class" class="mf-btn-group"></div>
       </div>
+
+      <!-- MPG Tier buttons -->
       <div class="explorer-filter-group">
         <span class="selector-label">MPG Tier</span>
-        <select id="ef-tier" onchange="onExplorerFilterChange()">
-          <option value="">All</option>
-        </select>
+        <div id="mf-mpg-tier" class="mf-btn-group"></div>
       </div>
+
+      <!-- Role single select -->
       <div class="explorer-filter-group">
         <span class="selector-label">Role</span>
         <select id="ef-role" onchange="onExplorerFilterChange()">
           <option value="">All</option>
         </select>
       </div>
+
+      <!-- Yrs D1 -->
       <div class="explorer-filter-group">
         <span class="selector-label">Yrs D1</span>
         <select id="ef-years-d1" onchange="onExplorerFilterChange()">
           <option value="">All</option>
         </select>
       </div>
+
+      <!-- Min Games -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Min Games</span>
+        <input type="number" id="ef-min-games" value="5" min="0" max="40"
+          style="width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:5px 8px;border-radius:4px;font-size:12px;"
+          oninput="cExplorerMinGames=parseInt(this.value)||0;onExplorerFilterChange()">
+      </div>
+
+      <!-- Height slider -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Height</span>
+        <div id="mf-height" class="mf-height-wrap"></div>
+      </div>
+
     </div>
 
     <!-- Stat threshold filters -->
@@ -322,6 +347,8 @@
       <button class="hist-cat-btn" onclick="setExplorerStatTab('context',this)">Context</button>
     </div>
 
+    <!-- Top scrollbar mirror -->
+    <div id="explorer-scroll-top" class="explorer-scroll-top"><div style="height:1px"></div></div>
     <div id="explorer-empty" class="empty-state" style="display:none">No players match the current filters.</div>
     <div id="explorer-loading" class="loading-state" style="display:flex">Loading players...</div>
     <div id="explorer-table-wrap" style="display:none"></div>
