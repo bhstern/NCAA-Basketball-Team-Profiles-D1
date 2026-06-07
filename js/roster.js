@@ -74,13 +74,13 @@ const DRTG_DELTA_KEYS = new Set(['drtg_delta_team','drtg_delta_conf','drtg_delta
 
 // Frozen columns — plain text except usage_pct which gets stacked format
 const ROSTER_FROZEN = [
-  {key:'name',             label:'Player',  stacked:false, width:150, left:0},
-  {key:'position',         label:'Pos',     stacked:false, width:60,  left:150},
-  {key:'class',            label:'Yr',      stacked:false, width:44,  left:210},
-  {key:'height_in',        label:'Ht',      stacked:false, width:50,  left:254, fmt: v => { const i=parseInt(v); return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"'; }},
-  {key:'games',            label:'G',       stacked:false, width:40,  left:304},
-  {key:'minutes_per_game', label:'MPG',     stacked:false, width:58,  left:344, fmt: v => parseFloat(v).toFixed(1)},
-  {key:'usage_pct',        label:'USG%',    stacked:true,  width:68,  left:402, fmt: v => fmtPct(v), pctKey:'usage_pct_pct'},
+  {key:'name',             label:'Player',  stacked:false, frozen:true},
+  {key:'position',         label:'Pos',     stacked:false, frozen:false},
+  {key:'class',            label:'Yr',      stacked:false, frozen:false},
+  {key:'height_in',        label:'Ht',      stacked:false, frozen:false, fmt: v => { const i=parseInt(v); return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"'; }},
+  {key:'games',            label:'G',       stacked:false, frozen:false},
+  {key:'minutes_per_game', label:'MPG',     stacked:false, frozen:false, fmt: v => parseFloat(v).toFixed(1)},
+  {key:'usage_pct',        label:'USG%',    stacked:true,  frozen:false, fmt: v => fmtPct(v), pctKey:'usage_pct_pct'},
 ];
 
 const ROSTER_STAT_TABS = {
@@ -241,7 +241,9 @@ function renderRosterTable(playersArg) {
   let html = `<div class="roster-scroll-wrap"><div class="roster-table-wrap"><table class="roster-table"><thead><tr>`;
 
   ROSTER_FROZEN.forEach(col => {
-    html += `<th class="roster-frozen-th" style="left:${col.left}px;min-width:${col.width}px;max-width:${col.width}px;">${col.label}${col.stacked ? rosterTip(col.key) : ''}</th>`;
+    const frozenStyle = col.frozen ? 'position:sticky;left:0;z-index:3;' : '';
+    const thClass = col.frozen ? 'roster-frozen-th roster-name-th' : 'roster-frozen-th roster-scroll-th';
+    html += `<th class="${thClass}" style="${frozenStyle}">${col.label}${col.stacked ? rosterTip(col.key) : ''}</th>`;
   });
   const totalStats = stats.length;
   stats.forEach((s, i) => {
@@ -280,7 +282,7 @@ function renderRosterTable(playersArg) {
         const display = col.fmt ? col.fmt(val) : (val ?? '—');
 
         if (col.key === 'name') {
-          html += `<td class="roster-frozen-td roster-name-cell" style="left:${col.left}px;min-width:${col.width}px;max-width:${col.width}px;">${display}</td>`;
+          html += `<td class="roster-frozen-td roster-name-cell" style="position:sticky;left:0;z-index:1;">${display}</td>`;
         } else if (col.stacked) {
           // USG% — stacked format in frozen column
           const pctKey = col.pctKey || (col.key + '_pct');
@@ -288,9 +290,9 @@ function renderRosterTable(playersArg) {
           const cellContent = (noPercentile || pctVal === null || pctVal === undefined)
             ? `<span class="roster-raw-white">${display}</span>`
             : rosterStackedCell(display, pctVal, isTier2);
-          html += `<td class="roster-frozen-td roster-frozen-stacked" style="left:${col.left}px;min-width:${col.width}px;max-width:${col.width}px;">${cellContent}</td>`;
+          html += `<td class="roster-frozen-td roster-scroll-td">${cellContent}</td>`;
         } else {
-          html += `<td class="roster-frozen-td" style="left:${col.left}px;min-width:${col.width}px;max-width:${col.width}px;">${display ?? '—'}</td>`;
+          html += `<td class="roster-frozen-td roster-scroll-td">${display ?? '—'}</td>`;
         }
       });
 

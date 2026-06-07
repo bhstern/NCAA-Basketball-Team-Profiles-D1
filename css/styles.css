@@ -316,14 +316,15 @@ select:focus{border-color:var(--accent);}
 .roster-table-wrap::-webkit-scrollbar-thumb:hover{background:#6b7280;}
 .roster-table{border-collapse:collapse;font-size:12px;white-space:nowrap;}
 .roster-table thead th{background:var(--surface2);font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);padding:9px 14px;border-bottom:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:2;}
-.roster-frozen-th{text-align:left!important;position:sticky;left:0;z-index:3;background:var(--surface2);}
-.roster-frozen-th:first-child{min-width:150px;}
+/* Frozen - only name column */
+.roster-name-th{text-align:left!important;position:sticky;left:0;z-index:3;background:var(--surface2);min-width:160px;}
+.roster-scroll-th{text-align:left!important;background:var(--surface2);}
 .roster-table tbody tr:last-child td{border-bottom:none;}
-.roster-frozen-td{position:sticky;left:0;background:var(--surface);z-index:1;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.roster-frozen-stacked{min-width:72px;text-align:center!important;vertical-align:middle;border-right:2px solid var(--border2)!important;}
+.roster-frozen-td{background:var(--surface);padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);font-size:12px;}
+.roster-name-cell{position:sticky;left:0;z-index:1;background:var(--surface);font-size:13px;font-weight:500;min-width:160px;border-right:2px solid var(--border2);}
+.roster-scroll-td{text-align:center;vertical-align:middle;}
 .roster-stat-td{padding:8px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;min-width:82px;}
-.roster-name-cell{font-size:13px;font-weight:500;min-width:150px;}
-.roster-tier-row td{background:var(--surface2);padding:11px 16px;border-bottom:1px solid var(--border);border-top:2px solid var(--border2);vertical-align:middle;text-align:left!important;position:sticky;left:0;z-index:2;}
+.roster-tier-row td{background:var(--surface2);padding:11px 16px;border-bottom:1px solid var(--border);border-top:2px solid var(--border2);vertical-align:middle;text-align:left!important;position:sticky;left:0;z-index:4;width:100%;}
 .roster-tier-label{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;}
 .roster-tier-mpg{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text3);margin-left:10px;text-transform:none;}
 .roster-tier-note{font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--text3);font-style:italic;margin-left:14px;}
@@ -347,16 +348,11 @@ select:focus{border-color:var(--accent);}
 .pct-elite-muted-bar{background:#6bbf8e;} .pct-good-muted-bar{background:#6b9e7a;} .pct-avg-muted-bar{background:#b89a30;} .pct-below-muted-bar{background:#b07030;} .pct-poor-muted-bar{background:#b04030;}
 /* Mobile roster — only freeze player name, unfreeze all other columns */
 @media (max-width: 768px) {
-  .roster-frozen-th:not(:first-child){position:static!important;background:var(--surface2);}
-  .roster-frozen-td:not(:first-child){position:static!important;background:var(--surface);border-right:none;}
-  .roster-frozen-stacked{text-align:center!important;}
-  .roster-table thead th{font-size:10px;padding:7px 8px;position:static!important;}
-  .roster-frozen-th:first-child{min-width:110px;position:sticky!important;left:0!important;}
-  .roster-frozen-th:first-child.roster-frozen-th{z-index:3;}
+  .roster-table thead th{font-size:10px;padding:7px 8px;}
+  .roster-name-th{min-width:110px;}
   .roster-name-cell{min-width:110px;font-size:12px;}
   .roster-stat-td{padding:7px 8px;min-width:70px;}
   .roster-frozen-td{padding:7px 8px;}
-  .roster-frozen-td:first-child{position:sticky!important;left:0!important;z-index:1;}
   .roster-tier-label{font-size:12px;}
   .roster-tier-mpg{font-size:10px;}
   .roster-tier-note{font-size:9px;display:block;margin-left:0;margin-top:3px;}
