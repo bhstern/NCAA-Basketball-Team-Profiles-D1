@@ -324,7 +324,9 @@ select:focus{border-color:var(--accent);}
 .roster-name-cell{position:sticky;left:0;z-index:1;background:var(--surface);font-size:13px;font-weight:500;min-width:160px;border-right:2px solid var(--border2);}
 .roster-scroll-td{text-align:center;vertical-align:middle;}
 .roster-stat-td{padding:8px 14px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;min-width:82px;}
-.roster-tier-row td{background:var(--surface2);padding:11px 16px;border-bottom:1px solid var(--border);border-top:2px solid var(--border2);vertical-align:middle;text-align:left!important;position:sticky;left:0;z-index:4;width:100%;}
+.roster-tier-row td{background:var(--surface2);border-bottom:1px solid var(--border);border-top:2px solid var(--border2);padding:0;}
+.roster-tier-first-cell{padding:10px 16px;white-space:nowrap;min-width:200px;background:var(--surface2);}
+.roster-tier-empty-cell{padding:0;background:var(--surface2);}
 .roster-tier-label{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;}
 .roster-tier-mpg{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text3);margin-left:10px;text-transform:none;}
 .roster-tier-note{font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--text3);font-style:italic;margin-left:14px;}

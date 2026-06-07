@@ -261,13 +261,18 @@ function renderRosterTable(playersArg) {
     const noteHtml = tierCfg.note
       ? `<span class="roster-tier-note">${tierCfg.note}</span>`
       : '';
-    html += `<tr class="roster-tier-row">
-      <td colspan="${totalCols}" style="position:sticky;left:0;">
-        <span class="roster-tier-label" style="color:${tierCfg.color}">${tierCfg.label}</span>
-        <span class="roster-tier-mpg">${tierCfg.mpg}</span>
-        ${noteHtml}
-      </td>
-    </tr>`;
+    // Tier header: first cell sticky, rest empty — colspan breaks sticky
+    let tierHtml = `<tr class="roster-tier-row"><td class="roster-tier-first-cell" style="position:sticky;left:0;z-index:4;background:var(--surface2);">`;
+    tierHtml += `<span class="roster-tier-label" style="color:${tierCfg.color}">${tierCfg.label}</span>`;
+    tierHtml += `<span class="roster-tier-mpg">${tierCfg.mpg}</span>`;
+    tierHtml += noteHtml;
+    tierHtml += `</td>`;
+    // Empty cells for remaining columns so row height is consistent
+    for (let i = 1; i < totalCols; i++) {
+      tierHtml += `<td class="roster-tier-empty-cell"></td>`;
+    }
+    tierHtml += `</tr>`;
+    html += tierHtml;
 
     group.forEach(p => {
       const isTier2 = p.percentile_tier === 'Tier 2';
