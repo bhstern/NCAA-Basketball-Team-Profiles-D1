@@ -449,7 +449,7 @@ function toggleEF(stateSet, val, allVals, containerSelector) {
 
 function togglePosition(val,btn){ toggleEF(EF.positions,val,['Guard','Wing','Big'],'#mf-position'); }
 function toggleLevel(val,btn){ toggleEF(EF.levels,val,['Power','Mid-Major'],'#mf-level'); }
-function toggleClass(val,btn){ toggleEF(EF.classes,val,['FR','SO','JR','SR','GR'],'#mf-class'); }
+function toggleClass(val,btn){ toggleEF(EF.classes,val,['FR','SO','JR','SR'],'#mf-class'); }
 function toggleTier(val,btn){
   const allTiers=['Core Player (26+ MPG)','Primary Rotation (18\u201326 MPG)','Bench Rotation (10\u201318 MPG)','Fringe Rotation (5\u201310 MPG)','End of Bench (0\u20135 MPG)'];
   toggleEF(EF.tiers,val,allTiers,'#mf-mpg-tier');
