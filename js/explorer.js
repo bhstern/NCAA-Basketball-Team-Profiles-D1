@@ -185,9 +185,9 @@ const EXPLORER_STAT_TABS = {
 };
 
 const EXPLORER_FROZEN = [
-  {key:'name',label:'Player',frozen:true,width:155,left:24,fmt:v=>v??'—'},
-  {key:'team',label:'Team',frozen:true,width:125,left:179,fmt:v=>v??'—'},
-  {key:'position',label:'Pos',frozen:true,width:65,left:304,fmt:v=>v??'—'},
+  {key:'name',label:'Player',frozen:true,width:155,left:40,fmt:v=>v??'—'},
+  {key:'team',label:'Team',frozen:true,width:125,left:195,fmt:v=>v??'—'},
+  {key:'position',label:'Pos',frozen:true,width:65,left:320,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
   {key:'height_in',label:'Ht',frozen:false,fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',label:'G',frozen:false,fmt:v=>v??'—'},
@@ -272,7 +272,7 @@ function buildExplorerFilters() {
     buildCheckboxDropdown(teamWrap, 'Team', teams, EF.teams);
   }
 
-  // Role dropdown — multi-select, sorted by position group
+  // Role buttons — sorted by position group
   const roleWrap = document.getElementById('mf-role');
   if (roleWrap && !roleWrap.dataset.built) {
     roleWrap.dataset.built = '1';
@@ -283,16 +283,28 @@ function buildExplorerFilters() {
     roles.sort((a,b)=>{
       const pa=posOrder[rolePos[a]]??3, pb=posOrder[rolePos[b]]??3;
       if(pa!==pb) return pa-pb;
+      if(a==='C'&&b==='PF/C') return 1;
+      if(a==='PF/C'&&b==='C') return -1;
       return a.localeCompare(b);
     });
-    buildCheckboxDropdown(roleWrap, 'Role', roles, EF.roles);
+    roles.forEach(r=>{
+      const btn=document.createElement('button');
+      btn.className='mf-btn active'; btn.dataset.value=r; btn.textContent=r;
+      btn.onclick=()=>toggleEF(EF.roles,r,roles,'#mf-role');
+      roleWrap.appendChild(btn);
+    });
   }
 
-  // Yrs D1 dropdown — multi-select
+  // Yrs D1 buttons
   const yrsWrap = document.getElementById('mf-years-d1');
   if (yrsWrap && !yrsWrap.dataset.built) {
     yrsWrap.dataset.built = '1';
-    buildCheckboxDropdown(yrsWrap, 'Yrs D1', ['1','2','3','4','5+'], EF.yrsD1);
+    ['1','2','3','4','5+'].forEach(y=>{
+      const btn=document.createElement('button');
+      btn.className='mf-btn active'; btn.dataset.value=y; btn.textContent=y+(y==='5+'?'':' yr');
+      btn.onclick=()=>toggleEF(EF.yrsD1,y,['1','2','3','4','5+'],'#mf-years-d1');
+      yrsWrap.appendChild(btn);
+    });
   }
 
   // Stat filter dropdown
@@ -303,15 +315,20 @@ function buildExplorerFilters() {
       if (seen.has(s.key)) return; seen.add(s.key);
       const o=document.createElement('option'); o.value=s.key; o.textContent=s.label.replace('\n',' '); sfSel.appendChild(o);
     });
-    // Add per-game shooting volume stats (shown as strings in table but filterable)
+    // Add per-game shooting volume stats grouped with their related stats
     const pgStats = [
+      // Overall
       {key:'fga_pg',label:'FGA/G'},{key:'fgm_pg',label:'FGM/G'},
       {key:'two_att_pg',label:'2PT Att/G'},{key:'two_made_pg',label:'2PT Made/G'},
+      // 3PT
       {key:'three_att_pg',label:'3PT Att/G'},{key:'three_made_pg',label:'3PT Made/G'},
+      // Rim
       {key:'rim_att_pg',label:'Rim Att/G'},{key:'rim_made_pg',label:'Rim Made/G'},
       {key:'close_two_att_pg',label:'Close 2 Att/G'},{key:'close_two_made_pg',label:'Close 2 Made/G'},
       {key:'dunk_att_pg',label:'Dunk Att/G'},{key:'dunk_made_pg',label:'Dunk Made/G'},
-      {key:'midrange_att_pg',label:'Mid Att/G'},{key:'midrange_made_pg',label:'Mid Made/G'},
+      // Midrange
+      {key:'midrange_att_pg',label:'Midrange Att/G'},{key:'midrange_made_pg',label:'Midrange Made/G'},
+      // FT
       {key:'ft_att_pg',label:'FT Att/G'},{key:'ft_made_pg',label:'FT Made/G'},
     ];
     pgStats.forEach(s=>{ if(seen.has(s.key)) return; seen.add(s.key); const o=document.createElement('option'); o.value=s.key; o.textContent=s.label; sfSel.appendChild(o); });
@@ -349,7 +366,9 @@ function buildCheckboxDropdown(container, label, values, stateSet) {
   };
   menu.appendChild(search);
   const updateBtn = () => {
-    btn.innerHTML = (stateSet.size===0?label:label+' ('+stateSet.size+')') + ' <span>▾</span>';
+    const count = stateSet.size;
+    const display = count===0 ? label+': All' : label+' ('+count+')';
+    btn.innerHTML = display + ' <span>▾</span>';
   };
   const actionRow = document.createElement('div');
   actionRow.className = 'mf-action-row';
@@ -574,7 +593,7 @@ function renderExplorerTable(append=false) {
   let html=`<div class="explorer-table-scroll-wrap"><table class="roster-table explorer-table"><thead><tr>`;
 
   // Rank
-  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:4;min-width:24px;width:24px;">#</th>`;
+  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:4;min-width:40px;width:40px;text-align:center;">#</th>`;
 
   // Frozen cols
   EXPLORER_FROZEN.forEach(col=>{
@@ -612,7 +631,7 @@ function renderExplorerTable(append=false) {
     const noPercentile=!p.percentile_eligible||p.percentile_eligible===false||p.percentile_eligible==='False';
     const rowCls=isTier2?'roster-row roster-tier2':'roster-row';
     html+=`<tr class="${rowCls}">`;
-    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:2;background:var(--surface);min-width:24px;width:24px;">${idx+1}</td>`;
+    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:2;background:var(--surface);min-width:40px;width:40px;text-align:center;">${idx+1}</td>`;
 
     EXPLORER_FROZEN.forEach(col=>{
       const val=p[col.key];
