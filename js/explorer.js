@@ -200,15 +200,18 @@ const EXPLORER_FROZEN = [
 // ── FILTER STATE — simple object, read from DOM ───────────────────────────────
 // Active multi-select sets — empty = all selected
 let EF = {
-  positions: new Set(),   // empty = all 3
-  levels:    new Set(),   // empty = all
-  classes:   new Set(),   // empty = all
-  tiers:     new Set(['Core Player (26+ MPG)','Primary Rotation (18\u201326 MPG)','Bench Rotation (10\u201318 MPG)','Fringe Rotation (5\u201310 MPG)']),
-  conferences: new Set(), // empty = all
-  minGames:  5,
-  minHeight: 0,
-  maxHeight: 999,
-  name:      '',
+  positions:   new Set(),
+  levels:      new Set(),
+  classes:     new Set(),
+  tiers:       new Set(['Core Player (26+ MPG)','Primary Rotation (18\u201326 MPG)','Bench Rotation (10\u201318 MPG)','Fringe Rotation (5\u201310 MPG)']),
+  conferences: new Set(),
+  teams:       new Set(),
+  roles:       new Set(),
+  yrsD1:       new Set(),
+  minGames:    5,
+  minHeight:   0,
+  maxHeight:   999,
+  name:        '',
 };
 
 // ── LOAD ──────────────────────────────────────────────────────────────────────
@@ -331,12 +334,11 @@ function buildExplorerFilters() {
 function buildCheckboxDropdown(container, label, values, stateSet) {
   const btn = document.createElement('button');
   btn.className = 'mf-dropdown-btn';
-  btn.innerHTML = label + ' <span>\u25be</span>';
-
+  btn.innerHTML = label + ' <span>▾</span>';
   const menu = document.createElement('div');
   menu.className = 'mf-dropdown-menu';
   menu.style.display = 'none';
-
+  menu.addEventListener('click', e => e.stopPropagation());
   const search = document.createElement('input');
   search.type='text'; search.placeholder='Search...'; search.className='mf-search';
   search.oninput = () => {
@@ -346,49 +348,41 @@ function buildCheckboxDropdown(container, label, values, stateSet) {
     });
   };
   menu.appendChild(search);
-
   const updateBtn = () => {
-    btn.innerHTML = (stateSet.size===0?label:`${label} (${stateSet.size})`) + ' <span>\u25be</span>';
+    btn.innerHTML = (stateSet.size===0?label:label+' ('+stateSet.size+')') + ' <span>▾</span>';
   };
-
-  // All option
-  const allLabel = document.createElement('label');
-  allLabel.className='mf-check-item';
-  const allCb = document.createElement('input'); allCb.type='checkbox'; allCb.checked=true;
-  allLabel.appendChild(allCb); allLabel.appendChild(document.createTextNode(' All'));
-  allCb.onchange = () => {
-    if (allCb.checked) {
-      stateSet.clear();
-      menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=true);
-    }
-    updateBtn(); onExplorerFilterChange();
-  };
-  menu.appendChild(allLabel);
-
+  const actionRow = document.createElement('div');
+  actionRow.className = 'mf-action-row';
+  const selAllBtn = document.createElement('button');
+  selAllBtn.className='mf-action-btn'; selAllBtn.textContent='Select All';
+  selAllBtn.onclick = () => { stateSet.clear(); menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=true); updateBtn(); onExplorerFilterChange(); };
+  const deselAllBtn = document.createElement('button');
+  deselAllBtn.className='mf-action-btn'; deselAllBtn.textContent='Deselect All';
+  deselAllBtn.onclick = () => { stateSet.clear(); values.forEach(v=>stateSet.add(v)); menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=false); updateBtn(); onExplorerFilterChange(); };
+  actionRow.appendChild(selAllBtn); actionRow.appendChild(deselAllBtn);
+  menu.appendChild(actionRow);
   values.forEach(v => {
     const item = document.createElement('label');
     item.className='mf-check-item'; item.dataset.val=v;
     const cb = document.createElement('input'); cb.type='checkbox';
     cb.checked = stateSet.size===0 || stateSet.has(v);
     cb.onchange = () => {
-      if (cb.checked) { stateSet.add(v); }
-      else { stateSet.delete(v); }
-      if (stateSet.size === values.length) stateSet.clear();
-      allCb.checked = stateSet.size===0;
+      if(stateSet.size===0) values.forEach(vv=>stateSet.add(vv));
+      if(cb.checked) { stateSet.add(v); } else { stateSet.delete(v); }
+      if(stateSet.size===values.length) stateSet.clear();
       updateBtn(); onExplorerFilterChange();
     };
     item.appendChild(cb); item.appendChild(document.createTextNode(' '+v));
     menu.appendChild(item);
   });
-
   btn.onclick = e => {
     e.stopPropagation();
     const open = menu.style.display!=='none';
     document.querySelectorAll('.mf-dropdown-menu').forEach(m=>m.style.display='none');
     menu.style.display = open?'none':'block';
+    if(menu.style.display!=='none') setTimeout(()=>search.focus(),50);
   };
   document.addEventListener('click', ()=>{ menu.style.display='none'; });
-
   container.appendChild(btn);
   container.appendChild(menu);
 }
