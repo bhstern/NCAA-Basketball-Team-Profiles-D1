@@ -187,7 +187,7 @@ const EXPLORER_STAT_TABS = {
 const EXPLORER_FROZEN = [
   {key:'name',label:'Player',frozen:true,width:155,left:32,fmt:v=>v??'—'},
   {key:'team',label:'Team',frozen:true,width:125,left:187,fmt:v=>v??'—'},
-  {key:'position',label:'Pos',frozen:true,width:52,left:312,fmt:v=>v??'—'},
+  {key:'position',label:'Pos',frozen:true,width:65,left:312,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
   {key:'height_in',label:'Ht',frozen:false,fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',label:'G',frozen:false,fmt:v=>v??'—'},
@@ -261,10 +261,18 @@ function buildExplorerFilters() {
     buildCheckboxDropdown(confWrap, 'Conference', confs, EF.conferences);
   }
 
-  // Role dropdown
+  // Role dropdown — sorted by position group then alphabetically
   const roleSel = document.getElementById('ef-role');
   if (roleSel && roleSel.options.length <= 1) {
-    const roles = [...new Set(cExplorerData.map(p=>p.role).filter(Boolean))].sort();
+    const roles = [...new Set(cExplorerData.map(p=>p.role).filter(Boolean))];
+    const rolePos = {};
+    cExplorerData.forEach(p=>{ if(p.role&&p.position) rolePos[p.role]=p.position; });
+    const posOrder = {'Guard':0,'Wing':1,'Big':2};
+    roles.sort((a,b)=>{
+      const pa=posOrder[rolePos[a]]??3, pb=posOrder[rolePos[b]]??3;
+      if(pa!==pb) return pa-pb;
+      return a.localeCompare(b);
+    });
     roles.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; roleSel.appendChild(o); });
   }
 
@@ -282,6 +290,18 @@ function buildExplorerFilters() {
       if (seen.has(s.key)) return; seen.add(s.key);
       const o=document.createElement('option'); o.value=s.key; o.textContent=s.label.replace('\n',' '); sfSel.appendChild(o);
     });
+    // Add per-game shooting volume stats (shown as strings in table but filterable)
+    const pgStats = [
+      {key:'fga_pg',label:'FGA/G'},{key:'fgm_pg',label:'FGM/G'},
+      {key:'two_att_pg',label:'2PT Att/G'},{key:'two_made_pg',label:'2PT Made/G'},
+      {key:'three_att_pg',label:'3PT Att/G'},{key:'three_made_pg',label:'3PT Made/G'},
+      {key:'rim_att_pg',label:'Rim Att/G'},{key:'rim_made_pg',label:'Rim Made/G'},
+      {key:'close_two_att_pg',label:'Close 2 Att/G'},{key:'close_two_made_pg',label:'Close 2 Made/G'},
+      {key:'dunk_att_pg',label:'Dunk Att/G'},{key:'dunk_made_pg',label:'Dunk Made/G'},
+      {key:'midrange_att_pg',label:'Mid Att/G'},{key:'midrange_made_pg',label:'Mid Made/G'},
+      {key:'ft_att_pg',label:'FT Att/G'},{key:'ft_made_pg',label:'FT Made/G'},
+    ];
+    pgStats.forEach(s=>{ if(seen.has(s.key)) return; seen.add(s.key); const o=document.createElement('option'); o.value=s.key; o.textContent=s.label; sfSel.appendChild(o); });
   }
 
   // Height slider bounds
@@ -548,10 +568,16 @@ function renderExplorerTable(append=false) {
   EXPLORER_FROZEN.forEach(col=>{
     const lbl=col.label.replace('\n','<br>');
     const isLast=col.key==='position';
+    const isSorted=cExplorerSort.key===col.key;
+    const sortIcon=isSorted?(cExplorerSort.dir==='desc'?' ▾':' ▴'):'';
+    const sortedCls=isSorted?' explorer-col-sorted':'';
+    // Sortable identity cols (not name/team/position)
+    const sortable=['height_in','games','minutes_per_game','age','recruit_rank_clean','years_in_d1'].includes(col.key);
+    const clickable=sortable?`onclick="setExplorerSort('${col.key}')" style="cursor:pointer;"`:'';
     if(col.frozen) {
-      html+=`<th class="roster-frozen-th explorer-id-th${isLast?' explorer-last-frozen':''}" style="position:sticky;left:${col.left}px;z-index:4;min-width:${col.width}px;max-width:${col.width}px;background:var(--surface2);">${lbl}</th>`;
+      html+=`<th class="roster-frozen-th explorer-id-th${isLast?' explorer-last-frozen':''}${sortedCls}" ${clickable} style="position:sticky;left:${col.left}px;z-index:4;min-width:${col.width}px;max-width:${col.width}px;background:var(--surface2);">${lbl}${sortIcon}</th>`;
     } else {
-      html+=`<th class="roster-frozen-th roster-scroll-th">${lbl}</th>`;
+      html+=`<th class="roster-frozen-th roster-scroll-th${sortedCls}" ${clickable}>${lbl}${sortIcon}</th>`;
     }
   });
 
@@ -619,7 +645,7 @@ function renderExplorerTable(append=false) {
   });
 
   if(cExplorerFiltered.length>pageEnd) {
-    html+=`<tr><td colspan="999" class="explorer-more-row"><button class="view-btn" onclick="showMoreExplorer()">Show More (${cExplorerFiltered.length-pageEnd} remaining)</button></td></tr>`;
+    html+=`<tr><td class="explorer-more-row" style="text-align:left;padding-left:8px;"><button class="view-btn" onclick="showMoreExplorer()">Show More (${cExplorerFiltered.length-pageEnd} remaining)</button></td><td colspan="999"></td></tr>`;
   }
 
   html+=`</tbody></table></div>`;
@@ -628,6 +654,48 @@ function renderExplorerTable(append=false) {
 
   updateExplorerCount();
   setTimeout(syncExplorerScrollbar,60);
+}
+
+function resetExplorerFilters() {
+  // Reset all EF state
+  EF.positions.clear(); EF.levels.clear(); EF.classes.clear();
+  EF.conferences.clear();
+  EF.tiers = new Set(['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)']);
+  EF.minGames = 5; EF.name = '';
+  EF.minHeight = 0; EF.maxHeight = 999;
+
+  // Reset DOM
+  document.getElementById('ef-name-search').value = '';
+  document.getElementById('ef-min-games').value = 5;
+  document.getElementById('ef-role').value = '';
+  document.getElementById('ef-years-d1').value = '';
+
+  // Reset sliders
+  const minS = document.getElementById('slider-min-height');
+  const maxS = document.getElementById('slider-max-height');
+  if (minS && maxS) { minS.value = minS.min; maxS.value = maxS.max; updateHeightLabel(); }
+
+  // Reset position/level/class buttons — all active
+  ['#mf-position','#mf-level','#mf-class'].forEach(sel => {
+    document.querySelectorAll(sel+' .mf-btn').forEach(b => b.classList.add('active'));
+  });
+
+  // Reset MPG tier buttons — all except EOB
+  document.querySelectorAll('#mf-mpg-tier .mf-btn').forEach(b => {
+    const isEOB = b.dataset.value && b.dataset.value.includes('End of Bench');
+    b.classList.toggle('active', !isEOB);
+  });
+
+  // Reset conference dropdown checkboxes
+  document.querySelectorAll('#mf-conference .mf-check-item[data-val] input').forEach(cb => cb.checked = true);
+  const confBtn = document.querySelector('#mf-conference .mf-dropdown-btn');
+  if (confBtn) confBtn.innerHTML = 'Conference <span>▾</span>';
+
+  // Reset stat filters
+  cExplorerStatFilters = [];
+  renderStatFilterTags();
+
+  onExplorerFilterChange();
 }
 
 function updateExplorerCount() {
