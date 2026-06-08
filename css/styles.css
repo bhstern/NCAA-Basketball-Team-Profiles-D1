@@ -386,6 +386,11 @@ select:focus{border-color:var(--accent);}
 .explorer-id-th{min-width:80px;}
 .explorer-id-cell{border-right:none;}
 .explorer-more-row{text-align:center;padding:12px;font-size:11px;color:var(--text4);font-style:italic;}
+@media (max-width:768px){
+  .explorer-id-th:not(:first-of-type){position:static!important;}
+  .explorer-id-cell:not(:first-of-type){position:static!important;}
+  .explorer-last-frozen{border-right:none!important;}
+}
 .explorer-sort-hint{font-size:11px;color:var(--text4);margin-bottom:6px;font-style:italic;}
 .explorer-col-sorted{background:rgba(74,158,255,0.06)!important;}
 /* Explorer table scroll */

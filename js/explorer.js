@@ -185,9 +185,9 @@ const EXPLORER_STAT_TABS = {
 };
 
 const EXPLORER_FROZEN = [
-  {key:'name',label:'Player',frozen:true,width:155,left:36,fmt:v=>v??'—'},
-  {key:'team',label:'Team',frozen:true,width:125,left:191,fmt:v=>v??'—'},
-  {key:'position',label:'Pos',frozen:true,width:65,left:316,fmt:v=>v??'—'},
+  {key:'name',label:'Player',frozen:true,width:155,left:28,fmt:v=>v??'—'},
+  {key:'team',label:'Team',frozen:true,width:125,left:183,fmt:v=>v??'—'},
+  {key:'position',label:'Pos',frozen:true,width:65,left:308,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
   {key:'height_in',label:'Ht',frozen:false,fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',label:'G',frozen:false,fmt:v=>v??'—'},
@@ -622,7 +622,7 @@ function renderExplorerTable(append=false) {
   let html=`<div class="explorer-table-scroll-wrap"><table class="roster-table explorer-table"><thead><tr>`;
 
   // Rank
-  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky!important;left:0;z-index:4;min-width:36px;width:36px;max-width:36px;text-align:center;background:var(--surface2);">#</th>`;
+  html+=`<th class="explorer-rank-th" style="min-width:28px;width:28px;max-width:28px;text-align:center;padding:0 4px;background:var(--surface2);color:var(--text4);font-size:10px;">#</th>`;
 
   // Frozen cols
   EXPLORER_FROZEN.forEach(col=>{
@@ -660,7 +660,7 @@ function renderExplorerTable(append=false) {
     const noPercentile=!p.percentile_eligible||p.percentile_eligible===false||p.percentile_eligible==='False';
     const rowCls=isTier2?'roster-row roster-tier2':'roster-row';
     html+=`<tr class="${rowCls}">`;
-    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky!important;left:0;z-index:2;background:var(--surface);min-width:36px;width:36px;max-width:36px;text-align:center;">${idx+1}</td>`;
+    html+=`<td class="explorer-rank-cell" style="min-width:28px;width:28px;max-width:28px;text-align:center;padding:0 4px;font-size:11px;color:var(--text4);border-bottom:1px solid var(--border);">${idx+1}</td>`;
 
     EXPLORER_FROZEN.forEach(col=>{
       const val=p[col.key];

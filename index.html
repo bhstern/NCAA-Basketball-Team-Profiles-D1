@@ -251,14 +251,35 @@
     <!-- Filter bar -->
     <div class="explorer-filters">
 
-      <!-- Name search -->
+      <!-- 1. Search Player -->
       <div class="explorer-filter-group">
         <span class="selector-label">Search Player</span>
         <input type="text" id="ef-name-search" placeholder="Player name..." class="mf-search-input"
           oninput="EF.name=this.value;onExplorerFilterChange()">
       </div>
 
-      <!-- Position buttons -->
+      <!-- 2. Team -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Team</span>
+        <div id="mf-team" class="mf-dropdown-wrap"></div>
+      </div>
+
+      <!-- 3. Conference -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Conference</span>
+        <div id="mf-conference" class="mf-dropdown-wrap"></div>
+      </div>
+
+      <!-- 4. Level -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Level</span>
+        <div id="mf-level" class="mf-btn-group">
+          <button class="mf-btn active" data-value="Power" onclick="toggleLevel('Power',this)">Power</button>
+          <button class="mf-btn active" data-value="Mid-Major" onclick="toggleLevel('Mid-Major',this)">Mid-Major</button>
+        </div>
+      </div>
+
+      <!-- 5. Position -->
       <div class="explorer-filter-group">
         <span class="selector-label">Position</span>
         <div id="mf-position" class="mf-btn-group">
@@ -268,22 +289,7 @@
         </div>
       </div>
 
-      <!-- Level buttons -->
-      <div class="explorer-filter-group">
-        <span class="selector-label">Level</span>
-        <div id="mf-level" class="mf-btn-group">
-          <button class="mf-btn active" data-value="Power" onclick="toggleLevel('Power',this)">Power</button>
-          <button class="mf-btn active" data-value="Mid-Major" onclick="toggleLevel('Mid-Major',this)">Mid-Major</button>
-        </div>
-      </div>
-
-      <!-- Conference checkbox dropdown -->
-      <div class="explorer-filter-group">
-        <span class="selector-label">Conference</span>
-        <div id="mf-conference" class="mf-dropdown-wrap"></div>
-      </div>
-
-      <!-- Class buttons -->
+      <!-- 6. Class -->
       <div class="explorer-filter-group">
         <span class="selector-label">Class</span>
         <div id="mf-class" class="mf-btn-group">
@@ -295,7 +301,13 @@
         </div>
       </div>
 
-      <!-- MPG Tier buttons -->
+      <!-- 7. Yrs D1 -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Yrs D1</span>
+        <div id="mf-years-d1" class="mf-btn-group"></div>
+      </div>
+
+      <!-- 8. MPG Tier -->
       <div class="explorer-filter-group">
         <span class="selector-label">MPG Tier</span>
         <div id="mf-mpg-tier" class="mf-btn-group">
@@ -307,25 +319,13 @@
         </div>
       </div>
 
-      <!-- Team -->
-      <div class="explorer-filter-group">
-        <span class="selector-label">Team</span>
-        <div id="mf-team" class="mf-dropdown-wrap"></div>
-      </div>
-
-      <!-- Role -->
+      <!-- 9. Role -->
       <div class="explorer-filter-group">
         <span class="selector-label">Role</span>
         <div id="mf-role" class="mf-btn-group"></div>
       </div>
 
-      <!-- Yrs D1 -->
-      <div class="explorer-filter-group">
-        <span class="selector-label">Yrs D1</span>
-        <div id="mf-years-d1" class="mf-btn-group"></div>
-      </div>
-
-      <!-- Min Games -->
+      <!-- 10. Min Games -->
       <div class="explorer-filter-group">
         <span class="selector-label">Min Games</span>
         <input type="number" id="ef-min-games" value="5" min="0" max="40"
@@ -333,7 +333,7 @@
           oninput="EF.minGames=parseInt(this.value)||0;onExplorerFilterChange()">
       </div>
 
-      <!-- Height -->
+      <!-- 11. Height -->
       <div class="explorer-filter-group">
         <span class="selector-label">Height</span>
         <div class="mf-height-wrap">
@@ -439,9 +439,16 @@
       <div class="about-section">
         <h2>About This Project</h2>
         <p>This started as an open-ended exploration. I was watching games every week, taking detailed notes, and I wanted to know if what the data said matched what my eyes were telling me. That question eventually turned into this site.</p>
-        <p>I built the entire thing from scratch &mdash; Python for the data pipeline and variable engineering, HTML and JavaScript for the front end, deployed on GitHub Pages. The platform now covers all 368 D1 programs across 11 seasons (2016&ndash;2026) and roughly 53,000 individual player-seasons. Every team profile includes D1-wide percentiles, conference context, and power vs. mid-major comparisons. The Player Explorer lets you filter, sort, and evaluate players across five stat categories with six different percentile contexts &mdash; national, conference, power/mid-major, position, position within conference, and position within power/mid-major.</p>
-        <p>The goal was never to just surface more stats. It was to build something a coaching staff could actually sit down with &mdash; to understand their own identity, prep for opponents, evaluate the portal, and make faster decisions. This is a proof of concept built entirely on public data. I know the real value multiplies with access to tools like Synergy Sports and Second Spectrum.</p>
-        <p>Next up: individual player profiles, transfer portal decision support, and eventually clustering and similarity models with a long-term goal of building predictive tools on the player development side.</p>
+        <p>I built the entire thing from scratch &mdash; Python for the data pipeline and variable engineering, HTML and JavaScript for the front end, deployed on GitHub Pages. The platform covers all 368 D1 programs across 11 seasons (2016&ndash;2026) and roughly 53,000 individual player-seasons. The goal was never to just surface more stats. It was to build something a coaching staff could actually sit down with &mdash; to understand their own identity, prep for opponents, evaluate the portal, and make faster decisions. This is a proof of concept built entirely on public data. I know the real value multiplies with access to tools like Synergy Sports and Second Spectrum.</p>
+
+        <h3 style="color:var(--text2);margin:16px 0 8px">What&rsquo;s in the Platform</h3>
+        <p><strong style="color:var(--text1)">Team Profile</strong> &mdash; Full team analytics for any D1 program, any season. Efficiency ratings, shot profile, Four Factors, custom PPP metrics, and a complete roster breakdown grouped by rotation tier. Every stat includes D1-wide percentiles, conference rank, and power/mid-major context.</p>
+        <p><strong style="color:var(--text1)">Conference Context</strong> &mdash; How a team stacks up within its own conference across every key metric. Useful for understanding relative standing and preparing for conference opponents.</p>
+        <p><strong style="color:var(--text1)">Player Explorer</strong> &mdash; Filter and sort 4,000+ players per season across five stat categories &mdash; overview, advanced, shooting, per-40, and contextual deltas. Six percentile contexts (national, conference, power/mid-major, position, and position within conference or subgroup). Threshold filters let you build any player profile you&rsquo;re looking for.</p>
+        <p><strong style="color:var(--text1)">Historical Trends</strong> &mdash; Track how a program has evolved over time across any metric. Useful for understanding roster construction patterns and long-term program identity.</p>
+        <p><strong style="color:var(--text1)">Head to Head</strong> &mdash; Direct comparison of two teams across every metric, side by side.</p>
+
+        <p style="margin-top:12px">Next up: individual player profiles, transfer portal decision support, and eventually clustering and similarity models with a long-term goal of building predictive tools on the player development side.</p>
       </div>
 
       <div class="about-section">
