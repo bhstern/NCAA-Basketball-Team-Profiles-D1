@@ -718,47 +718,81 @@ function renderExplorerTable(append=false) {
 }
 
 function resetExplorerFilters() {
-  // Reset all EF state
-  EF.positions.clear(); EF.levels.clear(); EF.classes.clear();
-  EF.conferences.clear(); EF.teams.clear(); EF.roles.clear(); EF.yrsD1.clear();
-  EF.tiers = new Set(['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)']);
-  EF.minGames = 5; EF.name = '';
-  EF.minHeight = 0; EF.maxHeight = 999;
+  // Reset EF state
+  EF.positions.clear();
+  EF.levels.clear();
+  EF.classes.clear();
+  EF.conferences.clear();
+  EF.teams.clear();
+  EF.roles.clear();
+  EF.yrsD1.clear();
+  EF.tiers.clear();
+  ['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)'].forEach(t=>EF.tiers.add(t));
+  EF.minGames = 5;
+  EF.name = '';
+  EF.minHeight = 0;
+  EF.maxHeight = 999;
 
-  // Reset DOM
-  document.getElementById('ef-name-search').value = '';
-  document.getElementById('ef-min-games').value = 5;
-  document.getElementById('ef-role').value = '';
-  document.getElementById('ef-years-d1').value = '';
+  // Reset name search
+  const nameEl = document.getElementById('ef-name-search');
+  if (nameEl) nameEl.value = '';
 
-  // Reset sliders
+  // Reset min games
+  const gamesEl = document.getElementById('ef-min-games');
+  if (gamesEl) gamesEl.value = 5;
+
+  // Reset height sliders
   const minS = document.getElementById('slider-min-height');
   const maxS = document.getElementById('slider-max-height');
-  if (minS && maxS) { minS.value = minS.min; maxS.value = maxS.max; updateHeightLabel(); }
+  if (minS && maxS) {
+    minS.value = minS.min;
+    maxS.value = maxS.max;
+    updateHeightLabel();
+  }
 
-  // Reset position/level/class buttons — all active
+  // Reset all button groups — all active
   ['#mf-position','#mf-level','#mf-class'].forEach(sel => {
-    document.querySelectorAll(sel+' .mf-btn').forEach(b => b.classList.add('active'));
+    document.querySelectorAll(sel + ' .mf-btn').forEach(b => b.classList.add('active'));
   });
 
-  // Reset MPG tier buttons — all except EOB
+  // Reset role and yrs D1 button groups
+  ['#mf-role','#mf-years-d1'].forEach(sel => {
+    document.querySelectorAll(sel + ' .mf-btn').forEach(b => b.classList.add('active'));
+  });
+
+  // Reset MPG tier — all except EOB
   document.querySelectorAll('#mf-mpg-tier .mf-btn').forEach(b => {
     const isEOB = b.dataset.value && b.dataset.value.includes('End of Bench');
     b.classList.toggle('active', !isEOB);
   });
 
-  // Reset all checkbox dropdowns
-  ['#mf-conference','#mf-team','#mf-role','#mf-years-d1'].forEach(sel=>{
-    document.querySelectorAll(sel+' .mf-check-item[data-val] input').forEach(cb=>cb.checked=true);
-    const btn=document.querySelector(sel+' .mf-dropdown-btn');
-    if(btn) { const lbl={'#mf-conference':'Conference','#mf-team':'Team','#mf-role':'Role','#mf-years-d1':'Yrs D1'}[sel]; btn.innerHTML=lbl+' <span>▾</span>'; }
+  // Reset conference and team dropdowns
+  ['#mf-conference','#mf-team'].forEach(sel => {
+    // Check all checkboxes
+    document.querySelectorAll(sel + ' .mf-check-item[data-val] input').forEach(cb => cb.checked = true);
+    // Reset button label
+    const btn = document.querySelector(sel + ' .mf-dropdown-btn');
+    if (btn) {
+      const lbl = sel === '#mf-conference' ? 'Conference' : 'Team';
+      btn.innerHTML = lbl + ': All <span>▾</span>';
+    }
   });
 
-  // Reset stat filters
+  // Reset stat threshold filters
   cExplorerStatFilters = [];
   renderStatFilterTags();
 
-  onExplorerFilterChange();
+  // Reset sort to default
+  cExplorerSort = {key: 'bpm', dir: 'desc'};
+
+  // Reset percentile context to national
+  cExplorerPctContext = 'national';
+  document.querySelectorAll('#explorer-pct-toggle .view-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === 0);
+  });
+
+  applyExplorerFilters();
+  renderExplorerTable();
 }
 
 function updateExplorerCount() {
