@@ -232,7 +232,7 @@
         <select id="explorer-year-select" onchange="loadAndRenderExplorer()"></select>
       </div>
       <div id="explorer-count" class="explorer-count"></div>
-      <button class="view-btn" onclick="resetExplorerFilters()" style="margin-left:auto;">Reset Filters</button>
+      <button onclick="resetExplorerFilters()" style="margin-left:auto;background:var(--accent);color:#fff;border:none;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;">Reset Filters</button>
     </div>
 
     <!-- Percentile context toggle -->
@@ -307,16 +307,22 @@
         </div>
       </div>
 
+      <!-- Team -->
+      <div class="explorer-filter-group">
+        <span class="selector-label">Team</span>
+        <div id="mf-team" class="mf-dropdown-wrap"></div>
+      </div>
+
       <!-- Role -->
       <div class="explorer-filter-group">
         <span class="selector-label">Role</span>
-        <select id="ef-role" onchange="onExplorerFilterChange()"><option value="">All</option></select>
+        <div id="mf-role" class="mf-dropdown-wrap"></div>
       </div>
 
       <!-- Yrs D1 -->
       <div class="explorer-filter-group">
         <span class="selector-label">Yrs D1</span>
-        <select id="ef-years-d1" onchange="onExplorerFilterChange()"><option value="">All</option></select>
+        <div id="mf-years-d1" class="mf-dropdown-wrap"></div>
       </div>
 
       <!-- Min Games -->
@@ -331,14 +337,17 @@
       <div class="explorer-filter-group">
         <span class="selector-label">Height</span>
         <div class="mf-height-wrap">
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
-            <span id="height-label" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);">—</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <input type="range" id="slider-min-height" min="60" max="90" value="60" class="mf-slider"
-              oninput="updateHeightLabel()">
-            <input type="range" id="slider-max-height" min="60" max="90" value="90" class="mf-slider"
-              oninput="updateHeightLabel()">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:10px;color:var(--text4);width:22px;">Min</span>
+              <input type="range" id="slider-min-height" min="60" max="90" value="60" class="mf-slider" oninput="updateHeightLabel()">
+              <span id="height-label-min" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);min-width:36px;">5'0"</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:10px;color:var(--text4);width:22px;">Max</span>
+              <input type="range" id="slider-max-height" min="60" max="90" value="90" class="mf-slider" oninput="updateHeightLabel()">
+              <span id="height-label-max" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);min-width:36px;">7'6"</span>
+            </div>
           </div>
         </div>
       </div>

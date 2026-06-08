@@ -185,16 +185,16 @@ const EXPLORER_STAT_TABS = {
 };
 
 const EXPLORER_FROZEN = [
-  {key:'name',label:'Player',frozen:true,width:155,left:32,fmt:v=>v??'—'},
-  {key:'team',label:'Team',frozen:true,width:125,left:187,fmt:v=>v??'—'},
-  {key:'position',label:'Pos',frozen:true,width:65,left:312,fmt:v=>v??'—'},
+  {key:'name',label:'Player',frozen:true,width:155,left:24,fmt:v=>v??'—'},
+  {key:'team',label:'Team',frozen:true,width:125,left:179,fmt:v=>v??'—'},
+  {key:'position',label:'Pos',frozen:true,width:65,left:304,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
   {key:'height_in',label:'Ht',frozen:false,fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',label:'G',frozen:false,fmt:v=>v??'—'},
   {key:'minutes_per_game',label:'MPG',frozen:false,fmt:v=>fmtNumE(v)},
   {key:'age',label:'Age',frozen:false,fmt:v=>fmtNumE(v,1)},
-  {key:'recruit_rank_clean',label:'Recruit\nScore',frozen:false,fmt:v=>(v&&!isNaN(v))?parseInt(v):'—'},
-  {key:'years_in_d1',label:'Yrs\nD1',frozen:false,fmt:v=>v??'—'},
+  {key:'recruit_rank_clean',label:'Recruit\nScore',frozen:false,tip:true,fmt:v=>(v&&!isNaN(v))?parseInt(v):'—'},
+  {key:'years_in_d1',label:'Yrs\nD1',frozen:false,tip:true,fmt:v=>v??'—'},
 ];
 
 // ── FILTER STATE — simple object, read from DOM ───────────────────────────────
@@ -261,9 +261,18 @@ function buildExplorerFilters() {
     buildCheckboxDropdown(confWrap, 'Conference', confs, EF.conferences);
   }
 
-  // Role dropdown — sorted by position group then alphabetically
-  const roleSel = document.getElementById('ef-role');
-  if (roleSel && roleSel.options.length <= 1) {
+  // Team dropdown
+  const teamWrap = document.getElementById('mf-team');
+  if (teamWrap && !teamWrap.dataset.built) {
+    teamWrap.dataset.built = '1';
+    const teams = [...new Set(cExplorerData.map(p=>p.team).filter(Boolean))].sort();
+    buildCheckboxDropdown(teamWrap, 'Team', teams, EF.teams);
+  }
+
+  // Role dropdown — multi-select, sorted by position group
+  const roleWrap = document.getElementById('mf-role');
+  if (roleWrap && !roleWrap.dataset.built) {
+    roleWrap.dataset.built = '1';
     const roles = [...new Set(cExplorerData.map(p=>p.role).filter(Boolean))];
     const rolePos = {};
     cExplorerData.forEach(p=>{ if(p.role&&p.position) rolePos[p.role]=p.position; });
@@ -273,13 +282,14 @@ function buildExplorerFilters() {
       if(pa!==pb) return pa-pb;
       return a.localeCompare(b);
     });
-    roles.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; roleSel.appendChild(o); });
+    buildCheckboxDropdown(roleWrap, 'Role', roles, EF.roles);
   }
 
-  // Yrs D1
-  const yrsSel = document.getElementById('ef-years-d1');
-  if (yrsSel && yrsSel.options.length <= 1) {
-    [1,2,3,4,5].forEach(y=>{ const o=document.createElement('option'); o.value=y; o.textContent=y+(y===5?'+':' yr'); yrsSel.appendChild(o); });
+  // Yrs D1 dropdown — multi-select
+  const yrsWrap = document.getElementById('mf-years-d1');
+  if (yrsWrap && !yrsWrap.dataset.built) {
+    yrsWrap.dataset.built = '1';
+    buildCheckboxDropdown(yrsWrap, 'Yrs D1', ['1','2','3','4','5+'], EF.yrsD1);
   }
 
   // Stat filter dropdown
@@ -407,10 +417,14 @@ function updateHeightLabel() {
   const minS = document.getElementById('slider-min-height');
   const maxS = document.getElementById('slider-max-height');
   if (!minS||!maxS) return;
-  const lo=parseInt(minS.value), hi=parseInt(maxS.value);
+  let lo=parseInt(minS.value), hi=parseInt(maxS.value);
+  if(lo>hi){ minS.value=hi; lo=hi; }
+  if(hi<lo){ maxS.value=lo; hi=lo; }
   const fmt=h=>`${Math.floor(h/12)}'${h%12}"`;
-  const lbl = document.getElementById('height-label');
-  if (lbl) lbl.textContent=fmt(lo)+' – '+fmt(hi);
+  const lblMin=document.getElementById('height-label-min');
+  const lblMax=document.getElementById('height-label-max');
+  if(lblMin) lblMin.textContent=fmt(lo);
+  if(lblMax) lblMax.textContent=fmt(hi);
   EF.minHeight=lo; EF.maxHeight=hi;
   onExplorerFilterChange();
 }
@@ -425,10 +439,14 @@ function applyExplorerFilters() {
   if (EF.tiers.size>0)     data=data.filter(p=>EF.tiers.has(p.mpg_tier));
   if (EF.conferences.size>0) data=data.filter(p=>EF.conferences.has(p.conference));
 
-  const role=document.getElementById('ef-role')?.value;
-  const yrsD1=document.getElementById('ef-years-d1')?.value;
-  if (role)  data=data.filter(p=>p.role===role);
-  if (yrsD1) data=data.filter(p=>parseInt(p.years_in_d1)>=parseInt(yrsD1));
+  if (EF.teams.size>0)  data=data.filter(p=>EF.teams.has(p.team));
+  if (EF.roles.size>0)  data=data.filter(p=>EF.roles.has(p.role));
+  if (EF.yrsD1.size>0) {
+    data=data.filter(p=>{
+      const y=parseInt(p.years_in_d1);
+      return EF.yrsD1.has(y>=5?'5+':String(y));
+    });
+  }
 
   // Min games
   data=data.filter(p=>parseInt(p.games)>=(EF.minGames||0));
@@ -562,7 +580,7 @@ function renderExplorerTable(append=false) {
   let html=`<div class="explorer-table-scroll-wrap"><table class="roster-table explorer-table"><thead><tr>`;
 
   // Rank
-  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:4;min-width:32px;width:32px;">#</th>`;
+  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:4;min-width:24px;width:24px;">#</th>`;
 
   // Frozen cols
   EXPLORER_FROZEN.forEach(col=>{
@@ -577,7 +595,8 @@ function renderExplorerTable(append=false) {
     if(col.frozen) {
       html+=`<th class="roster-frozen-th explorer-id-th${isLast?' explorer-last-frozen':''}${sortedCls}" ${clickable} style="position:sticky;left:${col.left}px;z-index:4;min-width:${col.width}px;max-width:${col.width}px;background:var(--surface2);">${lbl}${sortIcon}</th>`;
     } else {
-      html+=`<th class="roster-frozen-th roster-scroll-th${sortedCls}" ${clickable}>${lbl}${sortIcon}</th>`;
+      const tipHtml=col.tip?explorerTip(col.key):'';
+      html+=`<th class="roster-frozen-th roster-scroll-th${sortedCls}" ${clickable}>${lbl}${sortIcon}${tipHtml}</th>`;
     }
   });
 
@@ -599,7 +618,7 @@ function renderExplorerTable(append=false) {
     const noPercentile=!p.percentile_eligible||p.percentile_eligible===false||p.percentile_eligible==='False';
     const rowCls=isTier2?'roster-row roster-tier2':'roster-row';
     html+=`<tr class="${rowCls}">`;
-    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:2;background:var(--surface);">${idx+1}</td>`;
+    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:2;background:var(--surface);min-width:24px;width:24px;">${idx+1}</td>`;
 
     EXPLORER_FROZEN.forEach(col=>{
       const val=p[col.key];
@@ -659,7 +678,7 @@ function renderExplorerTable(append=false) {
 function resetExplorerFilters() {
   // Reset all EF state
   EF.positions.clear(); EF.levels.clear(); EF.classes.clear();
-  EF.conferences.clear();
+  EF.conferences.clear(); EF.teams.clear(); EF.roles.clear(); EF.yrsD1.clear();
   EF.tiers = new Set(['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)']);
   EF.minGames = 5; EF.name = '';
   EF.minHeight = 0; EF.maxHeight = 999;
@@ -686,10 +705,12 @@ function resetExplorerFilters() {
     b.classList.toggle('active', !isEOB);
   });
 
-  // Reset conference dropdown checkboxes
-  document.querySelectorAll('#mf-conference .mf-check-item[data-val] input').forEach(cb => cb.checked = true);
-  const confBtn = document.querySelector('#mf-conference .mf-dropdown-btn');
-  if (confBtn) confBtn.innerHTML = 'Conference <span>▾</span>';
+  // Reset all checkbox dropdowns
+  ['#mf-conference','#mf-team','#mf-role','#mf-years-d1'].forEach(sel=>{
+    document.querySelectorAll(sel+' .mf-check-item[data-val] input').forEach(cb=>cb.checked=true);
+    const btn=document.querySelector(sel+' .mf-dropdown-btn');
+    if(btn) { const lbl={'#mf-conference':'Conference','#mf-team':'Team','#mf-role':'Role','#mf-years-d1':'Yrs D1'}[sel]; btn.innerHTML=lbl+' <span>▾</span>'; }
+  });
 
   // Reset stat filters
   cExplorerStatFilters = [];

@@ -422,6 +422,10 @@ select:focus{border-color:var(--accent);}
 .mf-height-label{font-size:11px;color:var(--text3);font-family:var(--font-mono);}
 .mf-slider-wrap{position:relative;height:20px;}
 .mf-slider{width:100%;cursor:pointer;accent-color:var(--accent);}
+/* Dropdown action row */
+.mf-action-row{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--border);}
+.mf-action-btn{font-size:10px;padding:3px 8px;border-radius:3px;border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;}
+.mf-action-btn:hover{border-color:var(--accent);color:var(--accent);}
 /* Top scrollbar */
 .explorer-scroll-top{overflow-x:auto;overflow-y:hidden;height:12px;margin-bottom:2px;}
 .explorer-scroll-top::-webkit-scrollbar{height:8px;}
