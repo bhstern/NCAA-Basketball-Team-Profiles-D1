@@ -185,9 +185,9 @@ const EXPLORER_STAT_TABS = {
 };
 
 const EXPLORER_FROZEN = [
-  {key:'name',label:'Player',frozen:true,width:155,left:40,fmt:v=>v??'—'},
-  {key:'team',label:'Team',frozen:true,width:125,left:195,fmt:v=>v??'—'},
-  {key:'position',label:'Pos',frozen:true,width:65,left:320,fmt:v=>v??'—'},
+  {key:'name',label:'Player',frozen:true,width:155,left:36,fmt:v=>v??'—'},
+  {key:'team',label:'Team',frozen:true,width:125,left:191,fmt:v=>v??'—'},
+  {key:'position',label:'Pos',frozen:true,width:65,left:316,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
   {key:'height_in',label:'Ht',frozen:false,fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',label:'G',frozen:false,fmt:v=>v??'—'},
@@ -365,19 +365,37 @@ function buildCheckboxDropdown(container, label, values, stateSet) {
     });
   };
   menu.appendChild(search);
+  const totalCount = values.length;
   const updateBtn = () => {
-    const count = stateSet.size;
-    const display = count===0 ? label+': All' : label+' ('+count+')';
+    let display;
+    if (stateSet.size === 0) {
+      display = label + ': All';
+    } else if (stateSet.size === totalCount) {
+      display = label + ': None';
+    } else {
+      // Show how many are selected (total minus filtered-out)
+      const selectedCount = totalCount - stateSet.size;
+      display = label + ' (' + selectedCount + ')';
+    }
     btn.innerHTML = display + ' <span>▾</span>';
   };
   const actionRow = document.createElement('div');
   actionRow.className = 'mf-action-row';
   const selAllBtn = document.createElement('button');
   selAllBtn.className='mf-action-btn'; selAllBtn.textContent='Select All';
-  selAllBtn.onclick = () => { stateSet.clear(); menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=true); updateBtn(); onExplorerFilterChange(); };
+  selAllBtn.onclick = () => {
+    stateSet.clear(); // empty = all selected
+    menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=true);
+    updateBtn(); onExplorerFilterChange();
+  };
   const deselAllBtn = document.createElement('button');
   deselAllBtn.className='mf-action-btn'; deselAllBtn.textContent='Deselect All';
-  deselAllBtn.onclick = () => { stateSet.clear(); values.forEach(v=>stateSet.add(v)); menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=false); updateBtn(); onExplorerFilterChange(); };
+  deselAllBtn.onclick = () => {
+    stateSet.clear();
+    values.forEach(v=>stateSet.add(v)); // all in set = none visible
+    menu.querySelectorAll('.mf-check-item[data-val] input').forEach(c=>c.checked=false);
+    updateBtn(); onExplorerFilterChange();
+  };
   actionRow.appendChild(selAllBtn); actionRow.appendChild(deselAllBtn);
   menu.appendChild(actionRow);
   values.forEach(v => {
@@ -386,9 +404,20 @@ function buildCheckboxDropdown(container, label, values, stateSet) {
     const cb = document.createElement('input'); cb.type='checkbox';
     cb.checked = stateSet.size===0 || stateSet.has(v);
     cb.onchange = () => {
-      if(stateSet.size===0) values.forEach(vv=>stateSet.add(vv));
-      if(cb.checked) { stateSet.add(v); } else { stateSet.delete(v); }
-      if(stateSet.size===values.length) stateSet.clear();
+      if (cb.checked) {
+        // User checked this item - remove from excluded set
+        stateSet.delete(v);
+      } else {
+        // User unchecked - if was "all", initialize excluded set with just this item
+        if (stateSet.size === 0) {
+          // Was showing all, now exclude just this one
+          stateSet.add(v);
+        } else {
+          stateSet.add(v);
+        }
+      }
+      // If all excluded, treat as deselect all
+      // If none excluded, treat as select all (clear)
       updateBtn(); onExplorerFilterChange();
     };
     item.appendChild(cb); item.appendChild(document.createTextNode(' '+v));
@@ -450,9 +479,9 @@ function applyExplorerFilters() {
   if (EF.levels.size>0)    data=data.filter(p=>EF.levels.has(p.power_mid));
   if (EF.classes.size>0)   data=data.filter(p=>EF.classes.has(p.class));
   if (EF.tiers.size>0)     data=data.filter(p=>EF.tiers.has(p.mpg_tier));
-  if (EF.conferences.size>0) data=data.filter(p=>EF.conferences.has(p.conference));
+  if (EF.conferences.size>0) data=data.filter(p=>!EF.conferences.has(p.conference));
 
-  if (EF.teams.size>0)  data=data.filter(p=>EF.teams.has(p.team));
+  if (EF.teams.size>0)  data=data.filter(p=>!EF.teams.has(p.team));
   if (EF.roles.size>0)  data=data.filter(p=>EF.roles.has(p.role));
   if (EF.yrsD1.size>0) {
     data=data.filter(p=>{
@@ -593,7 +622,7 @@ function renderExplorerTable(append=false) {
   let html=`<div class="explorer-table-scroll-wrap"><table class="roster-table explorer-table"><thead><tr>`;
 
   // Rank
-  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky;left:0;z-index:4;min-width:40px;width:40px;text-align:center;">#</th>`;
+  html+=`<th class="roster-frozen-th explorer-rank-th" style="position:sticky!important;left:0;z-index:4;min-width:36px;width:36px;max-width:36px;text-align:center;background:var(--surface2);">#</th>`;
 
   // Frozen cols
   EXPLORER_FROZEN.forEach(col=>{
@@ -631,7 +660,7 @@ function renderExplorerTable(append=false) {
     const noPercentile=!p.percentile_eligible||p.percentile_eligible===false||p.percentile_eligible==='False';
     const rowCls=isTier2?'roster-row roster-tier2':'roster-row';
     html+=`<tr class="${rowCls}">`;
-    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky;left:0;z-index:2;background:var(--surface);min-width:40px;width:40px;text-align:center;">${idx+1}</td>`;
+    html+=`<td class="roster-frozen-td explorer-rank-cell" style="position:sticky!important;left:0;z-index:2;background:var(--surface);min-width:36px;width:36px;max-width:36px;text-align:center;">${idx+1}</td>`;
 
     EXPLORER_FROZEN.forEach(col=>{
       const val=p[col.key];

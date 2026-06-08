@@ -432,3 +432,5 @@ select:focus{border-color:var(--accent);}
 .explorer-scroll-top::-webkit-scrollbar-track{background:var(--surface2);border-radius:4px;}
 .explorer-scroll-top::-webkit-scrollbar-thumb{background:#4a5568;border-radius:4px;}
 .explorer-scroll-top::-webkit-scrollbar-thumb:hover{background:#6b7280;}
+
+.badge-custom{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;padding:2px 7px;border-radius:3px;background:rgba(74,158,255,0.15);color:var(--accent);border:1px solid rgba(74,158,255,0.3);vertical-align:middle;margin-right:4px;text-transform:uppercase;}
