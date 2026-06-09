@@ -13,8 +13,8 @@ const EXPLORER_PAGE_SIZE = 200;
 // Default sort per tab
 const TAB_DEFAULT_SORT = {
   overview: 'bpm',
-  advanced: 'ppp_used',
-  shooting: 'ts',
+  advanced: 'ortg',
+  shooting: 'ppp_used',
   per40:    'pts_per_40',
   context:  'ortg_delta_team',
 };
@@ -309,11 +309,13 @@ function buildExplorerFilters() {
 
   // Stat filter dropdown
   const sfSel = document.getElementById('sf-stat-select');
+  const pfSel = document.getElementById('pf-stat-select');
   if (sfSel && sfSel.options.length <= 1) {
     const seen = new Set();
     Object.values(EXPLORER_STAT_TABS).flat().filter(s=>!s.computed&&!STRING_KEYS_E.has(s.key)).forEach(s=>{
       if (seen.has(s.key)) return; seen.add(s.key);
       const o=document.createElement('option'); o.value=s.key; o.textContent=s.label.replace('\n',' '); sfSel.appendChild(o);
+      if(pfSel){const o2=document.createElement('option');o2.value=s.key;o2.textContent=s.label.replace('\n',' ');pfSel.appendChild(o2);}
     });
     // Add per-game shooting volume stats grouped with their related stats
     const pgStats = [
@@ -516,6 +518,20 @@ function applyExplorerFilters() {
     });
   });
 
+  // Percentile filters
+  cExplorerPctFilters.forEach(f=>{
+    const pctKey = f.stat + PCT_SUFFIX[f.ctx];
+    data=data.filter(p=>{
+      const v=parseFloat(p[pctKey]);
+      if(isNaN(v)) return false;
+      // Convert to 0-100 scale for user-friendly input
+      const pct100 = v * 100;
+      if(f.min!==''&&!isNaN(f.min)&&pct100<parseFloat(f.min)) return false;
+      if(f.max!==''&&!isNaN(f.max)&&pct100>parseFloat(f.max)) return false;
+      return true;
+    });
+  });
+
   // Sort
   data.sort((a,b)=>{
     const av=parseFloat(a[cExplorerSort.key]), bv=parseFloat(b[cExplorerSort.key]);
@@ -562,6 +578,21 @@ function addStatFilter() {
 
 function removeStatFilter(i) {
   cExplorerStatFilters.splice(i,1);
+  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
+}
+
+function addPctFilter() {
+  const stat=document.getElementById('pf-stat-select').value;
+  const ctx=document.getElementById('pf-context-select').value;
+  const min=document.getElementById('pf-min').value;
+  const max=document.getElementById('pf-max').value;
+  if(!stat||!ctx) return;
+  cExplorerPctFilters.push({stat,ctx,min,max});
+  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
+}
+
+function removePctFilter(i) {
+  cExplorerPctFilters.splice(i,1);
   renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
 }
 
@@ -778,8 +809,9 @@ function resetExplorerFilters() {
     }
   });
 
-  // Reset stat threshold filters
+  // Reset stat threshold and percentile filters
   cExplorerStatFilters = [];
+  cExplorerPctFilters = [];
   renderStatFilterTags();
 
   // Reset sort to default

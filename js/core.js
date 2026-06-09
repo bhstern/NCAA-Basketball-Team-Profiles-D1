@@ -137,7 +137,7 @@ const SUMMARY_LABELS={
 };
 
 const PAGE_DESCS={
-  profile:(t,y)=>`Team profile shows how ${t} ranks across all D1 programs in ${yLabel(y)}. Toggle between All D1 percentiles, Conference rank, and power/mid-major comparison below.`,
+  profile:(t,y)=>`Team profile shows how ${t} ranks across all D1 programs in ${yLabel(y)}, with a full roster breakdown by rotation tier. Toggle between All D1 percentiles, Conference rank, and power/mid-major comparison below.`,
   conference:(t,y,c)=>`Conference context shows where ${t} stands within the ${c} in ${yLabel(y)}. Click teams in the standings to compare, or use the top N selector.`,
   historical:(t,y)=>`Historical trends show ${t}'s trajectory over the selected range. Filter by stat category and compare against All D1, conference rank, or power/mid-major peers.`,
   h2h:()=>`Head to Head lets you compare any two teams from any two seasons. Percentiles reflect each team's standing within their own season.`,

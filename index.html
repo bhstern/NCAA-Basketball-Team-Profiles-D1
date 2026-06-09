@@ -365,6 +365,26 @@
     </div>
     <div id="stat-filter-tags" class="stat-filter-tags"></div>
 
+    <!-- Percentile filter row -->
+    <div class="explorer-stat-filter-row" style="margin-top:6px;">
+      <span class="selector-label" style="margin-right:8px">Percentile Filter</span>
+      <select id="pf-stat-select" style="min-width:140px"><option value="">— Select Stat —</option></select>
+      <select id="pf-context-select" style="margin-left:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:5px 8px;border-radius:4px;font-size:12px;">
+        <option value="national">National</option>
+        <option value="conf">Conference</option>
+        <option value="sub">Power/Mid</option>
+        <option value="pos">Position</option>
+        <option value="pos_conf">Pos + Conf</option>
+        <option value="pos_sub">Pos + Sub</option>
+      </select>
+      <span class="selector-label" style="margin:0 6px">Min</span>
+      <input id="pf-min" type="number" step="1" min="0" max="100" placeholder="0" style="width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:4px 8px;border-radius:4px;font-size:12px;">
+      <span class="selector-label" style="margin:0 6px">Max</span>
+      <input id="pf-max" type="number" step="1" min="0" max="100" placeholder="100" style="width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:4px 8px;border-radius:4px;font-size:12px;">
+      <button class="view-btn" onclick="addPctFilter()" style="margin-left:8px">Add</button>
+      <span style="font-size:11px;color:var(--text4);margin-left:10px">Enter percentile 0-100 (e.g. Min 75 = top 25%)</span>
+    </div>
+
     <!-- Stat category tabs -->
     <div id="explorer-stat-tabs" style="display:flex;gap:3px;margin-bottom:12px">
       <button class="hist-cat-btn active" onclick="setExplorerStatTab('overview',this)">Overview</button>
