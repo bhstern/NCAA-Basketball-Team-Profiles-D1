@@ -778,6 +778,24 @@ function resetExplorerFilters() {
   const gamesEl = document.getElementById('ef-min-games');
   if (gamesEl) gamesEl.value = 5;
 
+  // Reset stat filter dropdowns
+  const sfStat = document.getElementById('sf-stat-select');
+  const sfMin = document.getElementById('sf-min');
+  const sfMax = document.getElementById('sf-max');
+  if (sfStat) sfStat.value = '';
+  if (sfMin) sfMin.value = '';
+  if (sfMax) sfMax.value = '';
+
+  // Reset percentile filter dropdowns
+  const pfStat = document.getElementById('pf-stat-select');
+  const pfCtx = document.getElementById('pf-context-select');
+  const pfMin = document.getElementById('pf-min');
+  const pfMax = document.getElementById('pf-max');
+  if (pfStat) pfStat.value = '';
+  if (pfCtx) pfCtx.value = 'national';
+  if (pfMin) pfMin.value = '';
+  if (pfMax) pfMax.value = '';
+
   // Reset height sliders
   const minS = document.getElementById('slider-min-height');
   const maxS = document.getElementById('slider-max-height');
