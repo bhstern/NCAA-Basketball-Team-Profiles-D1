@@ -752,6 +752,84 @@ function renderExplorerTable(append=false) {
 
   updateExplorerCount();
   setTimeout(syncExplorerScrollbar,60);
+  setTimeout(initStickyExplorerHeader,80);
+}
+
+// ── STICKY HEADER CLONE ───────────────────────────────────────────────────────
+function initStickyExplorerHeader() {
+  const scrollWrap = document.querySelector('#explorer-table-wrap .explorer-table-scroll-wrap');
+  const table = scrollWrap ? scrollWrap.querySelector('table') : null;
+  const realThead = table ? table.querySelector('thead tr') : null;
+  if (!scrollWrap || !realThead) return;
+
+  // Remove any existing clone
+  const existing = document.getElementById('explorer-sticky-header');
+  if (existing) existing.remove();
+
+  // Create sticky header container
+  const stickyWrap = document.createElement('div');
+  stickyWrap.id = 'explorer-sticky-header';
+  stickyWrap.style.cssText = 'position:sticky;top:0;z-index:10;overflow:hidden;background:var(--surface2);display:none;border-bottom:2px solid var(--border2);';
+
+  // Clone the header into a matching table
+  const cloneTable = document.createElement('table');
+  cloneTable.className = 'roster-table explorer-table';
+  cloneTable.style.cssText = 'margin:0;border-collapse:collapse;white-space:nowrap;';
+  const cloneThead = document.createElement('thead');
+  const cloneRow = realThead.cloneNode(true);
+  cloneThead.appendChild(cloneRow);
+  cloneTable.appendChild(cloneThead);
+  stickyWrap.appendChild(cloneTable);
+
+  // Insert sticky header before the scroll wrap inside explorer-table-wrap
+  const tableWrap = document.getElementById('explorer-table-wrap');
+  tableWrap.insertBefore(stickyWrap, scrollWrap);
+
+  // Sync column widths from real header to clone
+  function syncWidths() {
+    const realCells = realThead.querySelectorAll('th');
+    const cloneCells = cloneRow.querySelectorAll('th');
+    realCells.forEach((cell, i) => {
+      if (cloneCells[i]) {
+        const w = cell.getBoundingClientRect().width;
+        cloneCells[i].style.minWidth = w + 'px';
+        cloneCells[i].style.maxWidth = w + 'px';
+        cloneCells[i].style.width = w + 'px';
+      }
+    });
+    // Match total table width
+    cloneTable.style.width = table.getBoundingClientRect().width + 'px';
+  }
+
+  // Sync horizontal scroll between sticky header and table
+  scrollWrap.addEventListener('scroll', () => {
+    stickyWrap.scrollLeft = scrollWrap.scrollLeft;
+  });
+
+  // Show/hide sticky header based on whether real thead is visible
+  const tableWrapEl = document.getElementById('explorer-table-wrap');
+  function onScroll() {
+    const theadRect = realThead.getBoundingClientRect();
+    const wrapRect = tableWrapEl.getBoundingClientRect();
+    if (theadRect.bottom < wrapRect.top + 10) {
+      if (stickyWrap.style.display === 'none') {
+        syncWidths();
+        stickyWrap.style.display = 'block';
+      }
+      stickyWrap.scrollLeft = scrollWrap.scrollLeft;
+    } else {
+      stickyWrap.style.display = 'none';
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, {passive: true});
+  // Store cleanup ref
+  if (window._explorerScrollListener) {
+    window.removeEventListener('scroll', window._explorerScrollListener);
+  }
+  window._explorerScrollListener = onScroll;
+
+  syncWidths();
 }
 
 function resetExplorerFilters() {
