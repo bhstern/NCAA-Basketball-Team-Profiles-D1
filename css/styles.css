@@ -395,11 +395,11 @@ select:focus{border-color:var(--accent);}
 .explorer-sort-hint{font-size:11px;color:var(--text4);margin-bottom:6px;font-style:italic;}
 .explorer-col-sorted{background:rgba(74,158,255,0.06)!important;}
 /* Explorer table scroll */
-.explorer-table-scroll-wrap{overflow-x:auto;}
-.explorer-table-scroll-wrap::-webkit-scrollbar{height:8px;}
+.explorer-table-scroll-wrap{overflow-x:scroll;overflow-y:visible;}
+.explorer-table-scroll-wrap::-webkit-scrollbar{height:10px;}
 .explorer-table-scroll-wrap::-webkit-scrollbar-track{background:var(--surface2);border-radius:4px;}
-.explorer-table-scroll-wrap::-webkit-scrollbar-thumb{background:#4a5568;border-radius:4px;}
-.explorer-table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#6b7280;}
+.explorer-table-scroll-wrap::-webkit-scrollbar-thumb{background:#5a6478;border-radius:4px;border:1px solid var(--border);}
+.explorer-table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:#7b8799;}
 /* Explorer frozen cells — must paint above scrolling cells */
 .explorer-rank-cell{background:var(--surface)!important;z-index:2!important;}
 .explorer-id-cell{background:var(--surface)!important;z-index:2!important;}
@@ -440,3 +440,5 @@ select:focus{border-color:var(--accent);}
 .explorer-scroll-top::-webkit-scrollbar-thumb:hover{background:#6b7280;}
 
 .badge-custom{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;padding:2px 7px;border-radius:3px;background:rgba(74,158,255,0.15);color:var(--accent);border:1px solid rgba(74,158,255,0.3);vertical-align:middle;margin-right:4px;text-transform:uppercase;}
+
+#explorer-table-wrap{overflow-y:auto;max-height:70vh;}
