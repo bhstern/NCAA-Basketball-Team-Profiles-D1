@@ -14,7 +14,7 @@ const EXPLORER_PAGE_SIZE = 200;
 // Default sort per tab
 const TAB_DEFAULT_SORT = {
   overview: 'bpm',
-  advanced: 'ortg',
+  advanced: 'prpg',
   shooting: 'ppp_used',
   per40:    'pts_per_40',
   context:  'ortg_delta_team',
@@ -73,7 +73,7 @@ const EXPLORER_TIPS = {
   three_rate_delta_team:'Player 3PT rate minus team 3PT rate.',
   three_rate_delta_conf:'Player 3PT rate minus conf 3PT rate.',
   three_rate_delta_sub:'Player 3PT rate minus Power/Mid-Major 3PT rate.',
-  recruit_rank_clean:'Recruit Score (0-99) — Torvik rating. 99 = highest rated. Blank = unranked.',
+  recruit_rank_clean:'Recruit Score (0-100) — Torvik recruit rating. 100 = highest rated. Blank = unranked.',
   age:'Player age on Feb 1 of season.',years_in_d1:'Years of D1 experience.',
 };
 
@@ -94,27 +94,25 @@ const STRING_KEYS_E = new Set(['_fgm_fga','_two_ma','_rim_ma','_close_two_ma','_
 
 const EXPLORER_STAT_TABS = {
   overview:[
+    {key:'usage_pct',fmt:v=>fmtPctE(v),label:'USG%'},
     {key:'bpm',fmt:v=>fmtSignE(v),label:'BPM'},
     {key:'obpm',fmt:v=>fmtSignE(v),label:'Off\nBPM'},
     {key:'dbpm',fmt:v=>fmtSignE(v),label:'Def\nBPM'},
-    {key:'prpg',fmt:v=>fmtNumE(v,2),label:'PRPG'},
-    {key:'oprpg',fmt:v=>fmtNumE(v,2),label:'Off\nPRPG'},
-    {key:'dprpg',fmt:v=>fmtNumE(v,2),label:'Def\nPRPG'},
+    {key:'ts',fmt:v=>fmtPctE(v),label:'TS%'},
     {key:'ppg',fmt:v=>fmtNumE(v),label:'PTS/G'},
     {key:'rebpg',fmt:v=>fmtNumE(v),label:'REB/G'},
     {key:'astpg',fmt:v=>fmtNumE(v),label:'AST/G'},
     {key:'stlpg',fmt:v=>fmtNumE(v),label:'STL/G'},
     {key:'blkpg',fmt:v=>fmtNumE(v),label:'BLK/G'},
-    {key:'ts',fmt:v=>fmtPctE(v),label:'TS%'},
-    {key:'usage_pct',fmt:v=>fmtPctE(v),label:'USG%'},
   ],
   advanced:[
-    {key:'ppp_used',fmt:v=>fmtNumE(v,3),label:'PPP\nUsed'},
+    {key:'prpg',fmt:v=>fmtNumE(v,2),label:'PRPG'},
+    {key:'oprpg',fmt:v=>fmtNumE(v,2),label:'Off\nPRPG'},
+    {key:'dprpg',fmt:v=>fmtNumE(v,2),label:'Def\nPRPG'},
     {key:'ortg',fmt:v=>fmtNumE(v,1),label:'Off\nRtg'},
     {key:'ortg_delta_team',fmt:v=>fmtSignE(v),label:'Off Rtg\nvs Team'},
     {key:'drtg',fmt:v=>fmtNumE(v,1),label:'Def\nRtg'},
     {key:'drtg_delta_team',fmt:v=>fmtDrtgDelta(v),label:'Def Rtg\nvs Team'},
-    {key:'efg',fmt:v=>fmtPctE(v),label:'eFG%'},
     {key:'or_pct',fmt:v=>fmtPctE(v),label:'OR%'},
     {key:'dr_pct',fmt:v=>fmtPctE(v),label:'DR%'},
     {key:'ast_pct',fmt:v=>fmtPctE(v),label:'AST%'},
@@ -126,6 +124,7 @@ const EXPLORER_STAT_TABS = {
     {key:'foul_sensitivity',fmt:v=>fmtNumE(v,2),label:'Foul\nSensitivity'},
   ],
   shooting:[
+    {key:'ppp_used',fmt:v=>fmtNumE(v,3),label:'PPP\nUsed'},
     {key:'ts',fmt:v=>fmtPctE(v),label:'TS%'},
     {key:'efg',fmt:v=>fmtPctE(v),label:'eFG%'},
     {key:'total_fg_pct',fmt:v=>fmtPctDecE(v),label:'FG%'},
@@ -600,10 +599,16 @@ function removePctFilter(i) {
 function renderStatFilterTags() {
   const wrap=document.getElementById('stat-filter-tags');
   if(!wrap) return;
-  wrap.innerHTML=cExplorerStatFilters.map((f,i)=>{
-    const mn=f.min!==''?` \u2265${f.min}`:'', mx=f.max!==''?` \u2264${f.max}`:'';
-    return `<span class="stat-filter-tag">${f.stat}${mn}${mx} <span class="stat-filter-remove" onclick="removeStatFilter(${i})">\u00d7</span></span>`;
-  }).join('');
+  const ctxLabels={national:'Natl',conf:'Conf',sub:'Power/Mid',pos:'Pos',pos_conf:'Pos+Conf',pos_sub:'Pos+Sub'};
+  const statTags=cExplorerStatFilters.map((f,i)=>{
+    const mn=f.min!==''?` ≥${f.min}`:'', mx=f.max!==''?` ≤${f.max}`:'';
+    return `<span class="stat-filter-tag">${f.stat}${mn}${mx} <span class="stat-filter-remove" onclick="removeStatFilter(${i})">×</span></span>`;
+  });
+  const pctTags=cExplorerPctFilters.map((f,i)=>{
+    const mn=f.min!==''?` ≥${f.min}th`:'', mx=f.max!==''?` ≤${f.max}th`:'';
+    return `<span class="stat-filter-tag stat-filter-tag-pct">${f.stat} (${ctxLabels[f.ctx]||f.ctx})${mn}${mx} <span class="stat-filter-remove" onclick="removePctFilter(${i})">×</span></span>`;
+  });
+  wrap.innerHTML=[...statTags,...pctTags].join('');
 }
 
 function showMoreExplorer() {

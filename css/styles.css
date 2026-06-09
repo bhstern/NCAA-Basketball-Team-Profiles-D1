@@ -381,7 +381,7 @@ select:focus{border-color:var(--accent);}
 .stat-filter-remove{cursor:pointer;color:var(--text4);font-size:13px;line-height:1;}
 .stat-filter-remove:hover{color:var(--accent);}
 .explorer-table{border-collapse:collapse;font-size:12px;white-space:nowrap;}
-.explorer-table thead tr{position:sticky;top:0;z-index:5;}
+.explorer-table thead th{position:sticky;top:0;z-index:5;background:var(--surface2);}
 .explorer-rank-th{min-width:36px;text-align:center!important;}
 .explorer-rank-cell{text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--text4);min-width:36px;border-right:1px solid var(--border2);}
 .explorer-id-th{min-width:80px;}
