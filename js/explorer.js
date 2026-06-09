@@ -5,6 +5,7 @@ let cExplorerStatTab = 'overview';
 let cExplorerPctContext = 'national';
 let cExplorerSort = {key: 'bpm', dir: 'desc'};
 let cExplorerStatFilters = [];
+let cExplorerPctFilters = [];
 let cExplorerData = [];
 let cExplorerFiltered = [];
 let cExplorerPage = 1;
