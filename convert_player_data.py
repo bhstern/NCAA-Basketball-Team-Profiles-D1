@@ -127,6 +127,10 @@ EXPLORER_IDENTIFIERS = [
     'minutes_per_game', 'mpg_tier', 'usage_tier', 'games_tier',
     'percentile_tier', 'percentile_eligible',
     'hometown_city', 'hometown_state',
+    # String display columns
+    'fg_made_att_str', 'two_made_att_str', 'three_made_att_str',
+    'rim_made_att_str', 'close_two_made_att_str', 'midrange_made_att_str',
+    'dunk_made_att_str', 'ft_made_att_str',
 ]
 
 # Ranked stats for explorer — 59 stats, each with raw + 4 pct contexts
@@ -142,22 +146,35 @@ EXPLORER_RANKED_STATS = [
     'ppg', 'rebpg', 'astpg', 'stlpg', 'blkpg',
     # Shooting %s
     'total_fg_pct', 'two_fg_pct', 'three_fg_pct', 'ft_pct',
-    'rim_fg_pct', 'midrange_fg_pct',
+    'rim_fg_pct', 'close_two_fg_pct', 'midrange_fg_pct', 'dunk_fg_pct',
     # Shot rates
-    'rim_rate', 'midrange_rate', 'three_rate',
+    'rim_rate', 'close_two_rate', 'midrange_rate', 'dunk_rate', 'three_rate',
+    # Ratios
+    'close_vs_mid_ratio', 'rim_vs_three_ratio',
     # Per game shooting
     'three_att_pg', 'three_made_pg',
     'rim_att_pg', 'rim_made_pg',
+    'close_two_att_pg', 'close_two_made_pg',
     'midrange_att_pg', 'midrange_made_pg',
+    'dunk_att_pg', 'dunk_made_pg',
     'ft_att_pg', 'ft_made_pg',
+    'fga_pg', 'fgm_pg',
+    'two_att_pg', 'two_made_pg',
     # Per 40
     'pts_per_40', 'reb_per_40', 'ast_per_40',
     'stl_per_40', 'blk_per_40', 'stocks_per_40', 'fc_40',
     # Advanced
     'ppp_used', 'tov_sensitivity', 'foul_sensitivity', 'three_p_per_100',
-    # Deltas
+    'recruit_rank_clean',
+    # Deltas — team
     'ortg_delta_team', 'drtg_delta_team', 'ts_delta_team',
+    'efg_delta_team', 'rim_rate_delta_team', 'three_rate_delta_team',
+    # Deltas — conf
     'ortg_delta_conf', 'drtg_delta_conf', 'ts_delta_conf',
+    'efg_delta_conf', 'rim_rate_delta_conf', 'three_rate_delta_conf',
+    # Deltas — sub
+    'ortg_delta_sub', 'drtg_delta_sub', 'ts_delta_sub',
+    'efg_delta_sub', 'rim_rate_delta_sub', 'three_rate_delta_sub',
 ]
 
 EXPLORER_PCT_SUFFIXES = ['_pct', '_conf_pct', '_sub_pct', '_pos_pct', '_pos_conf_pct', '_pos_sub_pct']
@@ -510,7 +527,6 @@ print(f"  players_index.json — {len(index_records):,} players, {size_kb:.0f} K
 # ============================================================
 # POST-PROCESS: Replace NaN with null in all JSON files
 # ============================================================
-import re
 
 print("\n--- POST-PROCESS: Replacing NaN with null in JSON files ---")
 
@@ -523,11 +539,11 @@ for directory in dirs_to_fix:
             continue
         fpath = os.path.join(directory, fname)
         with open(fpath, 'r') as f:
-            content = f.read()
-        if 'NaN' in content:
-            content = content.replace(':NaN,', ':null,').replace(':NaN}', ':null}')
+            raw = f.read()
+        if 'NaN' in raw:
+            raw = raw.replace(':NaN,', ':null,').replace(':NaN}', ':null}')
             with open(fpath, 'w') as f:
-                f.write(content)
+                f.write(raw)
             fixed_count += 1
 
 print(f"  Fixed NaN in {fixed_count} files")
