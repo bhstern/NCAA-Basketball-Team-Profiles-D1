@@ -56,6 +56,13 @@ function fmtSign(v, decimals=1) {
   return (n > 0 ? '+' : '') + n.toFixed(decimals);
 }
 
+function fmtMA(p, madeKey, attKey) {
+  const m = parseFloat(p[madeKey]);
+  const a = parseFloat(p[attKey]);
+  if (isNaN(m) || isNaN(a)) return '—';
+  return m.toFixed(1) + '/' + a.toFixed(1);
+}
+
 // Keys that are display strings — no percentile bar, white text
 const STRING_KEYS = new Set([
   '_rim_ma','_mid_ma','_three_ma','_ft_ma',
