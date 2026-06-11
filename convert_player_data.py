@@ -244,12 +244,18 @@ def clean_for_json(df_in):
     df_out = df_in.copy()
     # Remove any duplicate columns before processing
     df_out = df_out.loc[:, ~df_out.columns.duplicated()]
+    # Convert categoricals to string to avoid NaN serialization issues
+    for col in df_out.select_dtypes(include='category').columns:
+        df_out[col] = df_out[col].astype(str).replace('nan', None)
     numeric_cols = df_out.select_dtypes(include=[np.number]).columns
     for col in numeric_cols:
         df_out[col] = df_out[col].round(4)
-    # Replace inf
+    # Replace inf and NaN
     df_out.replace([np.inf, -np.inf], np.nan, inplace=True)
-    return df_out.where(pd.notnull(df_out), other=None)
+    # Force NaN scrub on all columns
+    records = df_out.to_dict(orient='records')
+    records = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
+    return pd.DataFrame(records)
 
 # ============================================================
 # PART 1 — LAYER 1: ROSTER FILES
@@ -500,6 +506,31 @@ with open(index_path, 'w') as f:
 
 size_kb = os.path.getsize(index_path) / 1024
 print(f"  players_index.json — {len(index_records):,} players, {size_kb:.0f} KB")
+
+# ============================================================
+# POST-PROCESS: Replace NaN with null in all JSON files
+# ============================================================
+import re
+
+print("\n--- POST-PROCESS: Replacing NaN with null in JSON files ---")
+
+dirs_to_fix = [ROSTERS_DIR, EXPLORER_DIR, POSITIONAL_DIR]
+fixed_count = 0
+
+for directory in dirs_to_fix:
+    for fname in os.listdir(directory):
+        if not fname.endswith('.json'):
+            continue
+        fpath = os.path.join(directory, fname)
+        with open(fpath, 'r') as f:
+            content = f.read()
+        if 'NaN' in content:
+            content = content.replace(':NaN,', ':null,').replace(':NaN}', ':null}')
+            with open(fpath, 'w') as f:
+                f.write(content)
+            fixed_count += 1
+
+print(f"  Fixed NaN in {fixed_count} files")
 
 # ============================================================
 # SUMMARY
