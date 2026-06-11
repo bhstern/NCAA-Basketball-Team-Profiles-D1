@@ -561,3 +561,4 @@ print(f"Layer 2  — {player_count:,} player profile files → {PROFILES_DIR}")
 print(f"Layer 3  — 1 positional file → {POSITIONAL_DIR}")
 print(f"Index    — 1 search index → {BASE_OUTPUT}")
 print(f"\nAll files saved to: {BASE_OUTPUT}")
+
