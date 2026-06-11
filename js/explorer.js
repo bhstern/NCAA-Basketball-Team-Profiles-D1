@@ -175,12 +175,12 @@ const EXPLORER_STAT_TABS = {
     {key:'efg_delta_conf',fmt:v=>fmtSignE(v,2),label:'eFG%\nvs Conf'},
     {key:'rim_rate_delta_conf',fmt:v=>fmtSignE(v,2),label:'Rim\nvs Conf'},
     {key:'three_rate_delta_conf',fmt:v=>fmtSignE(v,2),label:'3PT\nvs Conf'},
-    {key:'ortg_delta_sub',fmt:v=>fmtSignE(v),label:'Off Rtg\nvs P/M'},
-    {key:'drtg_delta_sub',fmt:v=>fmtDrtgDelta(v),label:'Def Rtg\nvs P/M'},
-    {key:'ts_delta_sub',fmt:v=>fmtSignE(v,2),label:'TS%\nvs P/M'},
-    {key:'efg_delta_sub',fmt:v=>fmtSignE(v,2),label:'eFG%\nvs P/M'},
-    {key:'rim_rate_delta_sub',fmt:v=>fmtSignE(v,2),label:'Rim\nvs P/M'},
-    {key:'three_rate_delta_sub',fmt:v=>fmtSignE(v,2),label:'3PT\nvs P/M'},
+    {key:'ortg_delta_sub',fmt:v=>fmtSignE(v),label:'Off Rtg\nvs Power/Mid'},
+    {key:'drtg_delta_sub',fmt:v=>fmtDrtgDelta(v),label:'Def Rtg\nvs Power/Mid'},
+    {key:'ts_delta_sub',fmt:v=>fmtSignE(v,2),label:'TS%\nvs Power/Mid'},
+    {key:'efg_delta_sub',fmt:v=>fmtSignE(v,2),label:'eFG%\nvs Power/Mid'},
+    {key:'rim_rate_delta_sub',fmt:v=>fmtSignE(v,2),label:'Rim\nvs Power/Mid'},
+    {key:'three_rate_delta_sub',fmt:v=>fmtSignE(v,2),label:'3PT\nvs Power/Mid'},
   ],
 };
 
@@ -599,7 +599,7 @@ function removePctFilter(i) {
 function renderStatFilterTags() {
   const wrap=document.getElementById('stat-filter-tags');
   if(!wrap) return;
-  const ctxLabels={national:'Natl',conf:'Conf',sub:'Power/Mid',pos:'Pos',pos_conf:'Pos+Conf',pos_sub:'Pos+Sub'};
+  const ctxLabels={national:'Natl',conf:'Conf',sub:'Power/Mid',pos:'Pos',pos_conf:'Pos+Conf',pos_sub:'Pos+P/Mid'};
   const statTags=cExplorerStatFilters.map((f,i)=>{
     const mn=f.min!==''?` ≥${f.min}`:'', mx=f.max!==''?` ≤${f.max}`:'';
     return `<span class="stat-filter-tag">${f.stat}${mn}${mx} <span class="stat-filter-remove" onclick="removeStatFilter(${i})">×</span></span>`;

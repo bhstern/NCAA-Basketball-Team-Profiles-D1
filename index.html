@@ -244,7 +244,7 @@
         <button class="view-btn" onclick="setExplorerPctContext('sub',this)">Power/Mid</button>
         <button class="view-btn" onclick="setExplorerPctContext('pos',this)">Position</button>
         <button class="view-btn" onclick="setExplorerPctContext('pos_conf',this)">Pos + Conf</button>
-        <button class="view-btn" onclick="setExplorerPctContext('pos_sub',this)">Pos + Sub</button>
+        <button class="view-btn" onclick="setExplorerPctContext('pos_sub',this)">Pos + Power/Mid</button>
       </div>
     </div>
 
@@ -372,7 +372,7 @@
       <select id="pf-context-select" style="margin-left:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text1);padding:5px 8px;border-radius:4px;font-size:12px;">
         <option value="national">National</option>
         <option value="conf">Conference</option>
-        <option value="sub">Power / Mid-Major</option>
+        <option value="sub">Power/Mid-Major</option>
         <option value="pos">Position</option>
         <option value="pos_conf">Position + Conference</option>
         <option value="pos_sub">Position + Power/Mid-Major</option>
@@ -639,12 +639,12 @@
             <tr><td>TOV Sensitivity</td><td>Percentage of team possessions this player turns over. Formula: TOV% &times; Usage%. A high-usage player with a 20% TOV% hurts more than a low-usage player with the same rate.</td></tr>
             <tr><td>Foul Sensitivity</td><td>Fouls committed per minute played &mdash; measures foul risk independent of playing time.</td></tr>
             <tr><td>PPP Used</td><td>Points per possession used &mdash; accounts for FGA, free throw trips, and turnovers.</td></tr>
-            <tr><td>Off Rtg vs Team / Conf / Sub</td><td>Player offensive rating minus team, conference, or power/mid-major average. Positive = more efficient than context.</td></tr>
-            <tr><td>Def Rtg vs Team / Conf / Sub</td><td>How many points per 100 possessions better this player defends vs. their context. Positive = better than context.</td></tr>
-            <tr><td>TS% vs Team / Conf / Sub</td><td>Player TS% minus team, conference, or subgroup average &mdash; shooting efficiency above context.</td></tr>
-            <tr><td>eFG% vs Team / Conf / Sub</td><td>Player eFG% minus context average.</td></tr>
-            <tr><td>Rim Rate vs Team / Conf / Sub</td><td>Player rim attempt rate minus context average &mdash; how paint-heavy a player is relative to their environment.</td></tr>
-            <tr><td>3PT Rate vs Team / Conf / Sub</td><td>Player 3PT attempt rate minus context average &mdash; how perimeter-oriented relative to environment.</td></tr>
+            <tr><td>Off Rtg vs Team / Conf / Power/Mid</td><td>Player offensive rating minus team, conference, or power/mid-major average. Positive = more efficient than context.</td></tr>
+            <tr><td>Def Rtg vs Team / Conf / Power/Mid</td><td>How many points per 100 possessions better this player defends vs. their context. Positive = better than context.</td></tr>
+            <tr><td>TS% vs Team / Conf / Power/Mid</td><td>Player TS% minus team, conference, or power/mid-major average &mdash; shooting efficiency above context.</td></tr>
+            <tr><td>eFG% vs Team / Conf / Power/Mid</td><td>Player eFG% minus context average.</td></tr>
+            <tr><td>Rim Rate vs Team / Conf / Power/Mid</td><td>Player rim attempt rate minus context average &mdash; how paint-heavy a player is relative to their environment.</td></tr>
+            <tr><td>3PT Rate vs Team / Conf / Power/Mid</td><td>Player 3PT attempt rate minus context average &mdash; how perimeter-oriented relative to environment.</td></tr>
             <tr><td>mpg_tier</td><td>Rotation classification based on minutes per game: Core (26+), Primary (18&ndash;26), Bench (10&ndash;18), Fringe (5&ndash;10), End of Bench (0&ndash;5).</td></tr>
             <tr><td>years_in_d1</td><td>Years of D1 experience &mdash; tracked independently across seasons in the pipeline.</td></tr>
           </tbody>
