@@ -77,7 +77,7 @@ ROSTER_IDENTIFIERS = [
 # Tab 1 — Overview stats (raw + national pct)
 ROSTER_TAB1_STATS = [
     'ppg', 'rebpg', 'astpg', 'blkpg', 'stlpg',
-    'ts', 'usage_pct', 'prpg', 'bpm', 'obpm', 'dbpm',
+    'ts', 'usage_pct', 'prpg', 'dprpg', 'bpm', 'obpm', 'dbpm',
 ]
 
 # Tab 2 — Role/Advanced stats (raw + national pct)
@@ -89,7 +89,7 @@ ROSTER_TAB2_STATS = [
 
 # Tab 3 — Shooting stats (raw + national pct where applicable)
 ROSTER_TAB3_STATS = [
-    'ts',
+    'ppp_used', 'ts', 'efg',
     'rim_rate', 'rim_fg_pct', 'rim_made_att_str',
     'midrange_rate', 'midrange_fg_pct', 'midrange_made_att_str',
     'three_rate', 'three_fg_pct', 'three_made_att_str', 'three_att_pg',
@@ -133,7 +133,7 @@ EXPLORER_IDENTIFIERS = [
     'dunk_made_att_str', 'ft_made_att_str',
 ]
 
-# Ranked stats for explorer — 59 stats, each with raw + 4 pct contexts
+# Ranked stats for explorer — each with raw + 6 pct contexts
 EXPLORER_RANKED_STATS = [
     # Playing time
     'minutes_per_game', 'usage_pct',
@@ -180,7 +180,7 @@ EXPLORER_RANKED_STATS = [
 EXPLORER_PCT_SUFFIXES = ['_pct', '_conf_pct', '_sub_pct', '_pos_pct', '_pos_conf_pct', '_pos_sub_pct']
 
 def get_explorer_cols(df_cols):
-    """Build Layer 2 column list — identifiers + raw + 4 pct contexts per stat."""
+    """Build Layer 2 column list — identifiers + raw + 6 pct contexts per stat."""
     seen = set()
     cols = []
     for c in EXPLORER_IDENTIFIERS:
@@ -253,7 +253,7 @@ POSITIONAL_STATS = [
 ]
 
 # ============================================================
-# HELPER: CLEAN FOR JSON
+# HELPERS
 # ============================================================
 
 def clean_for_json(df_in):
@@ -274,6 +274,23 @@ def clean_for_json(df_in):
     records = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in records]
     return pd.DataFrame(records)
 
+def scrub_nan_dir(directory):
+    """Replace NaN with null in all JSON files in a directory."""
+    fixed = 0
+    for fname in os.listdir(directory):
+        if not fname.endswith('.json'):
+            continue
+        fpath = os.path.join(directory, fname)
+        with open(fpath, 'r') as f:
+            raw = f.read()
+        if 'NaN' in raw:
+            raw = raw.replace(':NaN,', ':null,').replace(':NaN}', ':null}')
+            with open(fpath, 'w') as f:
+                f.write(raw)
+            fixed += 1
+    if fixed:
+        print(f"  NaN scrub: fixed {fixed} files in {os.path.basename(directory)}/")
+
 # ============================================================
 # PART 1 — LAYER 1: ROSTER FILES
 # ============================================================
@@ -292,10 +309,10 @@ for year in years:
         # Sort by mpg_tier order then minutes_per_game desc
         tier_order = {
             'Core Player (26+ MPG)': 0,
-            'Primary Rotation (18–26 MPG)': 1,
-            'Bench Rotation (10–18 MPG)': 2,
-            'Fringe Rotation (5–10 MPG)': 3,
-            'End of Bench (0–5 MPG)': 4,
+            'Primary Rotation (18\u201326 MPG)': 1,
+            'Bench Rotation (10\u201318 MPG)': 2,
+            'Fringe Rotation (5\u201310 MPG)': 3,
+            'End of Bench (0\u20135 MPG)': 4,
         }
         team_df = team_df.copy()
         team_df['_tier_sort'] = team_df['mpg_tier'].map(tier_order).fillna(5)
@@ -310,6 +327,8 @@ for year in years:
 
     size_kb = os.path.getsize(filepath) / 1024
     print(f"  rosters_{year}.json — {yr_df['team'].nunique()} teams, {size_kb:.0f} KB")
+
+scrub_nan_dir(ROSTERS_DIR)
 
 # ============================================================
 # PART 2 — LAYER 2: EXPLORER FILES
@@ -330,6 +349,8 @@ for year in years:
 
     size_kb = os.path.getsize(filepath) / 1024
     print(f"  players_{year}.json — {len(records):,} players, {size_kb:.0f} KB")
+
+scrub_nan_dir(EXPLORER_DIR)
 
 # ============================================================
 # PART 3 — LAYER 2 PROFILES: PER-PLAYER CAREER FILES
@@ -382,6 +403,7 @@ for _, row in df_collide.iterrows():
 
 print(f"  {player_count:,} career files written")
 print(f"  {collision_count} collision season files written")
+# Note: Part 3 writes via json.dump from clean_for_json output — NaN already scrubbed
 
 # ============================================================
 # PART 4 — LAYER 3: POSITIONAL AVERAGES
@@ -486,6 +508,8 @@ with open(bench_path, 'w') as f:
 size_mb = os.path.getsize(bench_path) / 1024 / 1024
 print(f"  positional_benchmarks.json — {size_mb:.1f} MB")
 
+scrub_nan_dir(POSITIONAL_DIR)
+
 # ============================================================
 # PART 5 — PLAYER SEARCH INDEX
 # ============================================================
@@ -525,30 +549,6 @@ size_kb = os.path.getsize(index_path) / 1024
 print(f"  players_index.json — {len(index_records):,} players, {size_kb:.0f} KB")
 
 # ============================================================
-# POST-PROCESS: Replace NaN with null in all JSON files
-# ============================================================
-
-print("\n--- POST-PROCESS: Replacing NaN with null in JSON files ---")
-
-dirs_to_fix = [ROSTERS_DIR, EXPLORER_DIR, POSITIONAL_DIR]
-fixed_count = 0
-
-for directory in dirs_to_fix:
-    for fname in os.listdir(directory):
-        if not fname.endswith('.json'):
-            continue
-        fpath = os.path.join(directory, fname)
-        with open(fpath, 'r') as f:
-            raw = f.read()
-        if 'NaN' in raw:
-            raw = raw.replace(':NaN,', ':null,').replace(':NaN}', ':null}')
-            with open(fpath, 'w') as f:
-                f.write(raw)
-            fixed_count += 1
-
-print(f"  Fixed NaN in {fixed_count} files")
-
-# ============================================================
 # SUMMARY
 # ============================================================
 
@@ -561,4 +561,3 @@ print(f"Layer 2  — {player_count:,} player profile files → {PROFILES_DIR}")
 print(f"Layer 3  — 1 positional file → {POSITIONAL_DIR}")
 print(f"Index    — 1 search index → {BASE_OUTPUT}")
 print(f"\nAll files saved to: {BASE_OUTPUT}")
-

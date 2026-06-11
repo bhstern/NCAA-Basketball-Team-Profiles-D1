@@ -9,8 +9,10 @@ const ROSTER_TIPS = {
   stlpg:          'Steals per game.',
   blkpg:          'Blocks per game.',
   ts:             'True Shooting % — overall scoring efficiency accounting for 2PT, 3PT, and free throws. Formula: PTS / (2 × (FGA + 0.44 × FTA)).',
+  efg:            'Effective FG% — weights 3-pointers appropriately. Formula: (FGM + 0.5 × 3PM) / FGA.',
   usage_pct:      'Usage % — share of team possessions used by this player while on the floor (shots, free throws, turnovers).',
-  prpg:           "Torvik's PRPG! — total player rating per game, combining offensive and defensive value added above average.",
+  prpg:           "Torvik's PRPG! (PORPAGATU!) — offensive value added above replacement per game, adjusted for usage and opponent strength.",
+  dprpg:          "Torvik's DPRPG! — defensive value added above replacement per game, adjusted for opponent strength.",
   bpm:            'Box Plus/Minus — overall on-court impact estimated from box score stats, measured in points per 100 possessions above average.',
   obpm:           'Off BPM — offensive component of Box Plus/Minus.',
   dbpm:           'Def BPM — defensive component of Box Plus/Minus.',
@@ -23,6 +25,7 @@ const ROSTER_TIPS = {
   dr_pct:         'Defensive Rebound % — share of available defensive rebounds secured while on the floor.',
   ast_pct:        'Assist % — percentage of teammate made field goals assisted by this player while on the floor.',
   tov_pct:        'Turnover % — turnovers per possession used. Lower is better.',
+  tov_sensitivity:'TOV Sensitivity — percentage of team possessions this player turns over. Formula: TOV% × Usage%.',
   blk_pct:        '% of opponent 2-point attempts blocked while this player is on the floor.',
   stl_pct:        '% of opponent possessions that end in a steal by this player.',
   ast_tov_ratio:  'Assist-to-turnover ratio. Higher is better for ball-handlers.',
@@ -37,42 +40,29 @@ const ROSTER_TIPS = {
   ft_pct:         'Free throw percentage.',
 };
 
-// Smart pct formatter — handles decimal (0.45) and whole-number (45.0) storage
-// Whole-number % storage (e.g. ts=59.56, usage_pct=25.7, or_pct=6.7)
 function fmtPct(v, decimals=1) {
   const n = parseFloat(v);
   if (isNaN(n) || v === null || v === undefined) return '—';
   return n.toFixed(decimals) + '%';
 }
-// Decimal % storage (e.g. rim_rate=0.324, rim_fg_pct=0.571, ft_pct=0.796)
 function fmtPctDec(v, decimals=1) {
   const n = parseFloat(v);
   if (isNaN(n) || v === null || v === undefined) return '—';
   return (n * 100).toFixed(decimals) + '%';
 }
-
 function fmtSign(v, decimals=1) {
   const n = parseFloat(v);
   if (isNaN(n) || v === null || v === undefined) return '—';
   return (n > 0 ? '+' : '') + n.toFixed(decimals);
 }
 
-function fmtMA(p, madeKey, attKey) {
-  const m = parseFloat(p[madeKey]);
-  const a = parseFloat(p[attKey]);
-  if (isNaN(m) || isNaN(a)) return '—';
-  return m.toFixed(1) + '/' + a.toFixed(1);
-}
-
 // Keys that are display strings — no percentile bar, white text
 const STRING_KEYS = new Set([
-  '_rim_ma','_mid_ma','_three_ma','_ft_ma',
+  'rim_made_att_str','midrange_made_att_str','three_made_att_str','ft_made_att_str',
 ]);
 
-// drtg delta keys — flip sign on display so positive = better defense
 const DRTG_DELTA_KEYS = new Set(['drtg_delta_team','drtg_delta_conf','drtg_delta_sub']);
 
-// Frozen columns — plain text except usage_pct which gets stacked format
 const ROSTER_FROZEN = [
   {key:'name',             label:'Player',  stacked:false, frozen:true},
   {key:'position',         label:'Pos',     stacked:false, frozen:false},
@@ -85,23 +75,22 @@ const ROSTER_FROZEN = [
 
 const ROSTER_STAT_TABS = {
   overview: [
+    {key:'bpm',          label:'BPM',         fmt:v=>fmtSign(v)},
+    {key:'obpm',         label:'Off\nBPM',    fmt:v=>fmtSign(v)},
+    {key:'dbpm',         label:'Def\nBPM',    fmt:v=>fmtSign(v)},
     {key:'ppg',          label:'PTS/G',       fmt:v=>parseFloat(v).toFixed(1)},
     {key:'rebpg',        label:'REB/G',       fmt:v=>parseFloat(v).toFixed(1)},
     {key:'astpg',        label:'AST/G',       fmt:v=>parseFloat(v).toFixed(1)},
     {key:'stlpg',        label:'STL/G',       fmt:v=>parseFloat(v).toFixed(1)},
     {key:'blkpg',        label:'BLK/G',       fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'ts',           label:'TS%',         fmt:v=>fmtPct(v)},
-    {key:'prpg',         label:'PRPG',        fmt:v=>parseFloat(v).toFixed(2)},
-    {key:'bpm',          label:'BPM',         fmt:v=>fmtSign(v)},
-    {key:'obpm',         label:'Off BPM',     fmt:v=>fmtSign(v)},
-    {key:'dbpm',         label:'Def BPM',     fmt:v=>fmtSign(v)},
   ],
   advanced: [
+    {key:'prpg',             label:'PRPG',             fmt:v=>parseFloat(v).toFixed(2)},
+    {key:'dprpg',            label:'DPRPG',            fmt:v=>parseFloat(v).toFixed(2)},
     {key:'ortg',             label:'Off Rtg',          fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'ortg_delta_team',  label:'Off Rtg vs Team',  fmt:v=>fmtSign(v)},
+    {key:'ortg_delta_team',  label:'Off Rtg\nvs Team', fmt:v=>fmtSign(v)},
     {key:'drtg',             label:'Def Rtg',          fmt:v=>parseFloat(v).toFixed(1)},
-    {key:'drtg_delta_team',  label:'Def Rtg vs Team',  fmt:v=>((-parseFloat(v))>0?'+':'')+(-parseFloat(v)).toFixed(1)},
-    {key:'ppp_used',         label:'PPP Used',         fmt:v=>parseFloat(v).toFixed(3)},
+    {key:'drtg_delta_team',  label:'Def Rtg\nvs Team', fmt:v=>((-parseFloat(v))>0?'+':'')+(-parseFloat(v)).toFixed(1)},
     {key:'or_pct',           label:'OR%',              fmt:v=>fmtPct(v)},
     {key:'dr_pct',           label:'DR%',              fmt:v=>fmtPct(v)},
     {key:'ast_pct',          label:'AST%',             fmt:v=>fmtPct(v)},
@@ -109,22 +98,25 @@ const ROSTER_STAT_TABS = {
     {key:'blk_pct',          label:'BLK%',             fmt:v=>fmtPct(v)},
     {key:'stl_pct',          label:'STL%',             fmt:v=>fmtPct(v)},
     {key:'ast_tov_ratio',    label:'AST/TOV',          fmt:v=>parseFloat(v).toFixed(2)},
+    {key:'tov_sensitivity',  label:'TOV\nSensitivity', fmt:v=>fmtPct(v,1)},
     {key:'foul_sensitivity', label:'Foul\nSensitivity',fmt:v=>parseFloat(v).toFixed(2)},
   ],
   shooting: [
-    {key:'ts',              label:'TS%',               fmt:v=>fmtPct(v)},
+    {key:'ppp_used',        label:'PPP\nUsed',        fmt:v=>parseFloat(v).toFixed(3)},
+    {key:'ts',              label:'TS%',              fmt:v=>fmtPct(v)},
+    {key:'efg',             label:'eFG%',             fmt:v=>fmtPct(v)},
     {key:'rim_rate',        label:'Rim\nRate',        fmt:v=>fmtPctDec(v)},
     {key:'rim_fg_pct',      label:'Rim\nFG%',        fmt:v=>fmtPctDec(v)},
-    {key:'_rim_ma',         label:'Rim\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true},
+    {key:'rim_made_att_str',label:'Rim\nFGM/FGA',    fmt:v=>v??'—', noBar:true},
     {key:'midrange_rate',   label:'Mid\nRate',        fmt:v=>fmtPctDec(v)},
     {key:'midrange_fg_pct', label:'Mid\nFG%',        fmt:v=>fmtPctDec(v)},
-    {key:'_mid_ma',         label:'Mid\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'midrange_made_pg','midrange_att_pg'), noBar:true, computed:true},
+    {key:'midrange_made_att_str',label:'Mid\nFGM/FGA',fmt:v=>v??'—', noBar:true},
     {key:'three_rate',      label:'3PT\nRate',        fmt:v=>fmtPctDec(v)},
-    {key:'three_fg_pct',    label:'3PT%',              fmt:v=>fmtPctDec(v)},
-    {key:'_three_ma',       label:'3PT\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'three_made_pg','three_att_pg'), noBar:true, computed:true},
+    {key:'three_fg_pct',    label:'3PT%',             fmt:v=>fmtPctDec(v)},
+    {key:'three_made_att_str',label:'3PT\nFGM/FGA',  fmt:v=>v??'—', noBar:true},
     {key:'ft_rate',         label:'FT\nRate',         fmt:v=>fmtPctDec(v)},
-    {key:'ft_pct',          label:'FT%',               fmt:v=>fmtPctDec(v)},
-    {key:'_ft_ma',          label:'FTM/FTA',           fmt:(v,p)=>fmtMA(p,'ft_made_pg','ft_att_pg'), noBar:true, computed:true},
+    {key:'ft_pct',          label:'FT%',              fmt:v=>fmtPctDec(v)},
+    {key:'ft_made_att_str', label:'FTM/\nFTA',        fmt:v=>v??'—', noBar:true},
   ],
 };
 
@@ -198,7 +190,6 @@ function rosterPctCls(pct, isTier2) {
 }
 
 function rosterStackedCell(rawDisplay, pctVal, isTier2) {
-  // pctVal is 0-1
   const pct = parseFloat(pctVal);
   if (isNaN(pct)) return `<span class="roster-raw-white">${rawDisplay}</span>`;
   const cls = rosterPctCls(pct, isTier2);
@@ -276,7 +267,6 @@ function renderRosterTable(playersArg) {
 
       html += `<tr class="${rowCls}">`;
 
-      // Frozen cells
       ROSTER_FROZEN.forEach(col => {
         const val = p[col.key];
         const display = col.fmt ? col.fmt(val) : (val ?? '—');
@@ -284,7 +274,6 @@ function renderRosterTable(playersArg) {
         if (col.key === 'name') {
           html += `<td class="roster-frozen-td roster-name-cell" style="position:sticky;left:0;z-index:1;">${display}</td>`;
         } else if (col.stacked) {
-          // USG% — stacked format in frozen column
           const pctKey = col.pctKey || (col.key + '_pct');
           const pctVal = p[pctKey];
           const cellContent = (noPercentile || pctVal === null || pctVal === undefined)
@@ -296,14 +285,13 @@ function renderRosterTable(playersArg) {
         }
       });
 
-      // Stat cells
       stats.forEach(s => {
-        const rawVal = s.computed ? null : p[s.key];
+        const rawVal = p[s.key];
         const isString = STRING_KEYS.has(s.key) || s.noBar;
 
         if (isString) {
-          const display = s.computed ? s.fmt(null, p) : s.fmt(rawVal);
-          html += `<td class="roster-stat-td"><span class="roster-raw-white">${display ?? '—'}</span></td>`;
+          const display = s.fmt ? s.fmt(rawVal) : (rawVal ?? '—');
+          html += `<td class="roster-stat-td"><span class="roster-raw-white">${display}</span></td>`;
           return;
         }
 
