@@ -36,7 +36,7 @@ const EXPLORER_TIPS = {
   ortg_delta_team:'Player ORtg minus team adjusted offense. Positive = more efficient than team.',
   drtg:'Defensive Rating — points allowed per 100 possessions. Lower is better.',
   drtg_delta_team:'How many pts/100 better this player defends vs team average. Positive = better.',
-  ppp_used:'Points per possession used — scoring efficiency on possessions this player ends.',
+  ppp_used:'Points per possession used — accounts for FGA, free throw trips, and turnovers.',
   or_pct:'Offensive Rebound %.',dr_pct:'Defensive Rebound %.',
   ast_pct:'Assist % — % of teammate FGs assisted while on floor.',
   tov_pct:'Turnover % — turnovers per possession used. Lower is better.',

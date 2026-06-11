@@ -244,7 +244,7 @@
         <button class="view-btn" onclick="setExplorerPctContext('sub',this)">Power/Mid</button>
         <button class="view-btn" onclick="setExplorerPctContext('pos',this)">Position</button>
         <button class="view-btn" onclick="setExplorerPctContext('pos_conf',this)">Pos + Conf</button>
-        <button class="view-btn" onclick="setExplorerPctContext('pos_sub',this)">Pos + Power/Mid</button>
+        <button class="view-btn" onclick="setExplorerPctContext('pos_sub',this)">Pos + Sub</button>
       </div>
     </div>
 
@@ -311,10 +311,10 @@
         <span class="selector-label">MPG Tier</span>
         <div id="mf-mpg-tier" class="mf-btn-group">
           <button class="mf-btn active" data-value="Core Player (26+ MPG)" onclick="toggleTier('Core Player (26+ MPG)',this)">Core (26+)</button>
-          <button class="mf-btn active" data-value="Primary Rotation (18–26 MPG)" onclick="toggleTier('Primary Rotation (18–26 MPG)',this)">Primary (18-26)</button>
-          <button class="mf-btn active" data-value="Bench Rotation (10–18 MPG)" onclick="toggleTier('Bench Rotation (10–18 MPG)',this)">Bench (10-18)</button>
-          <button class="mf-btn active" data-value="Fringe Rotation (5–10 MPG)" onclick="toggleTier('Fringe Rotation (5–10 MPG)',this)">Fringe (5-10)</button>
-          <button class="mf-btn" data-value="End of Bench (0–5 MPG)" onclick="toggleTier('End of Bench (0–5 MPG)',this)">End of Bench (0-5)</button>
+          <button class="mf-btn active" data-value="Primary Rotation (18–26 MPG)" onclick="toggleTier('Primary Rotation (18–26 MPG)',this)">Primary</button>
+          <button class="mf-btn active" data-value="Bench Rotation (10–18 MPG)" onclick="toggleTier('Bench Rotation (10–18 MPG)',this)">Bench</button>
+          <button class="mf-btn active" data-value="Fringe Rotation (5–10 MPG)" onclick="toggleTier('Fringe Rotation (5–10 MPG)',this)">Fringe</button>
+          <button class="mf-btn" data-value="End of Bench (0–5 MPG)" onclick="toggleTier('End of Bench (0–5 MPG)',this)">End of Bench</button>
         </div>
       </div>
 
@@ -638,7 +638,7 @@
           <tbody>
             <tr><td>TOV Sensitivity</td><td>TOV% &times; usage &mdash; measures how damaging turnovers are given a player&rsquo;s role. A high-usage player with a 20% TOV% hurts more than a low-usage player with the same rate.</td></tr>
             <tr><td>Foul Sensitivity</td><td>Fouls committed per minute played &mdash; measures foul risk independent of playing time.</td></tr>
-            <tr><td>PPP Used</td><td>Points per possession used &mdash; scoring efficiency on possessions this player ends. Combines FG%, 3PT rate, and free throw volume into a single efficiency number.</td></tr>
+            <tr><td>PPP Used</td><td>Points per possession used &mdash; accounts for FGA, free throw trips, and turnovers.</td></tr>
             <tr><td>Off Rtg vs Team / Conf / Sub</td><td>Player offensive rating minus team, conference, or power/mid-major average. Positive = more efficient than context.</td></tr>
             <tr><td>Def Rtg vs Team / Conf / Sub</td><td>How many points per 100 possessions better this player defends vs. their context. Positive = better than context.</td></tr>
             <tr><td>TS% vs Team / Conf / Sub</td><td>Player TS% minus team, conference, or subgroup average &mdash; shooting efficiency above context.</td></tr>
@@ -700,7 +700,6 @@
   </div>
 </div>
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KD9ZKZKQFS"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
