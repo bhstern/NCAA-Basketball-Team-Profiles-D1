@@ -58,7 +58,7 @@ function fmtSign(v, decimals=1) {
 
 // Keys that are display strings — no percentile bar, white text
 const STRING_KEYS = new Set([
-  'rim_made_att_str','midrange_made_att_str','three_made_att_str','ft_made_att_str',
+  '_rim_ma','_mid_ma','_three_ma','_ft_ma',
 ]);
 
 const DRTG_DELTA_KEYS = new Set(['drtg_delta_team','drtg_delta_conf','drtg_delta_sub']);
@@ -98,7 +98,6 @@ const ROSTER_STAT_TABS = {
     {key:'blk_pct',          label:'BLK%',             fmt:v=>fmtPct(v)},
     {key:'stl_pct',          label:'STL%',             fmt:v=>fmtPct(v)},
     {key:'ast_tov_ratio',    label:'AST/TOV',          fmt:v=>parseFloat(v).toFixed(2)},
-    {key:'tov_sensitivity',  label:'TOV\nSensitivity', fmt:v=>fmtPct(v,1)},
     {key:'foul_sensitivity', label:'Foul\nSensitivity',fmt:v=>parseFloat(v).toFixed(2)},
   ],
   shooting: [
@@ -107,16 +106,16 @@ const ROSTER_STAT_TABS = {
     {key:'efg',             label:'eFG%',             fmt:v=>fmtPct(v)},
     {key:'rim_rate',        label:'Rim\nRate',        fmt:v=>fmtPctDec(v)},
     {key:'rim_fg_pct',      label:'Rim\nFG%',        fmt:v=>fmtPctDec(v)},
-    {key:'rim_made_att_str',label:'Rim\nFGM/FGA',    fmt:v=>v??'—', noBar:true},
+    {key:'_rim_ma',         label:'Rim\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true},
     {key:'midrange_rate',   label:'Mid\nRate',        fmt:v=>fmtPctDec(v)},
     {key:'midrange_fg_pct', label:'Mid\nFG%',        fmt:v=>fmtPctDec(v)},
-    {key:'midrange_made_att_str',label:'Mid\nFGM/FGA',fmt:v=>v??'—', noBar:true},
+    {key:'_mid_ma',         label:'Mid\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'midrange_made_pg','midrange_att_pg'), noBar:true, computed:true},
     {key:'three_rate',      label:'3PT\nRate',        fmt:v=>fmtPctDec(v)},
     {key:'three_fg_pct',    label:'3PT%',             fmt:v=>fmtPctDec(v)},
-    {key:'three_made_att_str',label:'3PT\nFGM/FGA',  fmt:v=>v??'—', noBar:true},
+    {key:'_three_ma',       label:'3PT\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'three_made_pg','three_att_pg'), noBar:true, computed:true},
     {key:'ft_rate',         label:'FT\nRate',         fmt:v=>fmtPctDec(v)},
     {key:'ft_pct',          label:'FT%',              fmt:v=>fmtPctDec(v)},
-    {key:'ft_made_att_str', label:'FTM/\nFTA',        fmt:v=>v??'—', noBar:true},
+    {key:'_ft_ma',          label:'FTM/\nFTA',        fmt:(v,p)=>fmtMA(p,'ft_made_pg','ft_att_pg'), noBar:true, computed:true},
   ],
 };
 

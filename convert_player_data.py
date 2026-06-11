@@ -88,19 +88,17 @@ ROSTER_TAB2_STATS = [
 ]
 
 # Tab 3 — Shooting stats (raw + national pct where applicable)
+# Uses per-game made/att for FGM/FGA display strings computed in JS
 ROSTER_TAB3_STATS = [
     'ppp_used', 'ts', 'efg',
-    'rim_rate', 'rim_fg_pct', 'rim_made_att_str',
-    'midrange_rate', 'midrange_fg_pct', 'midrange_made_att_str',
-    'three_rate', 'three_fg_pct', 'three_made_att_str', 'three_att_pg',
-    'ft_rate', 'ft_pct', 'ft_made_att_str',
+    'rim_rate', 'rim_fg_pct', 'rim_made_pg', 'rim_att_pg',
+    'midrange_rate', 'midrange_fg_pct', 'midrange_made_pg', 'midrange_att_pg',
+    'three_rate', 'three_fg_pct', 'three_made_pg', 'three_att_pg',
+    'ft_rate', 'ft_pct', 'ft_made_pg', 'ft_att_pg',
 ]
 
 # String columns — display only, no percentile
-ROSTER_STRING_COLS = [
-    'rim_made_att_str', 'midrange_made_att_str',
-    'three_made_att_str', 'ft_made_att_str',
-]
+ROSTER_STRING_COLS = []
 
 ALL_ROSTER_STATS = list(dict.fromkeys(
     ROSTER_TAB1_STATS + ROSTER_TAB2_STATS + ROSTER_TAB3_STATS
