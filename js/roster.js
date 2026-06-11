@@ -296,7 +296,7 @@ function renderRosterTable(playersArg) {
         const isString = STRING_KEYS.has(s.key) || s.noBar;
 
         if (isString) {
-          const display = s.fmt ? s.fmt(rawVal) : (rawVal ?? '—');
+          const display = s.computed ? s.fmt(null, p) : (s.fmt ? s.fmt(rawVal) : (rawVal ?? '—'));
           html += `<td class="roster-stat-td"><span class="roster-raw-white">${display}</span></td>`;
           return;
         }
