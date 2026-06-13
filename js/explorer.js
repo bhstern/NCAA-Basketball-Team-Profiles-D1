@@ -243,6 +243,11 @@ async function loadAndRenderExplorer() {
     const year = parseInt(document.getElementById('explorer-year-select').value);
     cExplorerYear = year;
     cExplorerData = await loadExplorerYear(year);
+    // Clear built flags so conference and team dropdowns rebuild for the new year
+    const _cw = document.getElementById('mf-conference');
+    const _tw = document.getElementById('mf-team');
+    if (_cw) { _cw.dataset.built=''; _cw.innerHTML=''; }
+    if (_tw) { _tw.dataset.built=''; _tw.innerHTML=''; }
     buildExplorerFilters();
     applyExplorerFilters();
     loading.style.display='none'; wrap.style.display='block';
