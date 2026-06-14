@@ -17,10 +17,10 @@ const ROSTER_TIPS = {
   obpm:           'Off BPM — offensive component of Box Plus/Minus.',
   dbpm:           'Def BPM — defensive component of Box Plus/Minus.',
   ortg:           'Offensive Rating — points produced per 100 possessions used.',
-  ortg_delta_team:'Player offensive rating minus team adjusted offense. Positive = player scores more efficiently than his team overall.',
+  ortg_delta_team:'Offensive rating with this player on the floor vs. team avg. Positive = better than team avg.',
   drtg:           'Defensive Rating — points allowed per 100 possessions while on the floor. Lower is better.',
-  drtg_delta_team:'How many points per 100 possessions better this player defends relative to team average. Positive = better defender than team average.',
-  ppp_used:       'Points per possession used — scoring efficiency on possessions this player ends.',
+  drtg_delta_team:'Defensive rating with this player on the floor vs. team avg. Positive = better than team avg.',
+  ppp_used:       'Points per possession used — accounts for FGA, free throw trips, and turnovers.',
   or_pct:         'Offensive Rebound % — share of available offensive rebounds secured while on the floor.',
   dr_pct:         'Defensive Rebound % — share of available defensive rebounds secured while on the floor.',
   ast_pct:        'Assist % — percentage of teammate made field goals assisted by this player while on the floor.',
@@ -29,7 +29,7 @@ const ROSTER_TIPS = {
   blk_pct:        '% of opponent 2-point attempts blocked while this player is on the floor.',
   stl_pct:        '% of opponent possessions that end in a steal by this player.',
   ast_tov_ratio:  'Assist-to-turnover ratio. Higher is better for ball-handlers.',
-  foul_sensitivity:'Fouls committed per minute played. Indicates foul risk — higher = more likely to foul out or lose minutes.',
+  foul_sensitivity:'Fouls committed per minute played. Indicates foul risk — higher = more likely to foul out.',
   rim_rate:       'Rim attempt rate — dunks + close 2s as a share of total FGA. Higher = more paint presence.',
   rim_fg_pct:     'FG% at the rim — finishing efficiency on dunks and close 2-point attempts combined.',
   midrange_rate:  'Midrange attempt rate — long 2-point attempts as a share of total FGA.',
@@ -65,7 +65,7 @@ function fmtMA(p, madeKey, attKey) {
 
 // Keys that are display strings — no percentile bar, white text
 const STRING_KEYS = new Set([
-  '_rim_ma','_mid_ma','_three_ma','_ft_ma',
+  '_fg_ma','_rim_ma','_mid_ma','_three_ma','_ft_ma',
 ]);
 
 const DRTG_DELTA_KEYS = new Set(['drtg_delta_team','drtg_delta_conf','drtg_delta_sub']);
@@ -111,6 +111,8 @@ const ROSTER_STAT_TABS = {
     {key:'ppp_used',        label:'PPP\nUsed',        fmt:v=>parseFloat(v).toFixed(3)},
     {key:'ts',              label:'TS%',              fmt:v=>fmtPct(v)},
     {key:'efg',             label:'eFG%',             fmt:v=>fmtPct(v)},
+    {key:'total_fg_pct',    label:'FG%',              fmt:v=>fmtPctDec(v)},
+    {key:'_fg_ma',          label:'FGM/\nFGA',        fmt:(v,p)=>fmtMA(p,'fgm_pg','fga_pg'), noBar:true, computed:true},
     {key:'rim_rate',        label:'Rim\nRate',        fmt:v=>fmtPctDec(v)},
     {key:'rim_fg_pct',      label:'Rim\nFG%',        fmt:v=>fmtPctDec(v)},
     {key:'_rim_ma',         label:'Rim\nFGM/FGA',    fmt:(v,p)=>fmtMA(p,'rim_made_pg','rim_att_pg'), noBar:true, computed:true},

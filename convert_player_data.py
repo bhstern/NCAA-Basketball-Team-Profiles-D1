@@ -90,7 +90,7 @@ ROSTER_TAB2_STATS = [
 # Tab 3 — Shooting stats (raw + national pct where applicable)
 # Uses per-game made/att for FGM/FGA display strings computed in JS
 ROSTER_TAB3_STATS = [
-    'ppp_used', 'ts', 'efg',
+    'ppp_used', 'ts', 'efg', 'total_fg_pct', 'fgm_pg', 'fga_pg',
     'rim_rate', 'rim_fg_pct', 'rim_made_pg', 'rim_att_pg',
     'midrange_rate', 'midrange_fg_pct', 'midrange_made_pg', 'midrange_att_pg',
     'three_rate', 'three_fg_pct', 'three_made_pg', 'three_att_pg',
