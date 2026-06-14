@@ -1139,7 +1139,7 @@ function renderConfStats(){
   // Build header
   let thead=`<thead><tr>
     <th class="stat-col">Stat</th>
-    <th style="color:var(--accent)">${cRow.team_name.split(' ').slice(-1)}</th>`;
+    <th style="color:var(--accent)">${cRow.team_name}</th>`;
   compareTeams.forEach(t=>{
     const col=cCustomMode?'var(--yellow)':'var(--text3)';
     thead+=`<th style="color:${col}">${t.team_name}</th>`;
