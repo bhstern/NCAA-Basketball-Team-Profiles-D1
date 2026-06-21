@@ -1,7 +1,12 @@
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 function updateURL(){
-  if(!cTeam||!cYear)return;
   const params=new URLSearchParams();
+  if(cTab==='explorer'){
+    params.set('tab','explorer');            // Player Explorer is team-agnostic; keep the URL clean
+    history.replaceState(null,'','?'+params.toString());
+    return;
+  }
+  if(!cTeam||!cYear)return;
   params.set('team',cTeam);
   params.set('year',cYear);
   if(cTab&&cTab!=='profile')params.set('tab',cTab);
@@ -28,13 +33,14 @@ function switchTab(tab,btn){
   if(btn)btn.classList.add('active');
   updateURL();
   // Hide banner and page desc on explorer and about tabs
-  const hideBanner = tab==='about' || tab==='explorer';
+  const hideBanner = tab==='about' || tab==='explorer' || tab==='shotcharts';
   const bannerEl = document.getElementById('banner');
   const descEl = document.getElementById('page-desc');
   if(bannerEl) bannerEl.style.display = hideBanner ? 'none' : '';
   if(descEl) descEl.style.display = hideBanner ? 'none' : '';
-  if(tab !== 'about' && tab !== 'explorer') updatePageDesc();
+  if(tab !== 'about' && tab !== 'explorer' && tab !== 'shotcharts') updatePageDesc();
   if(tab==='explorer') initExplorer();
+  if(tab==='shotcharts') initShotCharts();
   if(tab==='h2h') syncH2HTeamA();
   if(cRow){
     if(tab==='profile')renderProfile();
@@ -90,6 +96,11 @@ loadIndex().then(async ()=>{
         });
       }
     }
+  } else if(params.get('tab')){
+    // team-agnostic tab (e.g. Player Explorer) deep-linked without a team
+    const tabParam=params.get('tab');
+    const tabBtn=[...document.querySelectorAll('.nav-tab')].find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${tabParam}'`));
+    if(tabBtn)switchTab(tabParam,tabBtn);
   }
 });
 

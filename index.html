@@ -21,6 +21,7 @@
 <meta name="description" content="11 seasons of D1 college basketball analytics — team profiles, player explorer, roster analysis, shot quality metrics, and historical trends across 368 programs."/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<link rel="stylesheet" href="css/shotcharts.css"/>
 </head>
 <body>
 
@@ -32,6 +33,7 @@
     <button class="nav-tab" onclick="switchTab('explorer',this)">Player Explorer</button>
     <button class="nav-tab" onclick="switchTab('historical',this)">Historical Trends</button>
     <button class="nav-tab" onclick="switchTab('h2h',this)">Head to Head</button>
+    <button class="nav-tab" onclick="switchTab('shotcharts',this)">Shot Charts</button>
     <button class="nav-tab" onclick="switchTab('about',this)">About</button>
   </div>
 </nav>
@@ -311,9 +313,9 @@
         <span class="selector-label">MPG Tier</span>
         <div id="mf-mpg-tier" class="mf-btn-group">
           <button class="mf-btn active" data-value="Core Player (26+ MPG)" onclick="toggleTier('Core Player (26+ MPG)',this)">Core (26+)</button>
-          <button class="mf-btn active" data-value="Primary Rotation (18–26 MPG)" onclick="toggleTier('Primary Rotation (18–26 MPG)',this)">Primary (18-26)</button>
-          <button class="mf-btn active" data-value="Bench Rotation (10–18 MPG)" onclick="toggleTier('Bench Rotation (10–18 MPG)',this)">Bench (10-18)</button>
-          <button class="mf-btn active" data-value="Fringe Rotation (5–10 MPG)" onclick="toggleTier('Fringe Rotation (5–10 MPG)',this)">Fringe (5-10)</button>
+          <button class="mf-btn active" data-value="Primary Rotation (18–26 MPG)" onclick="toggleTier('Primary Rotation (18–26 MPG)',this)">Primary</button>
+          <button class="mf-btn active" data-value="Bench Rotation (10–18 MPG)" onclick="toggleTier('Bench Rotation (10–18 MPG)',this)">Bench</button>
+          <button class="mf-btn active" data-value="Fringe Rotation (5–10 MPG)" onclick="toggleTier('Fringe Rotation (5–10 MPG)',this)">Fringe</button>
           <button class="mf-btn" data-value="End of Bench (0–5 MPG)" onclick="toggleTier('End of Bench (0–5 MPG)',this)">End of Bench</button>
         </div>
       </div>
@@ -700,6 +702,8 @@
   </div>
 </div>
 
+<div id="tab-shotcharts" class="tab-content"></div>
+
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -712,6 +716,8 @@
 <script src="js/explorer.js"></script>
 <script src="js/team.js"></script>
 <script src="js/h2h.js"></script>
+<script src="js/shotcourt.js"></script>
+<script src="js/shotcharts.js"></script>
 <script src="js/nav.js"></script>
 
 </body>
