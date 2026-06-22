@@ -23,7 +23,7 @@ const SC = {
   subject:'team',     // 'team' | 'player' | 'group'
   mode:'builder',     // 'builder' | 'compare'
   intent:'pop',       // 'pop' | 'diff'   (diff only in compare)
-  diffMetric:'fg',    // 'fg' | 'rate'
+  colorMetric:'fg',   // 'fg' | 'rate' — which metric drives the color (percentile in pop, difference in diff)
   basis:'_pct',       // current shared basis key/suffix
   showPct:false,
   showLabels:true,
@@ -125,12 +125,12 @@ function scZonesTeam(row, side, intent, basisSuffix, otherProf){
     const r=row[rf], fg=row[ff], zd={ r, fg, rp:null, fgp:null };
     if(intent==='pop'){
       zd.rp=row[rf+basisSuffix]; zd.fgp=row[ff+basisSuffix];
-      zd.color=scPctColor(zd.fgp);
+      zd.color=scPctColor(SC.colorMetric==='fg'?zd.fgp:zd.rp);
     } else {
       const od=otherProf?otherProf[z]:null;
       zd.dRate=(od&&r!=null&&od.rate!=null)?(r-od.rate)*100:null;
       zd.dFg  =(od&&fg!=null&&od.fg!=null)?(fg-od.fg)*100:null;
-      zd.color=scDiffColor(SC.diffMetric==='fg'?zd.dFg:zd.dRate);
+      zd.color=scDiffColor(SC.colorMetric==='fg'?zd.dFg:zd.dRate);
     }
     out[z]=zd;
   }
@@ -143,12 +143,12 @@ function scZonesPlayer(row, intent, basisSuffix, otherProf){
     const k=SC_PZ[z], r=row[`${k}_rate`], fg=row[`${k}_fg_pct`], zd={ r, fg, rp:null, fgp:null };
     if(intent==='pop'){
       zd.rp=row[`${k}_rate${basisSuffix}`]; zd.fgp=row[`${k}_fg_pct${basisSuffix}`];
-      zd.color=scPctColor(zd.fgp);
+      zd.color=scPctColor(SC.colorMetric==='fg'?zd.fgp:zd.rp);
     } else {
       const od=otherProf?otherProf[z]:null;
       zd.dRate=(od&&r!=null&&od.rate!=null)?(r-od.rate)*100:null;
       zd.dFg  =(od&&fg!=null&&od.fg!=null)?(fg-od.fg)*100:null;
-      zd.color=scDiffColor(SC.diffMetric==='fg'?zd.dFg:zd.dRate);
+      zd.color=scDiffColor(SC.colorMetric==='fg'?zd.dFg:zd.dRate);
     }
     out[z]=zd;
   }
@@ -163,12 +163,12 @@ function scZonesGroup(prof, POP, basisKey, intent, otherProf){
       const base=POP[basisKey]||POP.all;
       zd.rp=scPctileIn(prof[z].rate, base[z].rate);
       zd.fgp=scPctileIn(prof[z].fg,   base[z].fg);
-      zd.color=scPctColor(zd.fgp);
+      zd.color=scPctColor(SC.colorMetric==='fg'?zd.fgp:zd.rp);
     } else {
       const od=otherProf?otherProf[z]:null;
       zd.dRate=(od&&prof[z].rate!=null&&od.rate!=null)?(prof[z].rate-od.rate)*100:null;
       zd.dFg  =(od&&prof[z].fg!=null&&od.fg!=null)?(prof[z].fg-od.fg)*100:null;
-      zd.color=scDiffColor(SC.diffMetric==='fg'?zd.dFg:zd.dRate);
+      zd.color=scDiffColor(SC.colorMetric==='fg'?zd.dFg:zd.dRate);
     }
     out[z]=zd;
   }
@@ -185,7 +185,7 @@ const SC_EMPTY_ZONES = ()=>({
 
 function scBasisOptions(){
   if(SC.subject==='team'){
-    return [['_pct','vs all D1'],['_conf_pct','vs conference'],['_sub_pct','vs power/mid tier']];
+    return [['_pct','vs all D1'],['_conf_pct','vs conference'],['_sub_pct','vs same tier']];
   }
   if(SC.subject==='player'){
     return [
@@ -193,8 +193,8 @@ function scBasisOptions(){
       ['_pct','vs all D1'],
       ['_pos_conf_pct','vs position (conference)'],
       ['_conf_pct','vs conference'],
-      ['_pos_sub_pct','vs position (power/mid)'],
-      ['_sub_pct','vs power/mid tier'],
+      ['_pos_sub_pct','vs position (same tier)'],
+      ['_sub_pct','vs same tier'],
     ];
   }
   // group: union of selected players across active charts; offer shared position only if uniform
@@ -215,12 +215,24 @@ function scBasisText(){
   return o ? o[1] : '';
 }
 
+/* friendly name for a power_mid value, and the tier of chart c's subject */
+function scTierLabel(pm){ return pm==='Power' ? 'power-conference' : pm==='Mid-Major' ? 'mid-major' : ''; }
+function scChartPowerMid(c){
+  const st=SC.charts[c];
+  if(SC.subject==='team'){ const row=(YCACHE[st.year]||[]).find(r=>r.team_name===st.team); return row?row.power_mid:''; }
+  if(SC.subject==='player'){ const p=st.players[0]; return p?p.power_mid:''; }
+  return '';
+}
+
 /* population phrase for the on-chart footer of chart c.
    Reads cleaner than the dropdown menu wording on purpose: for a player it names
-   the actual position ("all D1 guards") instead of the menu's "position (all D1)". */
+   the actual position ("all D1 guards"), and the same-tier basis names the actual
+   tier ("power-conference teams") instead of the generic "same tier". */
 function scFooterText(c){
+  const tier=scTierLabel(scChartPowerMid(c));
   if(SC.subject==='team'){
-    return ({'_pct':'all D1','_conf_pct':'conference','_sub_pct':'power/mid tier'})[SC.basis] || '';
+    if(SC.basis==='_sub_pct') return tier ? `${tier} teams` : 'same-tier teams';
+    return ({'_pct':'all D1','_conf_pct':'conference'})[SC.basis] || '';
   }
   if(SC.subject==='player'){
     const p=SC.charts[c].players[0];
@@ -228,7 +240,7 @@ function scFooterText(c){
     return ({
       '_pos_pct':`all D1 ${pos}`, '_pct':'all D1',
       '_pos_conf_pct':`conference ${pos}`, '_conf_pct':'conference',
-      '_pos_sub_pct':`power/mid ${pos}`, '_sub_pct':'power/mid tier',
+      '_pos_sub_pct': tier?`${tier} ${pos}`:`same-tier ${pos}`, '_sub_pct': tier?`${tier} players`:'same-tier players',
     })[SC.basis] || '';
   }
   // group: reuse the basis label, drop the "vs " / trailing " players"
@@ -320,7 +332,8 @@ async function scRender(){
       zones, showPct: showPct && hasData, showLabels:SC.showLabels,
       title: scDisplayTitle(c), subtitle: st.subtitle.trim(), titleSize: sharedTitleSize,
       basisNote: (SC.intent==='pop' && hasData) ? 'Compared vs. '+scFooterText(c) : '',
-      diffMetric: SC.intent==='diff' ? SC.diffMetric : null,
+      colorNote: (SC.intent==='pop' && hasData) ? 'Colored by '+(SC.colorMetric==='fg'?'FG%':'rate') : '',
+      diffMetric: SC.intent==='diff' ? SC.colorMetric : null,
     });
   }
 
@@ -336,7 +349,7 @@ function scUpdateLegend(){
     bar.style.background='linear-gradient(90deg,#c0392b,#e67e22,#f1c40f,#82b74b,#27ae60)';
     lbl.innerHTML='<span>Poor</span><span>Avg</span><span>Elite</span>';
     let basisLabel=scBasisText()||'population';
-    let s='FG% percentile, '+basisLabel+'.';
+    let s=(SC.colorMetric==='fg'?'FG% ':'Shot-rate ')+'percentile, '+basisLabel+'.';
     if(SC.subject==='team') s+=' Defense is inverted: green = holds opponents below average.';
     if(groupMulti) s+=' Pooled-group percentiles read muted vs. individuals \u2014 treat as directional.'+poolNote;
     if(SC.mode==='compare') s+=' Both charts share one basis so the colors are comparable.';
@@ -344,7 +357,7 @@ function scUpdateLegend(){
   } else {
     bar.style.background='linear-gradient(90deg,rgb(192,57,43),rgb(120,128,150),rgb(39,174,96))';
     lbl.innerHTML='<span>-10 pts</span><span>even</span><span>+10 pts</span>';
-    let s=`Each zone colored by the raw ${SC.diffMetric==='fg'?'FG%':'rate'} difference between the two charts (fixed \u00B110-point scale). Green = this side is better in that zone. No population involved.`;
+    let s=`Each zone colored by the raw ${SC.colorMetric==='fg'?'FG%':'rate'} difference between the two charts (fixed \u00B110-point scale). Green = this side is better in that zone. No population involved.`;
     if(groupMulti) s+=poolNote;
     sub.textContent=s;
   }
@@ -491,8 +504,8 @@ function scMount(){
           <button data-v="diff">vs Each Other</button></div></div>
       <div class="sc-fld" id="sc-basiswrap"><label>Basis</label>
         <select class="sc-input" id="sc-basis"></select></div>
-      <div class="sc-fld" id="sc-diffwrap" style="display:none"><label>Difference by</label>
-        <div class="sc-seg" id="sc-diffmetric">
+      <div class="sc-fld" id="sc-colorwrap"><label>Color by</label>
+        <div class="sc-seg" id="sc-colormetric">
           <button data-v="fg" class="on">FG%</button>
           <button data-v="rate">Rate</button></div></div>
       <div class="sc-fld"><label>Display</label>
@@ -588,10 +601,10 @@ function scMount(){
     if(SC.intent==='diff'){ SC.showPct=false; document.getElementById('sc-showpct').checked=false; }
     scApplyVisibility(); scRender();
   });
-  // diff metric
-  document.querySelectorAll('#sc-diffmetric button').forEach(b=>b.onclick=()=>{
-    SC.diffMetric=b.dataset.v;
-    document.querySelectorAll('#sc-diffmetric button').forEach(x=>x.classList.toggle('on',x===b));
+  // color metric (drives color in both pop and diff modes)
+  document.querySelectorAll('#sc-colormetric button').forEach(b=>b.onclick=()=>{
+    SC.colorMetric=b.dataset.v;
+    document.querySelectorAll('#sc-colormetric button').forEach(x=>x.classList.toggle('on',x===b));
     scRender();
   });
   // basis / toggles
@@ -613,7 +626,7 @@ function scSetIntentButtons(){
 
 /* full reset to the opening defaults (Team / Builder / vs Population, Houston→Duke seed) */
 function scReset(){
-  SC.subject='team'; SC.mode='builder'; SC.intent='pop'; SC.diffMetric='fg';
+  SC.subject='team'; SC.mode='builder'; SC.intent='pop'; SC.colorMetric='fg';
   SC.showPct=false; SC.showLabels=true; SC.basis='_pct';
   ['A','B'].forEach(c=>Object.assign(SC.charts[c],
     {year:2026, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false, _seeded:false}));
@@ -639,7 +652,7 @@ function scApplyVisibility(){
 
   const pop=SC.intent==='pop';
   document.getElementById('sc-basiswrap').style.display=pop?'':'none';
-  document.getElementById('sc-diffwrap').style.display=(!pop&&compare)?'':'none';
+  document.getElementById('sc-colorwrap').style.display='';   // color metric applies in both modes
 }
 
 /* entry point — called by switchTab('shotcharts') */

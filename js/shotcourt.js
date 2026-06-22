@@ -71,7 +71,8 @@ const scOrdPct=x=>{if(x==null)return '—';const n=Math.round(x*100),v=n%100,d=n
    dRate/dFg are signed point differences vs the other chart (diff mode only);
    diffMetric ('fg'|'rate') tells the label which delta to print next to that metric.
    basisNote: optional string stamped bottom-left so an exported image always
-   states the population it is colored against (controller decides when to pass it). */
+   states the population it is colored against (controller decides when to pass it).
+   colorNote: optional string stamped bottom-right stating which metric drives the color. */
 function buildCourtSVG(o){
   const rimPath=scPathRim(SC_RIMR),ZT=SC_PATH_COURT+' '+SC_PATH_THREE_LINE,ZM=SC_PATH_THREE_LINE+' '+rimPath;
   const fz=(d,f)=>`<path fill-rule="evenodd" fill="${f}" fill-opacity="${SC_OPA}" d="${d}"/>`;
@@ -99,6 +100,8 @@ function buildCourtSVG(o){
     if(s)g+=`<text x="14" y="${t?55:33}" font-size="13" font-weight="500" fill="#c4d2ea">${SC_esc(s)}</text>`;return g+'</g>';};
   const bn=()=>{ if(!o.basisNote) return '';
     return `<g paint-order="stroke" stroke="rgba(8,13,26,0.72)" stroke-width="4" stroke-linejoin="round" font-family="${SC_FONT}" text-anchor="start"><text x="14" y="363" font-size="13" font-weight="600" fill="#c4d2ea">${SC_esc(o.basisNote)}</text></g>`;};
+  const cn=()=>{ if(!o.colorNote) return '';
+    return `<g paint-order="stroke" stroke="rgba(8,13,26,0.72)" stroke-width="4" stroke-linejoin="round" font-family="${SC_FONT}" text-anchor="end"><text x="498" y="363" font-size="13" font-weight="600" fill="#c4d2ea">${SC_esc(o.colorNote)}</text></g>`;};
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -12 ${SC_VBW} ${SC_VBH}">
     ${fz(ZT,o.zones.three.color)}${fz(ZM,o.zones.mid.color)}
     <path fill="${o.zones.rim.color}" fill-opacity="${SC_OPA}" d="${rimPath}"/>
@@ -111,7 +114,7 @@ function buildCourtSVG(o){
       <path stroke-dasharray="6 5" d="M ${SC_C.LANE_L} ${SC_C.FT_Y} A ${SC_C.FT_R} ${SC_C.FT_R} 0 0 0 ${SC_C.LANE_R} ${SC_C.FT_Y}"/>
       <path stroke-dasharray="6 5" d="M ${SC_C.BASKET_X-SC_C.REST_R} ${SC_C.BASKET_Y} A ${SC_C.REST_R} ${SC_C.REST_R} 0 0 1 ${SC_C.BASKET_X+SC_C.REST_R} ${SC_C.BASKET_Y}"/>
       <circle cx="${SC_C.BASKET_X}" cy="${SC_C.BASKET_Y}" r="${SC_C.RIM_R_RH}"/><line x1="${SC_C.BB_L}" y1="${SC_C.BB_Y}" x2="${SC_C.BB_R}" y2="${SC_C.BB_Y}"/>
-    </g>${tb()}${block('three')}${block('mid')}${block('rim')}${bn()}</svg>`;
+    </g>${tb()}${block('three')}${block('mid')}${block('rim')}${bn()}${cn()}</svg>`;
 }
 
 /* ---------- PNG export (single + paired), background filled #0f1729 first ---------- */
