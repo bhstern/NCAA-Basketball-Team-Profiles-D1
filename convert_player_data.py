@@ -69,7 +69,7 @@ print(f"  {len(df):,} rows, {len(df.columns):,} columns")
 # --- LAYER 1: Roster card columns ---
 # Frozen identifiers (visible all tabs)
 ROSTER_IDENTIFIERS = [
-    'player_id', 'name', 'position', 'class', 'years_in_d1',
+    'player_id', 'name', 'position', 'role', 'class', 'years_in_d1',
     'height_in', 'games', 'minutes_per_game', 'mpg_tier',
     'percentile_tier', 'percentile_eligible',
 ]
@@ -530,7 +530,7 @@ team_history = (df.groupby('player_id')
                   .apply(lambda x: [
                       {'year': int(r['year']), 'team': r['team']}
                       for _, r in x.sort_values('year').iterrows()
-                  ])
+                  ], include_groups=False)
                   .reset_index()
                   .rename(columns={0: 'history'}))
 

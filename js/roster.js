@@ -73,6 +73,7 @@ const DRTG_DELTA_KEYS = new Set(['drtg_delta_team','drtg_delta_conf','drtg_delta
 const ROSTER_FROZEN = [
   {key:'name',             label:'Player',  stacked:false, frozen:true},
   {key:'position',         label:'Pos',     stacked:false, frozen:false},
+  {key:'role',             label:'Role',    stacked:false, frozen:false},
   {key:'class',            label:'Yr',      stacked:false, frozen:false},
   {key:'height_in',        label:'Ht',      stacked:false, frozen:false, fmt: v => { const i=parseInt(v); return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"'; }},
   {key:'games',            label:'G',       stacked:false, frozen:false},

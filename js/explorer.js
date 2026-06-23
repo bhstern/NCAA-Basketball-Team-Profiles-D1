@@ -187,6 +187,7 @@ const EXPLORER_FROZEN = [
   {key:'name',label:'Player',frozen:true,width:155,left:28,fmt:v=>v??'—'},
   {key:'team',label:'Team',frozen:true,width:125,left:183,fmt:v=>v??'—'},
   {key:'position',label:'Pos',frozen:true,width:65,left:308,fmt:v=>v??'—'},
+  {key:'role',label:'Role',frozen:false,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
   {key:'height_in',label:'Ht',frozen:false,fmt:v=>{const i=parseInt(v);return isNaN(i)?'—':Math.floor(i/12)+"'"+(i%12)+'"';}},
   {key:'games',label:'G',frozen:false,fmt:v=>v??'—'},
