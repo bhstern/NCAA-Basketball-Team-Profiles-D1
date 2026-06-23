@@ -19,6 +19,7 @@
 #tab-shotcharts .sc-seg.sc-full{ width:100%; }
 #tab-shotcharts .sc-seg button{ flex:1; background:var(--surface2); color:var(--text3); border:none; padding:8px 14px; font-size:12px; font-weight:700; letter-spacing:.03em; cursor:pointer; font-family:var(--font-body); }
 #tab-shotcharts .sc-seg button.on{ background:var(--accent); color:#06101f; }
+#tab-shotcharts #sc-subject button{ flex:0 1 auto; white-space:nowrap; }   /* content-width so "Team vs Players" doesn't bloat the others */
 
 #tab-shotcharts .sc-input{ width:100%; background:var(--surface2); color:var(--text); border:1px solid var(--border2); border-radius:6px; padding:8px 10px; font-size:13px; font-family:var(--font-body); }
 #tab-shotcharts .sc-input::placeholder{ color:var(--text4); }

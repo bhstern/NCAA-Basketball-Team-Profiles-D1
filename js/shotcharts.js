@@ -51,6 +51,14 @@ const SC_MIN_TOT_ATT = 30, SC_MIN_ZONE_ATT = 10;
 
 function scActiveCharts(){ return SC.mode==='compare' ? ['A','B'] : ['A']; }
 
+/* effective subject of one chart. Identical to SC.subject for the three normal modes;
+   in 'tvp' (Team vs Players) chart A is a team and chart B is a group. This is the only
+   thing that lets the new mode reuse every existing builder without touching them. */
+function scSubjectOf(c){
+  if(SC.subject==='tvp') return c==='A' ? 'team' : 'group';
+  return SC.subject;
+}
+
 async function scEnsureData(year, subject){
   if(subject==='team') return await loadYear(year);
   return await loadExplorerYear(year);   // player + group
@@ -281,11 +289,11 @@ async function scRender(){
   // gather rows / profiles for each active chart
   const ctx={};
   for(const c of charts){
-    const st=SC.charts[c];
-    if(SC.subject==='team'){
+    const st=SC.charts[c], subj=scSubjectOf(c);
+    if(subj==='team'){
       const arr=await scEnsureData(st.year,'team');
       ctx[c]={ row: st.team ? arr.find(r=>r.team_name===st.team) : null };
-    } else if(SC.subject==='player'){
+    } else if(subj==='player'){
       const arr=await scEnsureData(st.year,'player');
       const p=st.players[0];
       ctx[c]={ row: p ? arr.find(r=>r.player_id===p.player_id) || p : null };
@@ -299,9 +307,9 @@ async function scRender(){
   // value profiles (needed for diff mode)
   const profOf={};
   for(const c of charts){
-    const st=SC.charts[c];
-    if(SC.subject==='team')   profOf[c]= ctx[c].row ? scTeamProfile(ctx[c].row, st.side) : null;
-    else if(SC.subject==='player') profOf[c]= ctx[c].row ? scPlayerProfile(ctx[c].row) : null;
+    const st=SC.charts[c], subj=scSubjectOf(c);
+    if(subj==='team')   profOf[c]= ctx[c].row ? scTeamProfile(ctx[c].row, st.side) : null;
+    else if(subj==='player') profOf[c]= ctx[c].row ? scPlayerProfile(ctx[c].row) : null;
     else profOf[c]= ctx[c].prof;
   }
 
@@ -313,16 +321,16 @@ async function scRender(){
     : null;
 
   for(const c of charts){
-    const st=SC.charts[c];
+    const st=SC.charts[c], subj=scSubjectOf(c);
     const other = c==='A'?'B':'A';
     const otherProf = SC.mode==='compare' ? profOf[other] : null;
     let zones;
-    const hasData = (SC.subject==='group') ? !!ctx[c].prof : !!ctx[c].row;
+    const hasData = (subj==='group') ? !!ctx[c].prof : !!ctx[c].row;
     if(!hasData){
       zones=SC_EMPTY_ZONES();
-    } else if(SC.subject==='team'){
+    } else if(subj==='team'){
       zones=scZonesTeam(ctx[c].row, st.side, SC.intent, SC.basis, otherProf);
-    } else if(SC.subject==='player'){
+    } else if(subj==='player'){
       zones=scZonesPlayer(ctx[c].row, SC.intent, SC.basis, otherProf);
     } else {
       zones=scZonesGroup(ctx[c].prof, ctx[c].pop, SC.basis, SC.intent, otherProf);
@@ -343,7 +351,7 @@ async function scRender(){
 function scUpdateLegend(){
   const bar=document.getElementById('sc-legbar'), lbl=document.getElementById('sc-leglbl'), sub=document.getElementById('sc-legsub');
   if(!bar) return;
-  const groupMulti = SC.subject==='group' && scActiveCharts().some(c=>SC.charts[c].players.length>1);
+  const groupMulti = scActiveCharts().some(c=>scSubjectOf(c)==='group' && SC.charts[c].players.length>1);
   const poolNote = " Group zones pool every player's makes and attempts, so values are volume-weighted, not a flat average of the players' rates.";
   if(SC.intent==='pop'){
     bar.style.background='linear-gradient(90deg,#c0392b,#e67e22,#f1c40f,#82b74b,#27ae60)';
@@ -409,7 +417,7 @@ async function scSetupSearch(c){
       const r=ms.find(x=>String(x.player_id)===String(d.dataset.pid));
       if(!r) return;
       const st=SC.charts[c];
-      if(SC.subject==='player') st.players=[r];                       // single -> replace
+      if(scSubjectOf(c)==='player') st.players=[r];                       // single -> replace
       else if(!st.players.some(x=>String(x.player_id)===String(r.player_id))) st.players.push(r); // group -> add
       inp.value=''; dd.style.display='none';
       scRenderChips(c); scAutoTitle(c); scRefreshBasis(); scRender();
@@ -421,11 +429,11 @@ async function scSetupSearch(c){
 /* auto title when the user hasn't typed their own; clears to '' when nothing is
    selected so the chart falls back to the "Pick a team / player" placeholder */
 function scAutoTitle(c){
-  const st=SC.charts[c];
+  const st=SC.charts[c], subj=scSubjectOf(c);
   if(st.titleEdited) return;                         // user owns the title
-  if(SC.subject==='team')        st.title = st.team ? st.team+' '+yLabel(st.year) : '';
-  else if(SC.subject==='player') st.title = st.players.length ? `${st.players[0].name} ${yLabel(st.year)}` : '';
-  else                           st.title = st.players.length ? scGroupTitle(st) : '';
+  if(subj==='team')        st.title = st.team ? st.team+' '+yLabel(st.year) : '';
+  else if(subj==='player') st.title = st.players.length ? `${st.players[0].name} ${yLabel(st.year)}` : '';
+  else                     st.title = st.players.length ? scGroupTitle(st) : '';
   syncInput('sc-title'+c, st.title);
 }
 function syncInput(id,val){ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=val; }
@@ -443,7 +451,8 @@ function scSyncTitlePlaceholders(){
 function scDisplayTitle(c){
   const t=SC.charts[c].title.trim();
   if(t) return t;
-  return SC.subject==='team' ? 'Pick a team' : SC.subject==='player' ? 'Pick a player' : 'Add 2+ players';
+  const subj=scSubjectOf(c);
+  return subj==='team' ? 'Pick a team' : subj==='player' ? 'Pick a player' : 'Add 2+ players';
 }
 
 /* ============================== MOUNT / EVENTS ============================== */
@@ -493,7 +502,8 @@ function scMount(){
         <div class="sc-seg" id="sc-subject">
           <button data-v="team" class="on">Team</button>
           <button data-v="player">Player</button>
-          <button data-v="group">Group</button></div></div>
+          <button data-v="group">Group</button>
+          <button data-v="tvp">Team vs Players</button></div></div>
       <div class="sc-fld"><label>Mode</label>
         <div class="sc-seg" id="sc-mode">
           <button data-v="builder" class="on">Builder</button>
@@ -539,7 +549,7 @@ function scMount(){
     sel.onchange=async ()=>{
       const st=SC.charts[c];
       st.year=parseInt(sel.value);
-      if(SC.subject==='team'){ await loadYear(st.year); scFillTeams(c); }
+      if(scSubjectOf(c)==='team'){ await loadYear(st.year); scFillTeams(c); }
       else if(st.players.length){
         // player_id is career-stable, so carry chips into the new season; drop any
         // player who didn't play that year (name guard handles rare id collisions)
@@ -584,7 +594,21 @@ function scMount(){
     document.querySelectorAll('#sc-subject button').forEach(x=>x.classList.toggle('on',x===b));
     SC.charts.A.players=[]; SC.charts.B.players=[];
     SC.basis=scDefaultBasis();
-    if(SC.subject==='team'){ for(const c of ['A','B']){ await loadYear(SC.charts[c].year); scFillTeams(c);} }
+    if(SC.subject==='tvp'){
+      // self-contained mode: A=team, B=group, always Compare + vs Each Other
+      SC.mode='compare'; SC.intent='diff';
+      document.querySelectorAll('#sc-mode button').forEach(x=>x.classList.toggle('on',x.dataset.v==='compare'));
+      scSetIntentButtons();
+      SC.showPct=false; document.getElementById('sc-showpct').checked=false;
+      SC.charts.A.year=2026; SC.charts.B.year=2026;
+      const yA=document.getElementById('sc-yearA'), yB=document.getElementById('sc-yearB');
+      if(yA) yA.value='2026'; if(yB) yB.value='2026';
+      await loadYear(2026); scFillTeams('A');
+      const arr=YCACHE[2026]||[];
+      const seedA=(typeof cTeam==='string'&&arr.find(r=>r.team_name===cTeam)) ? cTeam
+                : (arr.find(r=>r.team_name==='Houston') ? 'Houston' : (arr[0]&&arr[0].team_name));
+      if(seedA){ SC.charts.A.team=seedA; const s=document.getElementById('sc-teamA'); if(s) s.value=seedA; }
+    } else if(SC.subject==='team'){ for(const c of ['A','B']){ await loadYear(SC.charts[c].year); scFillTeams(c);} }
     ['A','B'].forEach(c=>{ scRenderChips(c); SC.charts[c].titleEdited=false; scAutoTitle(c); });
     scApplyVisibility(); scRefreshBasis(); scRender();
   });
@@ -636,19 +660,26 @@ function scReset(){
 
 /* show/hide controls based on subject + mode + intent */
 function scApplyVisibility(){
+  const tvp=SC.subject==='tvp';
   const compare=SC.mode==='compare';
-  document.querySelectorAll('.sc-compare-only').forEach(el=>el.style.display=compare?'':'none');
+  // comparison toggle hidden in tvp (intent is forced to diff); mode toggle hidden in tvp (forced compare)
+  document.querySelectorAll('.sc-compare-only').forEach(el=>el.style.display=(compare&&!tvp)?'':'none');
+  document.getElementById('sc-mode').closest('.sc-fld').style.display=tvp?'none':'';
   // second column only in compare
   const colB=document.querySelectorAll('#sc-courts .sc-col')[1];
   if(colB) colB.style.display=compare?'':'none';
   document.getElementById('sc-expB').style.display=compare?'':'none';
   document.getElementById('sc-expPair').style.display=compare?'':'none';
 
-  const teamSubj=SC.subject==='team';
-  document.querySelectorAll('.sc-subj-team').forEach(el=>el.style.display=teamSubj?'':'none');
-  document.querySelectorAll('.sc-subj-players').forEach(el=>el.style.display=teamSubj?'none':'');
-  // search label wording
-  ['A','B'].forEach(c=>{ const l=document.getElementById('sc-searchlab'+c); if(l) l.textContent = SC.subject==='player'?'Player':'Players (add 2+)'; });
+  // subject controls are resolved per column (so tvp shows team controls on A, group on B)
+  const cols=document.querySelectorAll('#sc-courts .sc-col');
+  ['A','B'].forEach((c,i)=>{
+    const col=cols[i]; if(!col) return;
+    const team=scSubjectOf(c)==='team';
+    col.querySelectorAll('.sc-subj-team').forEach(el=>el.style.display=team?'':'none');
+    col.querySelectorAll('.sc-subj-players').forEach(el=>el.style.display=team?'none':'');
+    const l=document.getElementById('sc-searchlab'+c); if(l) l.textContent = scSubjectOf(c)==='player'?'Player':'Players (add 2+)';
+  });
 
   const pop=SC.intent==='pop';
   document.getElementById('sc-basiswrap').style.display=pop?'':'none';
