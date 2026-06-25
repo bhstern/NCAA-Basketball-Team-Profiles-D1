@@ -135,15 +135,18 @@ function scExportPNG(svgEl, filename){
   img.src=url;
 }
 
-function scExportPair(svgA, svgB, filename){
+function scExportPair(svgA, svgB, filename, stacked){
   if(!svgA||!svgB) return;
   const mk=el=>{const c=el.cloneNode(true);c.setAttribute('width',SC_VBW);c.setAttribute('height',SC_VBH);
     return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(new XMLSerializer().serializeToString(c))));};
   const ia=new Image(),ib=new Image();let n=0;const g=24,s=2;
   const done=()=>{if(++n<2)return;
-    const cv=document.createElement('canvas');cv.width=(SC_VBW*2+g)*s;cv.height=SC_VBH*s;
+    const cv=document.createElement('canvas');
+    if(stacked){ cv.width=SC_VBW*s; cv.height=(SC_VBH*2+g)*s; }
+    else { cv.width=(SC_VBW*2+g)*s; cv.height=SC_VBH*s; }
     const ctx=cv.getContext('2d');ctx.fillStyle='#0f1729';ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.drawImage(ia,0,0,SC_VBW*s,SC_VBH*s);ctx.drawImage(ib,(SC_VBW+g)*s,0,SC_VBW*s,SC_VBH*s);
+    if(stacked){ ctx.drawImage(ia,0,0,SC_VBW*s,SC_VBH*s); ctx.drawImage(ib,0,(SC_VBH+g)*s,SC_VBW*s,SC_VBH*s); }
+    else { ctx.drawImage(ia,0,0,SC_VBW*s,SC_VBH*s); ctx.drawImage(ib,(SC_VBW+g)*s,0,SC_VBW*s,SC_VBH*s); }
     const dl=document.createElement('a');dl.download=filename;dl.href=cv.toDataURL('image/png');dl.click();};
   ia.onload=done;ib.onload=done;ia.src=mk(svgA);ib.src=mk(svgB);
 }

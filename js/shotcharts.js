@@ -27,6 +27,7 @@ const SC = {
   basis:'_pct',       // current shared basis key/suffix
   showPct:false,
   showLabels:true,
+  stack:false,        // compare charts stacked vertically (better for phone/outreach), else side by side
   _seededTeam:null,   // team chart A was last auto-seeded to (so context changes can follow it)
   charts:{
     A:{year:2026, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false},
@@ -521,7 +522,8 @@ function scMount(){
       <div class="sc-fld"><label>Display</label>
         <div class="sc-togrow">
           <label class="sc-toggle"><input type="checkbox" id="sc-showpct"/> Percentiles</label>
-          <label class="sc-toggle"><input type="checkbox" id="sc-showlbl" checked/> Labels</label></div></div>
+          <label class="sc-toggle"><input type="checkbox" id="sc-showlbl" checked/> Labels</label>
+          <label class="sc-toggle" id="sc-stackwrap" title="Stack the two charts vertically — fits both on a phone screen for outreach"><input type="checkbox" id="sc-stack"/> Stack</label></div></div>
       <div class="sc-fld sc-reset-fld"><label>&nbsp;</label>
         <button class="sc-btn ghost" id="sc-reset">Reset</button></div>
     </div>
@@ -634,12 +636,13 @@ function scMount(){
   // basis / toggles
   document.getElementById('sc-basis').onchange=e=>{ SC.basis=e.target.value; scRender(); };
   document.getElementById('sc-showpct').onchange=e=>{ SC.showPct=e.target.checked; scRender(); };
+  document.getElementById('sc-stack').onchange=e=>{ SC.stack=e.target.checked; scApplyVisibility(); };
   document.getElementById('sc-showlbl').onchange=e=>{ SC.showLabels=e.target.checked; scRender(); };
   document.getElementById('sc-reset').onclick=scReset;
   // export
   document.getElementById('sc-expA').onclick=()=>scExportPNG(document.querySelector('#sc-courtA svg'), scSlugName(SC.charts.A.title.trim(),'chartA'));
   document.getElementById('sc-expB').onclick=()=>scExportPNG(document.querySelector('#sc-courtB svg'), scSlugName(SC.charts.B.title.trim(),'chartB'));
-  document.getElementById('sc-expPair').onclick=()=>scExportPair(document.querySelector('#sc-courtA svg'), document.querySelector('#sc-courtB svg'), 'shot-chart-compare.png');
+  document.getElementById('sc-expPair').onclick=()=>scExportPair(document.querySelector('#sc-courtA svg'), document.querySelector('#sc-courtB svg'), SC.stack?'shot-chart-stacked.png':'shot-chart-compare.png', SC.stack);
 
   SC.mounted=true;
 }
@@ -651,7 +654,7 @@ function scSetIntentButtons(){
 /* full reset to the opening defaults (Team / Builder / vs Population, Houston→Duke seed) */
 function scReset(){
   SC.subject='team'; SC.mode='builder'; SC.intent='pop'; SC.colorMetric='fg';
-  SC.showPct=false; SC.showLabels=true; SC.basis='_pct';
+  SC.showPct=false; SC.showLabels=true; SC.basis='_pct'; SC.stack=false;
   ['A','B'].forEach(c=>Object.assign(SC.charts[c],
     {year:2026, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false, _seeded:false}));
   scMount();          // rebuild DOM + rebind (segmented defaults match the reset state)
@@ -684,6 +687,11 @@ function scApplyVisibility(){
   const pop=SC.intent==='pop';
   document.getElementById('sc-basiswrap').style.display=pop?'':'none';
   document.getElementById('sc-colorwrap').style.display='';   // color metric applies in both modes
+
+  // stack toggle: available whenever two charts are shown (regular compare AND Team vs Players)
+  document.getElementById('sc-stackwrap').style.display=compare?'':'none';
+  const courts=document.getElementById('sc-courts');
+  if(courts) courts.classList.toggle('sc-stacked', compare && SC.stack);
 }
 
 /* entry point — called by switchTab('shotcharts') */
