@@ -59,6 +59,8 @@ function setAboutSection(section,btn){
 loadIndex().then(async ()=>{
   // Check URL params for team deep link
   const params=new URLSearchParams(window.location.search);
+  const pidParam=params.get('pid');
+  if(pidParam){ openPlayerProfile(pidParam); return; }   // shared player-profile deep link
   const teamParam=params.get('team');
   const yearParam=params.get('year');
   if(teamParam){

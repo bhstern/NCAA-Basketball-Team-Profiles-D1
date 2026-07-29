@@ -206,13 +206,6 @@ PROFILE_DROP_COLS = [
     'total_reb',         # same
     'total_ast',         # same
     'ast_to_ratio',      # exact duplicate of ast_tov_ratio
-    # Sub deltas — not meaningful for any view
-    'ortg_delta_sub', 'drtg_delta_sub', 'ts_delta_sub',
-    'efg_delta_sub', 'rim_rate_delta_sub', 'three_rate_delta_sub',
-    # Redundant delta variants
-    'efg_delta_team', 'efg_delta_conf',
-    'rim_rate_delta_team', 'rim_rate_delta_conf',
-    'three_rate_delta_team', 'three_rate_delta_conf',
     # Team context averages — not needed in player JSON
     'conf_team_ts', 'conf_team_efg', 'conf_team_rim_rate', 'conf_team_three_rate',
     'conf_adj_o', 'conf_adj_d',
@@ -228,8 +221,9 @@ def get_profile_cols(df_cols):
     for c in df_cols:
         if c in drop_set:
             continue
-        # Drop all sub-derived columns (sub z/pct/rank and pos_sub z/pct/rank)
-        if any(c.endswith(s) for s in ['_sub_z', '_sub_pct', '_sub_rank',
+        # keep the national percentile/rank/z of the delta-vs-subgroup stats (Context tab needs them)
+        keep_delta_sub = c.endswith(('_delta_sub_pct', '_delta_sub_rank', '_delta_sub_z'))
+        if not keep_delta_sub and any(c.endswith(s) for s in ['_sub_z', '_sub_pct', '_sub_rank',
                                         '_pos_sub_z', '_pos_sub_pct', '_pos_sub_rank']):
             continue
         cols.append(c)
@@ -401,7 +395,7 @@ for _, row in df_collide.iterrows():
 
 print(f"  {player_count:,} career files written")
 print(f"  {collision_count} collision season files written")
-# Note: Part 3 writes via json.dump from clean_for_json output — NaN already scrubbed
+scrub_nan_dir(PROFILES_DIR)
 
 # ============================================================
 # PART 4 — LAYER 3: POSITIONAL AVERAGES

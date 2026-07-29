@@ -704,6 +704,22 @@
 
 <div id="tab-shotcharts" class="tab-content"></div>
 
+<div id="tab-player" class="tab-content">
+  <div id="player-empty" class="empty-state" style="padding:40px 28px">Select a player from a roster or the Player Explorer.</div>
+  <div id="player-loading" class="loading-state" style="display:none;padding:40px 28px">Loading...</div>
+  <div id="player-content" style="display:none">
+    <div id="player-identity" style="padding:22px 28px 6px"></div>
+    <div id="player-cat-nav" style="display:flex;gap:2px;flex-wrap:wrap;padding:6px 28px 0;border-bottom:1px solid var(--border);background:var(--surface)">
+      <button class="hist-cat-btn active" onclick="switchPlayerStatTab('overview',this)">Overview</button>
+      <button class="hist-cat-btn" onclick="switchPlayerStatTab('advanced',this)">Advanced</button>
+      <button class="hist-cat-btn" onclick="switchPlayerStatTab('shooting',this)">Shooting</button>
+      <button class="hist-cat-btn" onclick="switchPlayerStatTab('per40',this)">Per 40</button>
+      <button class="hist-cat-btn" onclick="switchPlayerStatTab('context',this)">Context</button>
+    </div>
+    <div id="player-career" style="padding:16px 28px 28px"></div>
+  </div>
+</div>
+
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -718,6 +734,7 @@
 <script src="js/h2h.js"></script>
 <script src="js/shotcourt.js"></script>
 <script src="js/shotcharts.js"></script>
+<script src="js/profile.js"></script>
 <script src="js/nav.js"></script>
 
 </body>

@@ -47,9 +47,9 @@ const EXPLORER_TIPS = {
   total_fg_pct:'Overall FG%.',two_fg_pct:'2-point FG%.',
   rim_rate:'Rim attempt rate — dunks + close 2s as share of FGA.',
   rim_fg_pct:'FG% at the rim — dunks + close 2s combined.',
-  close_two_rate:'Close 2PT attempt rate as share of FGA.',
-  close_two_fg_pct:'FG% on close 2PT attempts.',
-  dunk_rate:'Dunk attempt rate as share of FGA.',dunk_fg_pct:'FG% on dunks.',
+  close_two_rate:'Close 2PT attempt rate as share of FGA. Part of Rim (Rim = close 2s + dunks).',
+  close_two_fg_pct:'FG% on close 2PT attempts. Part of Rim attempts.',
+  dunk_rate:'Dunk attempt rate as share of FGA. Part of Rim (Rim = close 2s + dunks).',dunk_fg_pct:'FG% on dunks. Part of Rim attempts.',
   midrange_rate:'Midrange attempt rate as share of FGA.',midrange_fg_pct:'FG% on midrange shots.',
   three_rate:'3PT attempt rate as share of FGA.',three_fg_pct:'3PT FG%.',
   three_p_per_100:'3PT attempts per 100 possessions.',
@@ -706,7 +706,8 @@ function renderExplorerTable(append=false) {
 
     EXPLORER_FROZEN.forEach(col=>{
       const val=p[col.key];
-      const disp=col.fmt?col.fmt(val):(val??'—');
+      let disp=col.fmt?col.fmt(val):(val??'—');
+      if(col.key==='name' && p.player_id) disp=`<span class="pf-link" onclick="openPlayerProfile('${p.player_id}')">${disp}</span>`;
       const isLast=col.key==='position';
       if(col.frozen) {
         html+=`<td class="roster-frozen-td explorer-id-cell${isLast?' explorer-last-frozen':''}" style="position:sticky;left:${col.left}px;z-index:2;min-width:${col.width}px;max-width:${col.width}px;overflow:hidden;text-overflow:ellipsis;background:var(--surface);">${disp}</td>`;
