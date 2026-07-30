@@ -709,14 +709,23 @@
   <div id="player-loading" class="loading-state" style="display:none;padding:40px 28px">Loading...</div>
   <div id="player-content" style="display:none">
     <div id="player-identity" style="padding:22px 28px 6px"></div>
-    <div id="player-cat-nav" style="display:flex;gap:2px;flex-wrap:wrap;padding:6px 28px 0;border-bottom:1px solid var(--border);background:var(--surface)">
-      <button class="hist-cat-btn active" onclick="switchPlayerStatTab('overview',this)">Overview</button>
-      <button class="hist-cat-btn" onclick="switchPlayerStatTab('advanced',this)">Advanced</button>
-      <button class="hist-cat-btn" onclick="switchPlayerStatTab('shooting',this)">Shooting</button>
-      <button class="hist-cat-btn" onclick="switchPlayerStatTab('per40',this)">Per 40</button>
-      <button class="hist-cat-btn" onclick="switchPlayerStatTab('context',this)">Context</button>
+    <div id="player-view-nav" style="display:flex;gap:8px;padding:10px 28px 0">
+      <button class="pf-view-btn active" onclick="switchPlayerView('career',this)">Career Stats</button>
+      <button class="pf-view-btn" onclick="switchPlayerView('shots',this)">Shot Charts</button>
     </div>
-    <div id="player-career" style="padding:16px 28px 28px"></div>
+    <div id="player-career-view">
+      <div id="player-cat-nav" style="display:flex;gap:2px;flex-wrap:wrap;padding:6px 28px 0;border-bottom:1px solid var(--border);background:var(--surface)">
+        <button class="hist-cat-btn active" onclick="switchPlayerStatTab('overview',this)">Overview</button>
+        <button class="hist-cat-btn" onclick="switchPlayerStatTab('advanced',this)">Advanced</button>
+        <button class="hist-cat-btn" onclick="switchPlayerStatTab('shooting',this)">Shooting</button>
+        <button class="hist-cat-btn" onclick="switchPlayerStatTab('per40',this)">Per 40</button>
+        <button class="hist-cat-btn" onclick="switchPlayerStatTab('context',this)">Context</button>
+      </div>
+      <div id="player-career" style="padding:16px 28px 28px"></div>
+    </div>
+    <div id="player-shots-view" style="display:none">
+      <div id="player-shots" style="padding:16px 28px 28px"></div>
+    </div>
   </div>
 </div>
 

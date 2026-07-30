@@ -840,3 +840,32 @@ select:focus{border-color:var(--accent);}
 .pf-table td.roster-stat-td{ border-top:1px solid var(--border); }
 .pf-link{ color:var(--accent); cursor:pointer; text-decoration:none; }
 .pf-link:hover{ text-decoration:underline; }
+.pf-ctx-toggle{ display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.pf-ctx-label{ color:var(--text4); font-size:11px; text-transform:uppercase; letter-spacing:.04em; margin-right:2px; }
+.pf-ctx-btn{ background:var(--surface2); color:var(--text3); border:1px solid var(--border); border-radius:6px;
+  padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+.pf-ctx-btn:hover{ color:var(--text1); }
+.pf-ctx-btn.active{ background:var(--accent); color:#06101f; border-color:var(--accent); }
+
+/* player profile — top-level sub-view nav */
+.pf-view-btn{ background:transparent; color:var(--text3); border:none; border-bottom:2px solid transparent;
+  padding:8px 4px; font-size:14px; font-weight:700; cursor:pointer; }
+.pf-view-btn:hover{ color:var(--text1); }
+.pf-view-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+
+/* shot charts sub-view */
+.pf-shot-controls{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.pf-shot-lbl{ color:var(--text4); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+.pf-shot-select{ background:var(--surface2); color:var(--text1); border:1px solid var(--border);
+  border-radius:6px; padding:5px 10px; font-size:13px; }
+.pf-shot-check{ color:var(--text2); font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer; margin-left:6px; }
+.pf-shot-flag{ background:rgba(230,180,60,0.12); border:1px solid rgba(230,180,60,0.35); color:#e6c169;
+  border-radius:8px; padding:8px 12px; font-size:13px; margin-bottom:14px; }
+.pf-shot-season{ margin-bottom:26px; }
+.pf-shot-header{ color:var(--text1); font-size:15px; font-weight:700; margin-bottom:8px; }
+.pf-shot-courts{ display:flex; gap:16px; flex-wrap:wrap; }
+.pf-shot-court{ flex:1 1 340px; max-width:400px; }
+.pf-shot-court-lbl{ color:var(--text3); font-size:12px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; margin-bottom:4px; text-align:center; }
+.pf-shot-vol{ color:var(--text3); font-size:13px; margin-top:8px; font-family:var(--font-mono,monospace); }
+.pf-shot-compact .pf-shot-court{ flex:1 1 300px; max-width:330px; }   /* slightly smaller when comparing two seasons */

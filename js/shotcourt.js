@@ -53,7 +53,7 @@ const SC_PATH_COURT=`M 0 ${SC_C.TOP_Y} L ${SC_C.W} ${SC_C.TOP_Y} L ${SC_C.W} ${S
 const SC_PATH_THREE_LINE=`M ${SC_C.CORNER_X} ${SC_C.BASE_Y} L ${SC_C.CORNER_X} ${SC_C.CORNER_BREAK_Y} A ${SC_C.R3} ${SC_C.R3} 0 1 1 ${SC_C.W-SC_C.CORNER_X} ${SC_C.CORNER_BREAK_Y} L ${SC_C.W-SC_C.CORNER_X} ${SC_C.BASE_Y} Z`;
 const scPathRim=r=>`M ${SC_C.BASKET_X-r} ${SC_C.BASKET_Y} A ${r} ${r} 0 0 1 ${SC_C.BASKET_X+r} ${SC_C.BASKET_Y} L ${SC_C.BASKET_X+r} ${SC_C.BASE_Y} L ${SC_C.BASKET_X-r} ${SC_C.BASE_Y} Z`;
 const scStrokeRim=r=>`M ${SC_C.BASKET_X-r} ${SC_C.BASE_Y} L ${SC_C.BASKET_X-r} ${SC_C.BASKET_Y} A ${r} ${r} 0 0 1 ${SC_C.BASKET_X+r} ${SC_C.BASKET_Y} L ${SC_C.BASKET_X+r} ${SC_C.BASE_Y}`;
-const SC_ANCHOR={three:{x:405,y:52,name:'3PT'},mid:{x:130,y:185,name:'Midrange'},rim:{x:250,y:255,name:'Rim'}};
+const SC_ANCHOR={three:{x:405,y:52,name:'3PT'},mid:{x:130,y:172,name:'Midrange'},rim:{x:250,y:255,name:'Rim'}};
 const SC_TITLE_MAXW=470, SC_TITLE_ADV=0.62;   // usable title width from x=14; conservative per-char advance (em)
 /* font size that keeps `title` on one line within the court; floored for readability */
 function scTitleFontSize(title){
@@ -81,12 +81,28 @@ function buildCourtSVG(o){
     const a=SC_ANCHOR[z],zd=o.zones[z];
     const dm=o.diffMetric;                                   // 'fg' | 'rate' | undefined (diff mode only)
     const dStr=d=> (d==null||isNaN(d))?'':` (${d>0?'+':''}${Math.round(d)})`;
-    const rTxt=`Rate: ${scPcf(zd.r)}`+(o.showPct?` (${scOrdPct(zd.rp)})`:'')+(dm==='rate'?dStr(zd.dRate):'');
-    const fTxt=`FG: ${scPcf(zd.fg)}`+(o.showPct?` (${scOrdPct(zd.fgp)})`:'')+(dm==='fg'?dStr(zd.dFg):'');
-    return `<g text-anchor="middle" font-family="${SC_MONO}" fill="${SC_LINE}" paint-order="stroke" stroke="rgba(8,13,26,0.72)" stroke-width="4" stroke-linejoin="round">
-      <text x="${a.x}" y="${a.y}" font-size="18" font-weight="700">${a.name}</text>
-      <text x="${a.x}" y="${a.y+22}" font-size="15">${rTxt}</text>
-      <text x="${a.x}" y="${a.y+42}" font-size="15">${fTxt}</text></g>`;};
+    const ms=o.metricsShown;                                 // 'rate' | 'fg' | undefined (both)
+    const stack=o.stackPct;                                  // profile: split "value (pct)" onto two lines
+    const rBase=`Rate: ${scPcf(zd.r)}`, fBase=`FG: ${scPcf(zd.fg)}`;
+    const rPct=o.showPct?`(${scOrdPct(zd.rp)})`:'', fPct=o.showPct?`(${scOrdPct(zd.fgp)})`:'';
+    const rTxt=rBase+(rPct?` ${rPct}`:'')+(dm==='rate'?dStr(zd.dRate):'');
+    const fTxt=fBase+(fPct?` ${fPct}`:'')+(dm==='fg'?dStr(zd.dFg):'');
+    const showR = ms!=='fg', showF = ms!=='rate';
+    const lines=[];
+    if(stack){                                               // value and percentile on separate lines
+      if(showR){ lines.push(rBase+(dm==='rate'?dStr(zd.dRate):'')); if(rPct) lines.push(rPct); }
+      if(showF){ lines.push(fBase+(dm==='fg'?dStr(zd.dFg):'')); if(fPct) lines.push(fPct); }
+    } else {
+      if(showR) lines.push(rTxt);
+      if(showF) lines.push(fTxt);
+    }
+    if(zd.vol) lines.push(zd.vol);                           // volume on its own line
+    const zf=o.zoneFont||15, nf=Math.round(zf*1.2);
+    let g=`<g text-anchor="middle" font-family="${SC_MONO}" fill="${SC_LINE}" paint-order="stroke" stroke="rgba(8,13,26,0.72)" stroke-width="4" stroke-linejoin="round">
+      <text x="${a.x}" y="${a.y}" font-size="${nf}" font-weight="700">${a.name}</text>`;
+    lines.forEach((t,i)=>{ const y=a.y+nf+4+i*(zf+4);
+      g+=`<text x="${a.x}" y="${y}" font-size="${(i===lines.length-1&&zd.vol)?zf-1:zf}">${t}</text>`; });
+    return g+'</g>';};
   const tb=()=>{const t=o.title,s=o.subtitle;if(!t&&!s)return '';
     // shrink the title font so multi-name titles don't run off the court; clamp as a hard backstop.
     // o.titleSize lets the controller force one shared size across both compare charts.

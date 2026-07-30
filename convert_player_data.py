@@ -215,16 +215,15 @@ PROFILE_DROP_COLS = [
 ]
 
 def get_profile_cols(df_cols):
-    """Build full profile column list — everything minus dropped cols and sub derived."""
     drop_set = set(PROFILE_DROP_COLS)
     cols = []
     for c in df_cols:
         if c in drop_set:
             continue
-        # keep the national percentile/rank/z of the delta-vs-subgroup stats (Context tab needs them)
-        keep_delta_sub = c.endswith(('_delta_sub_pct', '_delta_sub_rank', '_delta_sub_z'))
-        if not keep_delta_sub and any(c.endswith(s) for s in ['_sub_z', '_sub_pct', '_sub_rank',
-                                        '_pos_sub_z', '_pos_sub_pct', '_pos_sub_rank']):
+        keep_delta_sub = c.endswith(('_delta_sub_pct','_delta_sub_rank','_delta_sub_z'))
+        keep_sub_pct  = c.endswith(('_sub_pct','_pos_sub_pct'))   # power/mid percentile contexts
+        if not keep_delta_sub and not keep_sub_pct and any(c.endswith(s) for s in
+                ['_sub_z','_sub_pct','_sub_rank','_pos_sub_z','_pos_sub_pct','_pos_sub_rank']):
             continue
         cols.append(c)
     return cols
