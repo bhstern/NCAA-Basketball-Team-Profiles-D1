@@ -713,9 +713,9 @@
       <div id="player-trending-header" class="pf-th"></div>
     </div>
     <div id="player-view-nav" style="display:flex;gap:8px;padding:10px 28px 0">
-      <button class="pf-view-btn active" onclick="switchPlayerView('career',this)">Career Stats</button>
-      <button class="pf-view-btn" id="player-trends-btn" onclick="switchPlayerView('trends',this)" style="display:none">Trends</button>
-      <button class="pf-view-btn" onclick="switchPlayerView('shots',this)">Shot Charts</button>
+      <button class="pf-view-btn active" data-view="career" onclick="switchPlayerView('career',this)">Career Stats</button>
+      <button class="pf-view-btn" id="player-trends-btn" data-view="trends" onclick="switchPlayerView('trends',this)" style="display:none">Trends</button>
+      <button class="pf-view-btn" data-view="shots" onclick="switchPlayerView('shots',this)">Shot Charts</button>
     </div>
     <div id="player-trends-view" style="display:none">
       <div id="player-trends" style="padding:16px 28px 28px"></div>

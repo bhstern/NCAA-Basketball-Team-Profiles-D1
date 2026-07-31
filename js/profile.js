@@ -8,7 +8,8 @@
 let cPlayer = null;              // loaded career file {player_id, name, seasons:[...]}
 let cPlayerStatTab = 'overview'; // active career-table stat group
 let cPlayerPctContext = 'national'; // percentile context for the cells (profile files carry 4)
-let cPlayerView = 'career';         // top-level sub-view: 'career' | 'shots'
+let cPlayerView = 'career';         // top-level sub-view: 'career' | 'shots' | 'trends'
+let cPlayerInitView = 'career';     // view to land on after load (for ?view= deep links)
 let cPlayerShotSeason = null;       // selected season (year) for shot charts; null → most recent
 let cPlayerShotBasis = 'national';  // shot-chart percentile basis: 'national' | 'pos'
 let cPlayerShotCompare = false;     // stack the previous season below
@@ -32,8 +33,9 @@ function pfLatest(seasons){
 }
 
 // ── entry point: roster/explorer row click, or a ?pid= deep link ──
-async function openPlayerProfile(playerId){
+async function openPlayerProfile(playerId, initView){
   if(!playerId) return;
+  cPlayerInitView = (initView==='trends'||initView==='shots') ? initView : 'career';
   cTab='player';
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
@@ -82,23 +84,31 @@ function renderPlayerProfile(){
   document.getElementById('player-shots-view').style.display='none';
   const trv=document.getElementById('player-trends-view'); if(trv) trv.style.display='none';
   renderPlayerCareer();
+  // land on a deep-linked view if requested (and available)
+  if(cPlayerInitView==='shots') switchPlayerView('shots');
+  else if(cPlayerInitView==='trends' && tb && tb.style.display!=='none') switchPlayerView('trends');
 }
 
-// top-level sub-view switch (Career Stats / Shot Charts / Trends)
+// top-level sub-view switch (Career Stats / Trends / Shot Charts)
 function switchPlayerView(view, btn){
   cPlayerView=view;
   document.querySelectorAll('#player-view-nav .pf-view-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  const activeBtn = btn || document.querySelector(`#player-view-nav .pf-view-btn[data-view="${view}"]`);
+  if(activeBtn) activeBtn.classList.add('active');
   document.getElementById('player-career-view').style.display = view==='career'?'':'none';
   document.getElementById('player-shots-view').style.display  = view==='shots'?'':'none';
   const trv=document.getElementById('player-trends-view'); if(trv) trv.style.display = view==='trends'?'':'none';
   if(view==='shots') renderPlayerShots();
+  // keep the URL in sync so the address bar is shareable (?pid=...&view=...)
+  if(cPlayer && cPlayer.player_id){
+    history.replaceState(null,'','?tab=player&pid='+encodeURIComponent(cPlayer.player_id)+'&view='+view);
+  }
 }
 
 // ── identity card (from the most recent season) ──
 function pfIdentityCard(){
   const s = pfLatest(cPlayer.seasons);
-  const bits1 = [s.position, s.role, s.class, pfHeightStr(s.height_in),
+  const bits1 = [s.position, s.role, pfHeightStr(s.height_in), s.class,
                  (s.age!=null && !isNaN(s.age) ? parseFloat(s.age).toFixed(1)+' yrs' : null)].filter(Boolean);
   const teamLine = [s.team, s.conference?`(${s.conference})`:null].filter(Boolean).join(' ');
   // recruit_rank_clean is a 0–100 grade (100 = best), not a rank.
@@ -448,6 +458,7 @@ function pfComputeTrending(seasonsDesc){
   const cur=seasonsDesc[0], prior=seasonsDesc[1];
   const c=pfMinUsgCtx(cur, prior);
   const out={singleSeason:!prior, improving:[], declining:[],
+             curYear: cur.year, priorYear: prior?prior.year:null,
              context:{minutes:c.minutes, usage:c.usage,
                       transfer: prior?pfTransferCtx(cur,prior):null,
                       position: prior?pfPositionCtx(cur,prior):null,
@@ -560,7 +571,9 @@ function pfTrendsTabHTML(t){
   if(t.context.transfer){ const [tl1,tl2]=pfTransferCtxLines(t.context.transfer); items.push(pfCtxItem('Transfer', tl1, tl2)); }
 
   let h='<div class="pf-trends">';
-  h+='<div class="pf-ctx-box"><div class="pf-ctx-h">Player Context</div><div class="pf-ctx-grid">'+items.join('')+'</div></div>';
+  const yrs = (t.priorYear && t.curYear && typeof yLabel==='function')
+      ? ` · ${yLabel(t.priorYear)} → ${yLabel(t.curYear)}` : '';
+  h+='<div class="pf-ctx-box"><div class="pf-ctx-h">Player Context'+yrs+'</div><div class="pf-ctx-grid">'+items.join('')+'</div></div>';
   h+='<div class="pf-trend-cols">';
   h+='<div class="pf-trend-col"><div class="pf-trend-h pf-up">Improving</div>'+
      (t.improving.length?t.improving.map(pfTrendRow).join(''):'<div class="pf-trend-empty">No notable improvements</div>')+'</div>';
