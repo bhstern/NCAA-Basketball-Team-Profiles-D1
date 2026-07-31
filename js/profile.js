@@ -70,20 +70,28 @@ async function openPlayerProfile(playerId){
 function renderPlayerProfile(){
   if(!cPlayer) return;
   document.getElementById('player-identity').innerHTML = pfIdentityCard();
+  const seasonsDesc=cPlayer.seasons.slice().sort((a,b)=>(b.year||0)-(a.year||0));
+  const trend=pfComputeTrending(seasonsDesc);
+  const th=document.getElementById('player-trending-header'); if(th) th.innerHTML=pfTrendingHeaderHTML(trend);
+  const tv=document.getElementById('player-trends'); if(tv) tv.innerHTML=pfTrendsTabHTML(trend);
+  const tb=document.getElementById('player-trends-btn'); if(tb) tb.style.display = trend.singleSeason ? 'none' : '';  // tab only for 2+ seasons
   // reset to Career Stats view on load
-  document.querySelectorAll('#player-view-nav .pf-view-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
-  const cv=document.getElementById('player-career-view'), sv=document.getElementById('player-shots-view');
-  if(cv) cv.style.display=''; if(sv) sv.style.display='none';
+  document.querySelectorAll('#player-view-nav .pf-view-btn').forEach(b=>b.classList.remove('active'));
+  const c0=document.querySelector('#player-view-nav .pf-view-btn'); if(c0) c0.classList.add('active');
+  document.getElementById('player-career-view').style.display='';
+  document.getElementById('player-shots-view').style.display='none';
+  const trv=document.getElementById('player-trends-view'); if(trv) trv.style.display='none';
   renderPlayerCareer();
 }
 
-// top-level sub-view switch (Career Stats / Shot Charts)
+// top-level sub-view switch (Career Stats / Shot Charts / Trends)
 function switchPlayerView(view, btn){
   cPlayerView=view;
   document.querySelectorAll('#player-view-nav .pf-view-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   document.getElementById('player-career-view').style.display = view==='career'?'':'none';
   document.getElementById('player-shots-view').style.display  = view==='shots'?'':'none';
+  const trv=document.getElementById('player-trends-view'); if(trv) trv.style.display = view==='trends'?'':'none';
   if(view==='shots') renderPlayerShots();
 }
 
@@ -342,4 +350,223 @@ function renderPlayerShots(){
   html+=pfSeasonCharts(selected, sfx, cPlayerShotCompare);
   if(cPlayerShotCompare && canCompare) html+=pfSeasonCharts(prior, sfx, cPlayerShotCompare);
   wrap.innerHTML=html;
+}
+
+// ── TRENDING PANEL ────────────────────────────────────────────────────────────
+// Auto-surfaces a player's biggest year-over-year improvements/declines + context.
+// Compares the TWO most recent seasons only. Percentiles are direction-normalized
+// upstream (higher = better for every stat, incl. TOV%/fouls), so a positive
+// percentile delta = improvement uniformly. One representative per family (anti-proxy).
+
+const PF_FAMILIES = [
+  {name:'Scoring efficiency',  stat:'ts',              label:'Scoring Efficiency (TS%)',   floor:'total_fga',   chip:true,  vfmt:'pct100'},
+  {name:'Scoring volume',      stat:'pts_per_40',      label:'Scoring Volume (Pts/40)',         floor:null,          chip:true,  vfmt:'num1'},
+  {name:'Playmaking',          stat:'ast_pct',         label:'Playmaking (AST%)',   floor:null,          chip:true,  vfmt:'pct100'},
+  {name:'Ball security',       stat:'tov_pct',         label:'Ball Security (TOV%)',floor:null,          chip:true,  vfmt:'pct100'},
+  {name:'Rim pressure',        stat:'rim_att_pg',      label:'Rim Pressure (rim att/g)',        floor:null,          chip:true,  vfmt:'num1'},
+  {name:'Rim finishing',       stat:'rim_fg_pct',      label:'Rim Finishing (rim FG%)',       floor:'rim_att',     chip:true,  vfmt:'pctdec'},
+  {name:'Midrange',            stat:'midrange_fg_pct', label:'Midrange Finishing (mid FG%)',      floor:'midrange_att',chip:true,  vfmt:'pctdec'},
+  {name:'3PT volume',          stat:'three_att_pg',    label:'3PT Volume (3PA/g)',          floor:null,          chip:true,  vfmt:'num1'},
+  {name:'3PT efficiency',      stat:'three_fg_pct',    label:'3PT Efficiency (3P%)',       floor:'three_pa',    chip:true,  vfmt:'pctdec'},
+  {name:'FT generation',       stat:'ft_rate',         label:'FT Generation (FT rate)',       floor:null,          chip:false, vfmt:'pctdec'},
+  {name:'FT efficiency',       stat:'ft_pct',          label:'FT Efficiency (FT%)',        floor:'fta',         chip:false, vfmt:'pctdec'},
+  {name:'Off rebounding',      stat:'or_pct',          label:'Offensive Rebounding (OR%)',       floor:null,          chip:true,  vfmt:'pct100'},
+  {name:'Def rebounding',      stat:'dr_pct',          label:'Defensive Rebounding (DR%)',       floor:null,          chip:true,  vfmt:'pct100'},
+  {name:'Rim protection',      stat:'blk_pct',         label:'Rim Protection (BLK%)',  floor:null,          chip:true,  vfmt:'pct100'},
+  {name:'Steal rate',          stat:'stl_pct',         label:'Steal Rate (STL%)',   floor:null,          chip:true,  vfmt:'pct100'},
+  {name:'Overall defense',     stat:'dbpm',            label:'Overall Defense (DBPM)',    floor:null,          chip:true,  vfmt:'signed'},
+  {name:'Fouls',               stat:'fc_40',           label:'Fouls (FC/40)',       floor:null,          chip:false, vfmt:'num1'},
+];
+function pfFamVal(vfmt, v){
+  if(v==null||isNaN(v)) return '—';
+  if(vfmt==='pct100') return v.toFixed(1)+'%';
+  if(vfmt==='pctdec') return (v*100).toFixed(1)+'%';
+  if(vfmt==='num1')   return v.toFixed(1);
+  if(vfmt==='signed') return (v>=0?'+':'')+v.toFixed(1);
+  return String(v);
+}
+const PF_TREND_MIN_MOVE=0.10;   // >=10 percentile points to count as a move
+const PF_TREND_FLOOR=40;        // efficiency families need >=40 attempts in current season
+const PF_STILL_STRONG=0.75;     // declines ending >=75th pct → "still strong", sorted last
+const PF_STILL_WEAK=0.25;       // improvements ending <=25th pct → "still below average", sorted last
+const PF_TREND_CAP=5;
+
+function pfTierShort(t){ return t ? String(t).replace(/\s*\(.*\)$/,'').trim() : '—'; }
+function pfUsageTierLabel(t){ const s=pfTierShort(t); return /usage/i.test(s) ? s : s+' Usage'; }
+function pfOrd(n){ if(n==null||isNaN(n)) return n;
+  const v=n%100,d=n%10; return n+((v>=11&&v<=13)?'th':(d===1?'st':d===2?'nd':d===3?'rd':'th')); }
+function pfLevelWord(pm){ return /power/i.test(pm||'') ? 'power' : 'mid-major'; }
+
+function pfMinUsgCtx(cur, prior){
+  const mpct=cur.minutes_per_game_pct, upct=cur.usage_pct_pct;
+  const m={tier:pfTierShort(cur.mpg_tier), val:cur.minutes_per_game!=null?Math.round(cur.minutes_per_game):null, changed:false,
+           pct: mpct!=null?Math.round(mpct*100):null};
+  const u={tier:pfTierShort(cur.usage_tier), val:cur.usage_pct!=null?Math.round(cur.usage_pct):null, changed:false,
+           pct: upct!=null?Math.round(upct*100):null};
+  if(prior && cur.minutes_per_game!=null && prior.minutes_per_game!=null){
+    const d=cur.minutes_per_game-prior.minutes_per_game;
+    m.absDelta=Math.abs(d); m.from=Math.round(prior.minutes_per_game); m.up=d>0;
+    m.fromPct = prior.minutes_per_game_pct!=null?Math.round(prior.minutes_per_game_pct*100):null;
+    if(m.absDelta>=5) m.changed=true;                     // header clause fires only at >=5
+  }
+  if(prior && cur.usage_pct!=null && prior.usage_pct!=null){
+    const d=cur.usage_pct-prior.usage_pct;
+    u.absDelta=Math.abs(d); u.from=Math.round(prior.usage_pct); u.up=d>0;
+    u.fromPct = prior.usage_pct_pct!=null?Math.round(prior.usage_pct_pct*100):null;
+    if(u.absDelta>=4) u.changed=true;                     // header clause fires only at >=4
+  }
+  return {minutes:m, usage:u};
+}
+function pfTransferCtx(cur, prior){
+  if(!prior || cur.team===prior.team) return null;
+  return {from:prior.team, to:cur.team,
+          fromLevel:prior.power_mid, toLevel:cur.power_mid,
+          fromConf:prior.conference, toConf:cur.conference};
+}
+function pfTransferLine(tr){   // header sentence form
+  if(tr.fromLevel!==tr.toLevel){
+    if(/power/i.test(tr.toLevel||''))   return `Transferred from Mid-Major to ${tr.toConf}: ${tr.from} → ${tr.to}`;
+    return `Transferred from ${tr.fromConf} to Mid-Major: ${tr.from} → ${tr.to}`;
+  }
+  return `Transferred: ${tr.from} → ${tr.to}`;
+}
+function pfTransferCtxLines(tr){   // context grid: [levels line, schools line]
+  let l1;
+  if(tr.fromLevel!==tr.toLevel){
+    l1 = /power/i.test(tr.toLevel||'') ? `Mid-Major → ${tr.toConf}` : `${tr.fromConf} → Mid-Major`;
+  } else l1 = tr.toConf || (tr.from+' → '+tr.to);
+  return [l1, `${tr.from} → ${tr.to}`];
+}
+function pfPositionCtx(cur, prior){
+  if(!prior) return null;
+  const posChanged=cur.position!==prior.position, roleChanged=cur.role!==prior.role;
+  if(!posChanged && !roleChanged) return null;
+  return {posChanged, roleChanged, fromPos:prior.position, toPos:cur.position, fromRole:prior.role, toRole:cur.role};
+}
+
+function pfComputeTrending(seasonsDesc){
+  const cur=seasonsDesc[0], prior=seasonsDesc[1];
+  const c=pfMinUsgCtx(cur, prior);
+  const out={singleSeason:!prior, improving:[], declining:[],
+             context:{minutes:c.minutes, usage:c.usage,
+                      transfer: prior?pfTransferCtx(cur,prior):null,
+                      position: prior?pfPositionCtx(cur,prior):null,
+                      curPosition: cur.position, curRole: cur.role}};
+  if(!prior) return out;
+
+  const movers=[];
+  PF_FAMILIES.forEach(f=>{
+    const a=prior[f.stat+'_pct'], b=cur[f.stat+'_pct'];
+    if(a==null||b==null||isNaN(a)||isNaN(b)) return;        // both seasons must be percentile-eligible
+    const delta=b-a;
+    if(Math.abs(delta)<PF_TREND_MIN_MOVE) return;           // >=10 percentile points
+    if(f.floor){ const att=cur[f.floor]; if(att==null||att<PF_TREND_FLOOR) return; }  // efficiency volume floor
+    movers.push({family:f.name, label:f.label, chip:f.chip,
+      start:Math.round(a*100), end:Math.round(b*100), delta:Math.round(delta*100),
+      startVal:pfFamVal(f.vfmt, prior[f.stat]), endVal:pfFamVal(f.vfmt, cur[f.stat]),
+      improving:delta>0,
+      stillStrong:(delta<0 && b>=PF_STILL_STRONG),
+      stillWeak:(delta>0 && b<=PF_STILL_WEAK)});
+  });
+
+  out.improving = movers.filter(m=>m.improving).sort((x,y)=>{
+    if(x.stillWeak!==y.stillWeak) return x.stillWeak?1:-1;         // still-below-average sorts last
+    return y.delta-x.delta;
+  }).slice(0,PF_TREND_CAP);
+  out.declining = movers.filter(m=>!m.improving).sort((x,y)=>{
+    if(x.stillStrong!==y.stillStrong) return x.stillStrong?1:-1;   // still-strong sorts last
+    return Math.abs(y.delta)-Math.abs(x.delta);
+  }).slice(0,PF_TREND_CAP);
+  return out;
+}
+
+// ---- render: compact header (fills the space beside the identity card) ----
+function pfMinUsgText(m,u){
+  const mSeg = m.tier + (m.val!=null?` (${m.val} minutes per game${m.changed?`, ${m.up?'up':'down'} from ${m.from}`:''})`:'');
+  const uSeg = pfUsageTierLabel(u.tier) + (u.val!=null?` (${u.val}%${u.changed?`, ${u.up?'up':'down'} from ${u.from}%`:''})`:'');
+  return `${mSeg} · ${uSeg}`;
+}
+function pfTopContextFlag(ctx){
+  if(ctx.transfer) return pfTransferLine(ctx.transfer);
+  if(ctx.position){ const p=ctx.position; return p.posChanged?`Position: ${p.fromPos} → ${p.toPos}`:`Role: ${p.fromRole} → ${p.toRole}`; }
+  return null;
+}
+function pfTrendingHeaderHTML(t){
+  let h=`<div class="pf-th-line">${pfMinUsgText(t.context.minutes, t.context.usage)}</div>`;
+  if(t.singleSeason){ return h+`<div class="pf-th-note">First D1 season — no year-over-year comparison yet</div>`; }
+  const tc=pfTopContextFlag(t.context);
+  if(tc) h+=`<div class="pf-th-flag">${tc}</div>`;
+  const chips=[...t.improving,...t.declining].filter(m=>m.chip)
+    .sort((x,y)=>{                                                 // SELECT the 5 most significant movers
+      const xe=x.stillStrong||x.stillWeak, ye=y.stillStrong||y.stillWeak;
+      if(xe!==ye) return xe?1:-1;
+      return Math.abs(y.delta)-Math.abs(x.delta);
+    }).slice(0,5)
+    .sort((x,y)=>{                                                 // DISPLAY grouped: all green, then all red
+      if(x.improving!==y.improving) return x.improving?-1:1;
+      const xe=x.stillStrong||x.stillWeak, ye=y.stillStrong||y.stillWeak;
+      if(xe!==ye) return xe?1:-1;                                  // solid before muted within each color
+      return Math.abs(y.delta)-Math.abs(x.delta);
+    });
+  if(chips.length) h+='<div class="pf-th-chips">'+chips.map(m=>{
+    const muted=m.stillStrong||m.stillWeak;
+    const cls=m.improving?(muted?'pf-up-bg pf-muted':'pf-up-bg'):(muted?'pf-down-bg pf-muted':'pf-down-bg');
+    return `<span class="pf-chip ${cls}">${m.improving?'↑':'↓'} ${m.label.replace(/\s*\(.*\)$/,'')}</span>`;
+  }).join('')+'</div>';
+  return h;
+}
+
+// ---- render: Trends tab (Player Context + two-column improving/declining) ----
+function pfTrendRow(m){
+  const tag = m.stillStrong?'<span class="pf-tag pf-tag-strong">still strong</span>'
+            : m.stillWeak ?'<span class="pf-tag pf-tag-weak">still below average</span>':'';
+  return `<div class="pf-trend-row">
+    <div class="pf-trend-lbl">${m.label}${tag}</div>
+    <div class="pf-trend-vals"><span class="pf-trend-raw">${m.startVal} → ${m.endVal}</span>`+
+    `<span class="pf-trend-pct">${pfOrd(m.start)} → ${pfOrd(m.end)} percentile <span class="${m.improving?'pf-up':'pf-down'}">(${m.improving?'↑':'↓'}${Math.abs(m.delta)})</span></span></div>
+  </div>`;
+}
+function pfCtxItem(key, line1, line2){
+  return `<div class="pf-ctx-item"><div class="pf-ctx-key">${key}</div>`+
+    `<div class="pf-ctx-l1">${line1}</div>`+(line2?`<div class="pf-ctx-l2">${line2}</div>`:'')+`</div>`;
+}
+// minutes/usage: three-tier language by raw magnitude; percentile detail on line 2
+function pfCtxStatLines(unit, o, bigGate, midGate){
+  if(o.val==null) return ['—',''];
+  const l2 = (o.absDelta!=null && o.fromPct!=null && o.pct!=null)
+      ? `${pfOrd(o.fromPct)} to ${pfOrd(o.pct)} percentile`
+      : (o.pct!=null?`${pfOrd(o.pct)} percentile`:'');
+  const d=o.absDelta;
+  let l1;
+  if(d==null)            l1=`${o.val}${unit}`;
+  else if(d>=bigGate)    l1=`${o.up?'Increased':'Decreased'} ${o.from}${unit} to ${o.val}${unit}`;
+  else if(d>=midGate)    l1=`Slight ${o.up?'increase':'decrease'}: ${o.from}${unit} to ${o.val}${unit}`;
+  else                   l1=`Similar (${o.from}${unit} to ${o.val}${unit})`;
+  return [l1, l2];
+}
+function pfTrendsTabHTML(t){
+  if(t.singleSeason) return '';
+  const items=[];
+  const [ml1,ml2]=pfCtxStatLines('', t.context.minutes, 5, 3);
+  const [ul1,ul2]=pfCtxStatLines('%', t.context.usage, 4, 2);
+  items.push(pfCtxItem('Minutes (MPG)', ml1, ml2));
+  items.push(pfCtxItem('Usage (USG%)', ul1, ul2));
+  // Position / Role — always shown; arrow if changed, else current state
+  const p=t.context.position||{};
+  const posL = p.posChanged ? `Position: ${p.fromPos} → ${p.toPos}` : `Position: ${t.context.curPosition??'—'}`;
+  const roleL= p.roleChanged? `Role: ${p.fromRole} → ${p.toRole}`  : `Role: ${t.context.curRole??'—'}`;
+  items.push(pfCtxItem('Position / Role', posL, roleL));
+  // Transfer — only if transferred
+  if(t.context.transfer){ const [tl1,tl2]=pfTransferCtxLines(t.context.transfer); items.push(pfCtxItem('Transfer', tl1, tl2)); }
+
+  let h='<div class="pf-trends">';
+  h+='<div class="pf-ctx-box"><div class="pf-ctx-h">Player Context</div><div class="pf-ctx-grid">'+items.join('')+'</div></div>';
+  h+='<div class="pf-trend-cols">';
+  h+='<div class="pf-trend-col"><div class="pf-trend-h pf-up">Improving</div>'+
+     (t.improving.length?t.improving.map(pfTrendRow).join(''):'<div class="pf-trend-empty">No notable improvements</div>')+'</div>';
+  h+='<div class="pf-trend-col"><div class="pf-trend-h pf-down">Declining</div>'+
+     (t.declining.length?t.declining.map(pfTrendRow).join(''):'<div class="pf-trend-empty">No notable declines</div>')+'</div>';
+  h+='</div>';
+  h+='<div class="pf-trend-foot">Trends compare the two most recent seasons using national percentiles, held constant across seasons for a fair comparison.</div>';
+  return h+'</div>';
 }

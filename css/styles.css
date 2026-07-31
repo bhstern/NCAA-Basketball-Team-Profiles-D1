@@ -822,8 +822,8 @@ select:focus{border-color:var(--accent);}
 
 /* ── PLAYER PROFILE ─────────────────────────────────────────────── */
 .pf-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; }
-.pf-name{ font-size:26px; font-weight:800; color:var(--text1); line-height:1.1; margin-bottom:6px; }
-.pf-line{ color:var(--text3); font-size:14px; line-height:1.7; }
+.pf-name{ font-size:30px; font-weight:800; color:var(--text1); line-height:1.1; margin-bottom:7px; }
+.pf-line{ color:var(--text3); font-size:15.5px; line-height:1.7; }
 .pf-what{ color:var(--text2); font-weight:600; }
 .pf-team{ color:var(--text2); }
 .pf-bg{ color:var(--text4); font-size:13px; }
@@ -869,3 +869,45 @@ select:focus{border-color:var(--accent);}
   letter-spacing:.04em; margin-bottom:4px; text-align:center; }
 .pf-shot-vol{ color:var(--text3); font-size:13px; margin-top:8px; font-family:var(--font-mono,monospace); }
 .pf-shot-compact .pf-shot-court{ flex:1 1 300px; max-width:330px; }   /* slightly smaller when comparing two seasons */
+
+/* player profile — top row: identity card + trending header */
+.pf-top{ display:flex; gap:22px; align-items:flex-start; padding:22px 28px 6px; flex-wrap:wrap; }
+.pf-top #player-identity{ flex:0 0 auto; }
+.pf-th{ flex:1 1 340px; min-width:300px; display:flex; flex-direction:column; gap:7px; padding-top:2px; }
+.pf-th-line{ color:var(--text2); font-size:16px; font-weight:600; }
+.pf-th-note{ color:var(--text4); font-size:13px; font-style:italic; }
+.pf-th-flag{ color:var(--text3); font-size:14.5px; }
+.pf-th-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
+.pf-chip{ font-size:13.5px; font-weight:700; padding:5px 13px; border-radius:20px; white-space:nowrap; }
+.pf-up-bg{ background:rgba(52,199,110,0.15); color:#37c76e; border:1px solid rgba(52,199,110,0.35); }
+.pf-down-bg{ background:rgba(232,90,90,0.14); color:#e85a5a; border:1px solid rgba(232,90,90,0.34); }
+.pf-chip.pf-muted{ opacity:0.55; }
+
+/* trends tab */
+.pf-trends{ display:flex; flex-direction:column; gap:16px; }
+.pf-ctx-box{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 22px; margin-bottom:6px; }
+.pf-ctx-h{ font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); margin-bottom:12px; }
+.pf-ctx-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px 30px; }
+@media (max-width:1000px){ .pf-ctx-grid{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:560px){ .pf-ctx-grid{ grid-template-columns:1fr; } }
+.pf-ctx-item{ display:flex; flex-direction:column; gap:3px; }
+.pf-ctx-key{ font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--text4); }
+.pf-ctx-l1{ color:var(--text1); font-size:15px; line-height:1.35; }
+.pf-ctx-l2{ color:var(--text3); font-size:13px; line-height:1.35; }
+.pf-trend-cols{ display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+.pf-trend-col{ flex:1 1 380px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 22px; }
+.pf-trend-h{ font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; }
+.pf-trend-row{ display:flex; justify-content:space-between; align-items:baseline; gap:16px;
+  padding:13px 0; border-top:1px solid var(--border); }
+.pf-trend-row:first-of-type{ border-top:none; }
+.pf-trend-lbl{ font-weight:600; color:var(--text1); font-size:16px; }
+.pf-trend-vals{ display:flex; flex-direction:column; align-items:flex-end; gap:1px; white-space:nowrap; }
+.pf-trend-raw{ font-family:var(--font-mono,monospace); font-size:16px; color:var(--text1); font-weight:600; }
+.pf-trend-pct{ font-family:var(--font-mono,monospace); font-size:13px; color:var(--text4); }
+.pf-trend-empty{ color:var(--text4); font-size:13px; font-style:italic; padding:4px 0; }
+.pf-tag{ font-size:12.5px; font-style:italic; font-weight:600; margin-left:8px; }
+.pf-tag-strong{ color:rgba(232,90,90,0.72); }
+.pf-tag-weak{ color:rgba(52,199,110,0.72); }
+.pf-trend-foot{ color:var(--text4); font-size:12px; font-style:italic; }
+.pf-up{ color:#37c76e; }
+.pf-down{ color:#e85a5a; }
