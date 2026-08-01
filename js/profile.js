@@ -530,7 +530,7 @@ function pfTrendingHeaderHTML(t){
 // ---- render: Trends tab (Player Context + two-column improving/declining) ----
 function pfTrendRow(m){
   const tag = m.stillStrong?'<span class="pf-tag pf-tag-strong">still strong</span>'
-            : m.stillWeak ?'<span class="pf-tag pf-tag-weak">still below average</span>':'';
+            : m.stillWeak ?'<span class="pf-tag pf-tag-weak">still below avg</span>':'';
   return `<div class="pf-trend-row">
     <div class="pf-trend-lbl">${m.label}${tag}</div>
     <div class="pf-trend-vals"><span class="pf-trend-raw">${m.startVal} → ${m.endVal}</span>`+
@@ -582,4 +582,138 @@ function pfTrendsTabHTML(t){
   h+='</div>';
   h+='<div class="pf-trend-foot">Trends compare the two most recent seasons using national percentiles, held constant across seasons for a fair comparison.</div>';
   return h+'</div>';
+}
+
+// ── ONE-PAGER PNG EXPORT ──────────────────────────────────────────────────────
+// Builds a purpose-built portrait layout (header + trends + shot charts + supplement
+// + core/advanced tables) in an off-screen node and rasterizes it via html2canvas.
+// Dual percentiles (national + position) on the most-recent season row; national on prior.
+
+const OP_CORE=[['minutes_per_game','num1','MPG'],['usage_pct','pct100','USG%'],['bpm','signed','BPM'],
+               ['ppg','num1','PTS'],['rebpg','num1','REB'],['astpg','num1','AST']];
+const OP_ADV=[['obpm','signed','OBPM'],['dbpm','signed','DBPM'],['or_pct','pct100','OR%'],['dr_pct','pct100','DR%'],
+              ['ast_pct','pct100','AST%'],['tov_pct','pct100','TOV%'],['blk_pct','pct100','BLK%'],['stl_pct','pct100','STL%'],['fc_40','num1','FC/40']];
+
+function pfSlug(n){ return (n||'player').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+function pfPctPair(season, statKey, showPos){
+  const n=season[statKey+'_pct'], p=season[statKey+'_pos_pct'];
+  if(n==null||isNaN(n)) return '';
+  const nP=Math.round(n*100);
+  if(showPos && p!=null && !isNaN(p)) return `${nP}N / ${Math.round(p*100)}P`;
+  return `${nP}N`;
+}
+function pfOpCell(season, statKey, vfmt, showPos){
+  const val=pfFamVal(vfmt, season[statKey]);
+  const pct=pfPctPair(season, statKey, showPos);
+  return `<td><div class="op-v">${val}</div>${pct?`<div class="op-p">${pct}</div>`:''}</td>`;
+}
+function pfOpTable(seasonsDesc, cols, showTeam, showGames){
+  const curPos = seasonsDesc[0] && seasonsDesc[0].position;
+  let h='<table class="op-table"><thead><tr><th class="op-lft">Season</th>'+(showTeam?'<th class="op-lft">Team</th>':'')+(showGames?'<th>G</th>':'')+
+    cols.map(c=>`<th>${c[2]}</th>`).join('')+'</tr></thead><tbody>';
+  seasonsDesc.forEach(s=>{
+    const showPos = (s.position===curPos);   // position percentile only where bucket matches current
+    h+='<tr>'+`<td class="op-lft op-season">${yLabel(s.year)}</td>`+
+       (showTeam?`<td class="op-lft">${s.team||''}</td>`:'')+
+       (showGames?`<td><div class="op-v">${s.games!=null?s.games:''}</div></td>`:'')+
+       cols.map(c=>pfOpCell(s,c[0],c[1],showPos)).join('')+'</tr>';
+  });
+  return h+'</tbody></table>';
+}
+function pfOpSupplement(s){
+  const cell=(lbl,val,pctHtml)=>`<div class="op-sup-item"><div class="op-sup-k">${lbl}</div><div class="op-sup-v">${val}</div>${pctHtml?`<div class="op-sup-p">${pctHtml}</div>`:''}</div>`;
+  const ftpg=(s.ft_made_pg!=null&&s.ft_att_pg!=null)?`${s.ft_made_pg.toFixed(1)}/${s.ft_att_pg.toFixed(1)}`:'—';
+  return '<div class="op-sup">'+cell('TS%',pfFamVal('pct100',s.ts),pfPctPair(s,'ts',true))+
+    cell('FT rate',pfFamVal('pctdec',s.ft_rate),pfPctPair(s,'ft_rate',true))+
+    cell('FT/g',ftpg,'')+cell('FT%',pfFamVal('pctdec',s.ft_pct),pfPctPair(s,'ft_pct',true))+'</div>';
+}
+function pfOnePagerHeader(){
+  const s=pfLatest(cPlayer.seasons);
+  const d1=(s.years_in_d1!=null&&!isNaN(s.years_in_d1))?parseInt(s.years_in_d1)+' yr'+(parseInt(s.years_in_d1)===1?'':'s')+' D1':null;
+  const bio=[s.position,s.role,pfHeightStr(s.height_in),s.class,
+             (s.age!=null&&!isNaN(s.age)?parseFloat(s.age).toFixed(1)+' yrs':null), d1].filter(Boolean).join(' · ');
+  const team=[s.team,s.conference?`(${s.conference})`:null].filter(Boolean).join(' ');
+  const seasonsDesc=cPlayer.seasons.slice().sort((a,b)=>(b.year||0)-(a.year||0));
+  const trend=pfComputeTrending(seasonsDesc);
+  const tier=pfMinUsgText(trend.context.minutes,trend.context.usage);
+  const flag=pfTopContextFlag(trend.context);
+  return `<div class="op-header">
+    <div class="op-name">${cPlayer.name||'—'}</div>
+    <div class="op-bio">${bio}</div>
+    <div class="op-team">${team}</div>
+    <div class="op-tier">${tier}</div>
+    ${flag?`<div class="op-flag">${flag}</div>`:''}
+  </div>`;
+}
+function pfOnePagerCharts(s, sfx){
+  const base={showPct:true, showLabels:true, stackPct:true, zoneFont:18};
+  const rate=buildCourtSVG({...base, zones:pfShotZones(s,sfx,'rate'), metricsShown:'rate'});
+  const fg  =buildCourtSVG({...base, zones:pfShotZones(s,sfx,'fg'),   metricsShown:'fg'});
+  return `<div class="op-court"><div class="op-court-lbl">Shot Rate</div>${rate}</div>`+
+         `<div class="op-court"><div class="op-court-lbl">FG% &amp; Volume</div>${fg}</div>`;
+}
+function pfOnePagerTrends(trend){
+  if(trend.singleSeason) return '<div class="op-sec-h">Trends</div><div class="op-tr-empty">First D1 season — no year-over-year comparison yet</div>';
+  const row=m=>{
+    const tag = m.stillStrong ? ' <span class="op-tag">still strong</span>'
+              : m.stillWeak   ? ' <span class="op-tag">still below avg</span>' : '';
+    return `<div class="op-tr-row"><div class="op-tr-lbl">${m.label}</div>`+
+    `<div class="op-tr-mv">${m.startVal} → ${m.endVal} <span class="op-tr-sep">·</span> <span class="op-tr-pctl">Pct: ${m.start} → ${m.end}</span> <span class="${m.improving?'pf-up':'pf-down'}">(${m.improving?'↑':'↓'}${Math.abs(m.delta)})</span>${tag}</div></div>`;
+  };
+  const col=(title,arr,cls)=>`<div class="op-tr-col"><div class="op-tr-h ${cls}">${title}</div>${arr.length?arr.map(row).join(''):'<div class="op-tr-empty">None</div>'}</div>`;
+  return `<div class="op-sec-h">Trends · ${yLabel(trend.priorYear)} → ${yLabel(trend.curYear)} · National Percentiles</div>
+    <div class="op-tr-cols">${col('Improving',trend.improving,'pf-up')}${col('Declining',trend.declining,'pf-down')}</div>`;
+}
+function pfOnePagerHTML(){
+  const seasonsDesc=cPlayer.seasons.slice().sort((a,b)=>(b.year||0)-(a.year||0));
+  const cur=seasonsDesc[0];
+  const trend=pfComputeTrending(seasonsDesc);
+  const posChanged=seasonsDesc.some(s=>s.position!==cur.position);
+  const posNote=posChanged?' <span class="op-note">· position percentiles shown for current-position seasons only</span>':'';
+  return `<div class="op-page">
+    ${pfOnePagerHeader()}
+    ${pfOnePagerTrends(trend)}
+    <div class="op-sec-h">Shot Profile · ${yLabel(cur.year)} · National Percentiles</div>
+    <div class="op-shot-row">
+      <div class="op-charts">${pfOnePagerCharts(cur,'_pct')}</div>
+      ${pfOpSupplement(cur)}
+    </div>
+    <div class="op-sec-h">Core Production (per game)${posNote}</div>
+    ${pfOpTable(seasonsDesc, OP_CORE, true, true)}
+    <div class="op-sec-h">Advanced (rates)</div>
+    ${pfOpTable(seasonsDesc, OP_ADV, false, false)}
+    <div class="op-footer">
+      <div class="op-legend">N = national percentile &nbsp;·&nbsp; P = position percentile &nbsp;·&nbsp; both vs. all D1</div>
+      <div class="op-brand">bhstern.github.io/NCAA-Basketball-Team-Profiles-D1 &nbsp;·&nbsp; Benj Stern</div>
+    </div>
+  </div>`;
+}
+function pfLoadHtml2Canvas(){
+  return new Promise((res,rej)=>{
+    if(window.html2canvas) return res(window.html2canvas);
+    const sc=document.createElement('script');
+    sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    sc.onload=()=>res(window.html2canvas); sc.onerror=()=>rej(new Error('could not load html2canvas'));
+    document.head.appendChild(sc);
+  });
+}
+async function pfExportOnePager(){
+  if(!cPlayer) return;
+  const btn=document.getElementById('pf-op-btn'); const label=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Generating…'; }
+  try{
+    const h2c=await pfLoadHtml2Canvas();
+    const host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-99999px;top:0;z-index:-1;';
+    host.innerHTML=pfOnePagerHTML();
+    document.body.appendChild(host);
+    const page=host.querySelector('.op-page');
+    const canvas=await h2c(page,{scale:2, backgroundColor:'#0d1526', logging:false, useCORS:true, windowWidth:page.scrollWidth, windowHeight:page.scrollHeight});
+    const a=document.createElement('a');
+    const yr = (function(){ const ss=cPlayer.seasons.slice().sort((x,y)=>(y.year||0)-(x.year||0))[0]; return ss&&ss.year?yLabel(ss.year):''; })();
+    a.download=(yr?yr+'_':'')+pfSlug(cPlayer.name)+'_Profile.png';
+    a.href=canvas.toDataURL('image/png'); a.click();
+    document.body.removeChild(host);
+  }catch(e){ alert('One-pager export failed: '+(e&&e.message?e.message:e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent=label||'Export one-pager (PNG)'; } }
 }
