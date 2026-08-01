@@ -185,7 +185,7 @@ const EXPLORER_STAT_TABS = {
 
 const EXPLORER_FROZEN = [
   {key:'name',label:'Player',frozen:true,width:155,left:28,fmt:v=>v??'—'},
-  {key:'team',label:'Team',frozen:true,width:125,left:183,fmt:v=>v??'—'},
+  {key:'team',label:'Team',frozen:true,width:125,left:183,fmt:v=>v?`<span class="pf-link" onclick="goToTeamFromExplorer('${jsq(v)}')">${v}</span>`:'—'},
   {key:'position',label:'Pos',frozen:true,width:65,left:308,fmt:v=>v??'—'},
   {key:'role',label:'Role',frozen:false,fmt:v=>v??'—'},
   {key:'class',label:'Yr',frozen:false,fmt:v=>v??'—'},
@@ -707,7 +707,7 @@ function renderExplorerTable(append=false) {
     EXPLORER_FROZEN.forEach(col=>{
       const val=p[col.key];
       let disp=col.fmt?col.fmt(val):(val??'—');
-      if(col.key==='name' && p.player_id) disp=`<span class="pf-link" onclick="openPlayerProfile('${p.player_id}')">${disp}</span>`;
+      if(col.key==='name' && p.player_id) disp=`<span class="pf-link" onclick="openPlayerProfile('${jsq(p.player_id)}')">${disp}</span>`;
       const isLast=col.key==='position';
       if(col.frozen) {
         html+=`<td class="roster-frozen-td explorer-id-cell${isLast?' explorer-last-frozen':''}" style="position:sticky;left:${col.left}px;z-index:2;min-width:${col.width}px;max-width:${col.width}px;overflow:hidden;text-overflow:ellipsis;background:var(--surface);">${disp}</td>`;

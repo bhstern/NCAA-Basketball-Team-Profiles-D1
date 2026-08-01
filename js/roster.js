@@ -281,7 +281,7 @@ function renderRosterTable(playersArg) {
         const display = col.fmt ? col.fmt(val) : (val ?? '—');
 
         if (col.key === 'name') {
-          const nameHtml = p.player_id ? `<span class="pf-link" onclick="openPlayerProfile('${p.player_id}')">${display}</span>` : display;
+          const nameHtml = p.player_id ? `<span class="pf-link" onclick="openPlayerProfile('${jsq(p.player_id)}')">${display}</span>` : display;
           html += `<td class="roster-frozen-td roster-name-cell" style="position:sticky;left:0;z-index:1;">${nameHtml}</td>`;
         } else if (col.stacked) {
           const pctKey = col.pctKey || (col.key + '_pct');

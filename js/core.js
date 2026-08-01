@@ -3,6 +3,7 @@ let INDEX={}, YCACHE={}, cTeam=null, cYear=null, cYearData=null, cRow=null;
 let cView='d1', cHistCat='Overview', cHistComp='d1conf', cTopN=0, cCompTeams=[], cCustomMode=false, cTab='profile'; let cTrendWindow=1;
 
 function isPower(row){return row&&row.power_mid==='Power';}
+function jsq(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}  // safe inside onclick="fn('...')" when value has apostrophes
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
 function sf(n){return n.replace(/ /g,'_').replace(/\./g,'').replace(/'/g,'').replace(/&/g,'').replace(/\//g,'_');}
 

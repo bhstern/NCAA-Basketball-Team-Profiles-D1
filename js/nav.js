@@ -25,6 +25,30 @@ function switchProfileSubTab(sub, btn) {
   if (sub === 'stats' && cRow) renderProfile();
 }
 
+// navigate to a team's Team Profile from a clickable team name (roster, explorer, player profile)
+// year (optional): land on that season if the team has it, else the team's most recent
+function goToTeamProfile(teamName, year){
+  if(!teamName) return;
+  const tSel=document.getElementById('team-select');
+  if(!tSel) return;
+  const opt=[...tSel.options].find(o=>o.value.toLowerCase()===String(teamName).toLowerCase());
+  if(!opt) return;                       // team not selectable (name mismatch) — do nothing
+  tSel.value=opt.value;
+  onTeamChange();                        // populate years + load the team's most-recent season
+  if(year){                              // override to the clicked row's season if available
+    const ySel=document.getElementById('year-select');
+    const target=ySel && [...ySel.options].find(o=>String(o.value)===String(year));
+    if(target && ySel.value!==target.value){ ySel.value=target.value; onSelectionChange(); }
+  }
+  const btn=document.querySelector('.nav-tab[data-tab="profile"]')||document.querySelector('.nav-tab');
+  switchTab('profile', btn);
+  window.scrollTo(0,0);
+}
+function goToTeamFromExplorer(teamName){   // explorer shows one selected year — carry it into the team profile
+  const y=document.getElementById('explorer-year-select');
+  goToTeamProfile(teamName, y?y.value:null);
+}
+
 function switchTab(tab,btn){
   cTab=tab;
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));

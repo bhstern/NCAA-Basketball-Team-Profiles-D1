@@ -110,7 +110,8 @@ function pfIdentityCard(){
   const s = pfLatest(cPlayer.seasons);
   const bits1 = [s.position, s.role, pfHeightStr(s.height_in), s.class,
                  (s.age!=null && !isNaN(s.age) ? parseFloat(s.age).toFixed(1)+' yrs' : null)].filter(Boolean);
-  const teamLine = [s.team, s.conference?`(${s.conference})`:null].filter(Boolean).join(' ');
+  const teamLink = s.team?`<span class="pf-link" onclick="goToTeamProfile('${jsq(s.team)}', ${s.year})">${s.team}</span>`:null;
+  const teamLine = [teamLink, s.conference?`(${s.conference})`:null].filter(Boolean).join(' ');
   // recruit_rank_clean is a 0–100 grade (100 = best), not a rank.
   const rr = (s.recruit_rank_clean!=null && !isNaN(s.recruit_rank_clean))
              ? 'Recruit grade '+Math.round(s.recruit_rank_clean)+'/100' : 'Unrated recruit';
@@ -219,7 +220,7 @@ function renderPlayerCareer(){
   // compute cumulative sticky left-offsets (Team + Role change across seasons and matter).
   const frozen = [
     {label:'Season', w:82,  get:s=> (typeof yLabel==='function'? yLabel(s.year) : s.year)},
-    {label:'Team',   w:120, get:s=> s.team ?? '—'},
+    {label:'Team',   w:120, get:s=> s.team?`<span class="pf-link" onclick="goToTeamProfile('${jsq(s.team)}', ${s.year})">${s.team}</span>`:'—'},
     {label:'Yr',     w:40,  get:s=> s.class ?? '—'},
     {label:'Pos',    w:52,  get:s=> s.position ?? '—'},
     {label:'Role',   w:80,  get:s=> s.role ?? '—'},
