@@ -6,6 +6,7 @@
   --font-display:'Barlow Condensed',sans-serif; --font-body:'Barlow',sans-serif; --font-mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 body{background:var(--bg);color:var(--text2);font-family:var(--font-body);min-height:100vh;overflow-x:auto;}
 nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:52px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
 .nav-brand{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;}
@@ -920,6 +921,7 @@ select:focus{border-color:var(--accent);}
 
 /* one-pager print layout (rasterized by html2canvas; explicit colors for fidelity) */
 .op-page{ width:816px; box-sizing:border-box; padding:30px 34px; background:#0d1526; color:#e8edf7;
+  -webkit-text-size-adjust:100%; text-size-adjust:100%;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
 .op-header{ border-bottom:1px solid #223052; padding-bottom:14px; margin-bottom:16px; }
 .op-name{ font-size:30px; font-weight:800; color:#fff; line-height:1.1; }
