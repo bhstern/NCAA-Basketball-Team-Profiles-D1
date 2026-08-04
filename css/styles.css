@@ -334,6 +334,7 @@ select:focus{border-color:var(--accent);}
 .explorer-id-th{min-width:80px;}
 .explorer-id-cell{border-right:none;}
 .explorer-more-row{text-align:center;padding:12px;font-size:11px;color:var(--text4);font-style:italic;}
+.explorer-more-bar{padding:12px 8px;text-align:left;position:sticky;left:0;}
 @media (max-width:768px){
   .explorer-id-th:not(:first-of-type){position:static!important;}
   .explorer-id-cell:not(:first-of-type){position:static!important;}

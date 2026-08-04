@@ -398,6 +398,7 @@ function pfFamVal(vfmt, v){
 }
 const PF_TREND_MIN_MOVE=0.10;   // >=10 percentile points to count as a move
 const PF_TREND_FLOOR=40;        // efficiency families need >=40 attempts in current season
+const PF_ZONE_SHARE=0.20;       // shooting zones (rim/mid/3PT) must also be >=20% of the player's FG attempts
 const PF_STILL_STRONG=0.75;     // declines ending >=75th pct → "still strong", sorted last
 const PF_STILL_WEAK=0.25;       // improvements ending <=25th pct → "still below average", sorted last
 const PF_TREND_CAP=5;
@@ -472,7 +473,14 @@ function pfComputeTrending(seasonsDesc){
     if(a==null||b==null||isNaN(a)||isNaN(b)) return;        // both seasons must be percentile-eligible
     const delta=b-a;
     if(Math.abs(delta)<PF_TREND_MIN_MOVE) return;           // >=10 percentile points
-    if(f.floor){ const att=cur[f.floor]; if(att==null||att<PF_TREND_FLOOR) return; }  // efficiency volume floor
+    if(f.floor){
+      const att=cur[f.floor];
+      if(att==null||att<PF_TREND_FLOOR) return;                       // volume floor (sample reliability)
+      if(f.floor==='rim_att'||f.floor==='midrange_att'||f.floor==='three_pa'){
+        const totalFGA=(cur.rim_att||0)+(cur.midrange_att||0)+(cur.three_pa||0);
+        if(totalFGA>0 && att/totalFGA < PF_ZONE_SHARE) return;        // zone must be a real part of his shot diet
+      }
+    }
     movers.push({family:f.name, label:f.label, chip:f.chip,
       start:Math.round(a*100), end:Math.round(b*100), delta:Math.round(delta*100),
       startVal:pfFamVal(f.vfmt, prior[f.stat]), endVal:pfFamVal(f.vfmt, cur[f.stat]),

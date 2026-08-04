@@ -748,11 +748,10 @@ function renderExplorerTable(append=false) {
     html+=`</tr>`;
   });
 
-  if(cExplorerFiltered.length>pageEnd) {
-    html+=`<tr><td class="explorer-more-row" style="text-align:left;padding-left:8px;"><button class="view-btn" onclick="showMoreExplorer()">Show More (${cExplorerFiltered.length-pageEnd} remaining)</button></td><td colspan="999"></td></tr>`;
-  }
-
   html+=`</tbody></table></div>`;
+  if(cExplorerFiltered.length>pageEnd) {   // outside the horizontal scroll wrap → stays at bottom-left
+    html+=`<div class="explorer-more-bar"><button class="view-btn" onclick="showMoreExplorer()">Show More (${cExplorerFiltered.length-pageEnd} remaining)</button></div>`;
+  }
   const hint='<div class="explorer-sort-hint">Click any column header to sort</div>';
   wrap.innerHTML=hint+html;
 
