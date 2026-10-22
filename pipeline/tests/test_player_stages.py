@@ -169,3 +169,45 @@ def test_leg_a_counts_cells_when_row_order_drifts(tmp_path):
     out.write_text('name,year,x\nJones,2024,2\n"Smith, J",2024,1\nLee,2024,3\n')   # same rows, swapped
     passed, _, cells = leg_a_year("player_fe", 2024, p, reference, want)
     assert passed is False and cells == 4
+
+
+# ============================================================
+# JSON converters — sandbox-only writes, scrub fidelity, diff counting
+# ============================================================
+
+def test_json_writes_outside_a_sandbox_are_refused_for_frozen_seasons():
+    from pipeline.guard import FrozenHistoryError
+    from pipeline.player.json_common import write_json
+    for target in (config.REPO_ROOT / "data" / "cbb_2018.json",
+                   config.REPO_ROOT / "player_data" / "layer2_profiles" / "player_X.json",
+                   config.REPO_ROOT / "player_data" / "players_index.json"):
+        for season in (2018, None):
+            with pytest.raises(FrozenHistoryError):
+                write_json(target, {"a": 1}, season)
+
+
+def test_write_json_scrub_matches_the_original_per_file():
+    from pipeline.player.json_common import scrub_nan_text
+    assert scrub_nan_text('{"a":NaN,"b":[1],"c":NaN}') == '{"a":null,"b":[1],"c":null}'
+    assert scrub_nan_text('{"a":1}') == '{"a":1}'
+
+
+def test_assemble_refuses_to_clear_a_profiles_folder_outside_the_sandbox(tmp_path):
+    from pipeline.assemble_json import fresh_profiles_dir
+    with pytest.raises(PermissionError):
+        fresh_profiles_dir(Paths(out_root=tmp_path))      # tmp is not the _rebuild sandbox
+
+
+def test_legacy_harness_open_refuses_writes_outside_the_sandbox():
+    from pipeline.dev.legacy_reference import _guarded_open
+    from pipeline.guard import FrozenHistoryError
+    with pytest.raises(FrozenHistoryError):
+        _guarded_open(config.REPO_ROOT / "data" / "cbb_2016.json", "w")
+
+
+def test_json_diff_counts_values_and_positional_order():
+    from pipeline.dev.compare_json import count_diffs
+    assert count_diffs([{"a": 1, "b": 2.0}], [{"a": 1, "b": 2.0}]) == 0
+    assert count_diffs([{"a": 1}], [{"a": 1.0}]) == 1                 # int vs float counts
+    assert count_diffs([{"a": 1}, {"a": 2}], [{"a": 2}, {"a": 1}]) == 2   # order drift counts
+    assert count_diffs({"a": 1, "b": 2}, {"b": 2, "a": 1}) == 1       # key order counts

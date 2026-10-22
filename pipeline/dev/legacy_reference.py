@@ -50,6 +50,15 @@ CHAINS = {
 }
 NEVER_RUN = ("101_scrape_Torvik_player_stats.py",)
 
+# The repo's team JSON converter. It writes with open(), so its output folder is
+# redirected too and open() is guarded for every write.
+REPO_SCRIPTS = {
+    "convert_data.py": {
+        "/Users/benjstern/Documents/CBB Analytics/NCAA-Basketball-Team-Profiles-D1/data": "json/data",
+    },
+}
+CHAINS["json_team"] = ["convert_data.py"]
+
 
 def _guarded_to_csv(original):
     def to_csv(self, path_or_buf=None, *args, **kwargs):
@@ -59,20 +68,32 @@ def _guarded_to_csv(original):
     return to_csv
 
 
+def _guarded_open(path, mode="r", *args, **kwargs):
+    if any(m in mode for m in "wax+"):
+        guard.check(path, season=None)   # sandbox or refuse
+    return open(path, mode, *args, **kwargs)
+
+
 def run_script(name, legacy_dir):
     if name in NEVER_RUN:
         raise PermissionError(f"{name} must never run (overwrites raw files in place)")
 
-    source = (SCRIPTS_DIR / name).read_text(encoding="utf-8")
+    script = (config.REPO_ROOT / name) if name in REPO_SCRIPTS else (SCRIPTS_DIR / name)
+    source = script.read_text(encoding="utf-8")
     if LEGACY_MASTER_DIR not in source:
         raise RuntimeError(f"{name}: expected hardcoded path not found — script changed?")
     source = source.replace(LEGACY_MASTER_DIR, str(legacy_dir))
-    if "Data/Master Datasets" in source.replace(str(legacy_dir), ""):
-        raise RuntimeError(f"{name}: a Master Datasets path survived the redirect — refusing to run")
+    for original, sandbox_rel in REPO_SCRIPTS.get(name, {}).items():
+        if source.count(original) != 1:
+            raise RuntimeError(f"{name}: expected output path not found exactly once — script changed?")
+        source = source.replace(original, str(legacy_dir / sandbox_rel))
+    leftover = source.replace(str(legacy_dir), "")
+    if "Data/Master Datasets" in leftover or "NCAA-Basketball-Team-Profiles-D1" in leftover:
+        raise RuntimeError(f"{name}: a real data path survived the redirect — refusing to run")
 
     print(f"\n{'=' * 70}\nLEGACY REFERENCE: {name}\n{'=' * 70}")
     started = time.time()
-    exec(compile(source, str(SCRIPTS_DIR / name), "exec"), {"__name__": "__main__"})
+    exec(compile(source, str(script), "exec"), {"__name__": "__main__", "open": _guarded_open})
     print(f"[legacy_reference] {name} done in {time.time() - started:.0f}s")
 
 

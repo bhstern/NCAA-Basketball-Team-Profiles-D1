@@ -112,3 +112,20 @@ def test_csv_text_keeps_quoted_fields_and_rejects_ragged_rows(tmp_path):
     _write(f, 'team,x\n"Duke\nNC_2016",1\n')          # embedded newline
     with pytest.raises(ValueError):
         CsvText(f).column("team")
+
+
+# ============================================================
+# t07 post-baseline fix: apostrophe dropped in JSON only
+# ============================================================
+
+def test_t07_drops_one_leading_apostrophe_from_the_json_record_only(tmp_path):
+    import json
+    from pipeline.team import t07_convert_team_json as t07
+    p = Paths(out_root=tmp_path)
+    csv_text = "year,team,team_name,full_season_record,x\n2018,Duke_2018,Duke,'27-8,1.23456\n2018,Yale_2018,Yale,''3-29,2\n"
+    _write(p.stage_file("team_profiles", 2018), csv_text, bom=False)
+    t07.run(2018, p)
+    records = json.loads(p.json_file("data", "cbb_2018.json").read_text())
+    assert [r["full_season_record"] for r in records] == ["27-8", "'3-29"]   # only ONE apostrophe
+    assert records[0]["x"] == 1.2346
+    assert p.stage_file("team_profiles", 2018).read_text() == csv_text      # CSV untouched

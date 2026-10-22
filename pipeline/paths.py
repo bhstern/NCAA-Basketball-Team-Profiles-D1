@@ -125,6 +125,20 @@ class Paths:
         first, last = min(config.FROZEN_SEASONS), max(config.FROZEN_SEASONS)
         return self.out_root / "player_history" / f"player_history_{first}_{last}.csv"
 
+    # --- site JSON (mirrors the repo layout under <out_root>/json/) ---
+
+    @property
+    def json_root(self):
+        return self.out_root / "json"
+
+    def json_file(self, *parts):
+        """A site JSON path, e.g. json_file("data", "cbb_2018.json")."""
+        return self.json_root.joinpath(*parts)
+
+    def json_fragment(self, year, name):
+        """One season's contribution to a multi-season JSON file (assembled later)."""
+        return self.json_root / "_fragments" / str(year) / name
+
     # --- validation side locations (all inside out_root) ---
 
     @property
