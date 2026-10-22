@@ -45,15 +45,18 @@ class PlayerHistoryError(RuntimeError):
 # Build (once, frozen seasons only)
 # ---------------------------------------------------------------------------
 
-def build(paths=None, force=False):
+def build(paths=None, force=False, source=None):
+    """Write the index under `paths`; read the frozen seasons' p102 output from
+    `source` (default: `paths`)."""
     paths = paths or Paths()
+    source = source or paths
     out = paths.player_history_file
     if out.exists() and not force:
         raise PlayerHistoryError(f"History index already exists (use --force to rebuild): {out}")
 
     frames = []
     for year in sorted(config.FROZEN_SEASONS):
-        player = pd.read_csv(paths.stage_file("player_stats", year))
+        player = pd.read_csv(source.stage_file("player_stats", year))
         player = add_player_ids(player)
         wrong = sorted(set(player["year"]) - {year})
         if wrong:

@@ -36,13 +36,18 @@ EXPECTED_COLUMNS = 67
 YEAR_COLUMN = 31          # "year" in the 67-column layout (see p102 HEADERS_67)
 
 
+# Captured at import: even if a caller later overrides config in-process (the
+# orchestrator's --simulate-current does), a season frozen here can never be fetched.
+FROZEN_AT_IMPORT = frozenset(config.FROZEN_SEASONS)
+
+
 class FetchScopeError(PermissionError):
     pass
 
 
 def output_path(year, paths):
     """Validate scope and return the one path this stage may write. Raises otherwise."""
-    if year != config.CURRENT_SEASON:
+    if year != config.CURRENT_SEASON or year in FROZEN_AT_IMPORT:
         raise FetchScopeError(
             f"p101 only fetches the current season ({config.CURRENT_SEASON}); refusing {year}. "
             f"Frozen seasons are built from the hand-built raw files."

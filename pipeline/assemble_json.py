@@ -39,24 +39,24 @@ from pipeline.paths import Paths
 from pipeline.player.json_common import clean_for_json, get_profile_cols, write_json
 
 
-def merge_fragments(name, years, paths):
+def merge_fragments(name, years, source):
     """Per-season dict fragments -> one dict, seasons in year order (as the original built it)."""
     merged = {}
     for year in sorted(years):
-        merged.update(json.loads(paths.json_fragment(year, name).read_text(encoding="utf-8")))
+        merged.update(json.loads(source(year).json_fragment(year, name).read_text(encoding="utf-8")))
     return merged
 
 
-def assemble_team_index(years, paths):
-    out = write_json(paths.json_file("data", "index.json"), merge_fragments("team_index.json", years, paths), None,
+def assemble_team_index(years, paths, source):
+    out = write_json(paths.json_file("data", "index.json"), merge_fragments("team_index.json", years, source), None,
                      scrub=False)   # convert_data.py has no NaN scrub
     print(f"  index.json saved -> {out}")
 
 
-def assemble_positional(years, paths):
+def assemble_positional(years, paths, source):
     for name in ("team_positional.json", "positional_benchmarks.json"):
         out = write_json(paths.json_file("player_data", "layer3_positional", name),
-                         merge_fragments(name, years, paths), None)
+                         merge_fragments(name, years, source), None)
         print(f"  {name} — {os.path.getsize(out) / 1024 / 1024:.1f} MB -> {out}")
 
 
@@ -70,8 +70,8 @@ def fresh_profiles_dir(paths):
     return target
 
 
-def assemble_player_cross_season(years, paths):
-    profiles_csv = stitch("player_profiles", years, paths)
+def assemble_player_cross_season(years, paths, source):
+    profiles_csv = stitch("player_profiles", years, paths, source)
     fresh_profiles_dir(paths)
 
     print("Loading player profiles dataset (stitched)...")
@@ -166,14 +166,18 @@ def assemble_player_cross_season(years, paths):
     print(f"  players_index.json — {len(index_records):,} players, {size_kb:.0f} KB")
 
 
-def run(years, paths=None):
+def run(years, paths=None, source=None):
+    """Assemble into `paths`. `source(year) -> Paths` says where each season's per-season
+    outputs live (default: `paths`) — e.g. the frozen seasons from the main sandbox and
+    the season just built from the run's own output root."""
     paths = paths or Paths()
+    source = source or (lambda year: paths)
     print("\n--- Team index ---")
-    assemble_team_index(years, paths)
+    assemble_team_index(years, paths, source)
     print("\n--- Positional files ---")
-    assemble_positional(years, paths)
+    assemble_positional(years, paths, source)
     print("\n--- Career files + players index ---")
-    assemble_player_cross_season(years, paths)
+    assemble_player_cross_season(years, paths, source)
 
 
 def main():

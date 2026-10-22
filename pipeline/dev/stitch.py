@@ -85,9 +85,12 @@ def to_bytes(bom, header, rows):
     return (BOM if bom else b"") + ("\n".join([header] + rows) + "\n").encode("utf-8")
 
 
-def stitch(key, years, paths):
+def stitch(key, years, paths, source=None):
+    """`source(year) -> Paths` says where each season's file lives (default: `paths`);
+    the stitched file is always written under `paths`."""
+    source = source or (lambda year: paths)
     dataset = DATASETS[key]
-    parts = [CsvText(paths.stage_file(key, y)) for y in sorted(years)]
+    parts = [CsvText(source(y).stage_file(key, y)) for y in sorted(years)]
 
     first = parts[0]
     for p in parts[1:]:
