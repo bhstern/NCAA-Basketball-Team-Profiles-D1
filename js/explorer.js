@@ -219,8 +219,15 @@ async function loadExplorerYear(year) {
   if (EXPLORER_CACHE[year]) return EXPLORER_CACHE[year];
   const r = await fetch(`player_data/layer2_explorer/players_${year}.json`);
   const data = await r.json();
-  EXPLORER_CACHE[year] = data;
-  return data;
+  // Compact file {columns, rows} -> array of plain record objects: the same shape every
+  // caller has always received. An old-format array of records passes through unchanged.
+  const records = Array.isArray(data) ? data : data.rows.map(row => {
+    const rec = {};
+    for (let i = 0; i < data.columns.length; i++) rec[data.columns[i]] = row[i];
+    return rec;
+  });
+  EXPLORER_CACHE[year] = records;
+  return records;
 }
 
 async function initExplorer() {
