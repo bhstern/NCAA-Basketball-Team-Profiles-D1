@@ -130,6 +130,70 @@ EXPLORER_RANKED_STATS = [
 
 EXPLORER_PCT_SUFFIXES = ['_pct', '_conf_pct', '_sub_pct', '_pos_pct', '_pos_conf_pct', '_pos_sub_pct']
 
+# --- LAYER 2: Compact explorer (Phase 4a, reviewed 2026-10-21) ---
+# The explorer file keeps only the columns js/explorer.js and js/shotcharts.js read
+# (both through loadExplorerYear). Derived from the JS definitions, approved at the
+# Phase 4a gate: 509 kept, 117 dropped. Values are unchanged — only fewer columns,
+# stored columnar. When a frontend change reads a new explorer column, add it here.
+
+def _with_pcts(stat):
+    return [stat] + [f'{stat}{s}' for s in EXPLORER_PCT_SUFFIXES]
+
+EXPLORER_KEEP_IDENTIFIERS = [
+    # row logic: profile links, filters, tier styling, shot-chart eligibility / tier text
+    'player_id', 'percentile_tier', 'percentile_eligible', 'power_mid', 'mpg_tier', 'conference',
+    # EXPLORER_FROZEN columns (also shot-chart search + chips)
+    'name', 'team', 'position', 'role', 'class', 'height_in', 'games',
+    'minutes_per_game', 'age', 'recruit_rank_clean', 'years_in_d1',
+    # kept by choice: identity (not read by the JS today) and a future usage-tier filter
+    'player_season_id', 'player_id_collision', 'year', 'usage_tier',
+    # shotcharts.js SC_MA — Group mode pools makes/attempts from these strings
+    'rim_made_att_str', 'midrange_made_att_str', 'three_made_att_str',
+]
+
+# EXPLORER_STAT_TABS stats (all five tabs) — raw + all six percentile contexts.
+# Includes the six shot-zone stats shotcharts.js colors by any basis suffix.
+EXPLORER_KEEP_STATS_WITH_PCTS = [
+    'usage_pct', 'bpm', 'obpm', 'dbpm', 'ts', 'ppg', 'rebpg', 'astpg', 'stlpg', 'blkpg',
+    'prpg', 'dprpg', 'ortg', 'ortg_delta_team', 'drtg', 'drtg_delta_team',
+    'or_pct', 'dr_pct', 'ast_pct', 'tov_pct', 'ast_tov_ratio', 'tov_sensitivity',
+    'blk_pct', 'stl_pct', 'foul_sensitivity',
+    'ppp_used', 'efg', 'total_fg_pct', 'two_fg_pct', 'three_rate', 'three_fg_pct',
+    'three_p_per_100', 'rim_rate', 'rim_fg_pct', 'close_two_rate', 'close_two_fg_pct',
+    'dunk_rate', 'dunk_fg_pct', 'midrange_rate', 'midrange_fg_pct', 'ft_rate', 'ft_pct',
+    'close_vs_mid_ratio', 'rim_vs_three_ratio',
+    'pts_per_40', 'reb_per_40', 'ast_per_40', 'stl_per_40', 'blk_per_40', 'stocks_per_40', 'fc_40',
+    'ts_delta_team', 'efg_delta_team', 'rim_rate_delta_team', 'three_rate_delta_team',
+    'ortg_delta_conf', 'drtg_delta_conf', 'ts_delta_conf', 'efg_delta_conf',
+    'rim_rate_delta_conf', 'three_rate_delta_conf',
+    'ortg_delta_sub', 'drtg_delta_sub', 'ts_delta_sub', 'efg_delta_sub',
+    'rim_rate_delta_sub', 'three_rate_delta_sub',
+]
+
+# explorer.js pgStats (raw stat filter) + the computed FGM/FGA cells — raw only;
+# their percentiles are redundant with the rate percentiles and were dropped.
+EXPLORER_KEEP_RAW_ONLY = [
+    'fga_pg', 'fgm_pg', 'two_att_pg', 'two_made_pg', 'three_att_pg', 'three_made_pg',
+    'rim_att_pg', 'rim_made_pg', 'close_two_att_pg', 'close_two_made_pg',
+    'dunk_att_pg', 'dunk_made_pg', 'midrange_att_pg', 'midrange_made_pg',
+    'ft_att_pg', 'ft_made_pg',
+]
+
+EXPLORER_KEEP_COLS = frozenset(
+    EXPLORER_KEEP_IDENTIFIERS
+    + [c for stat in EXPLORER_KEEP_STATS_WITH_PCTS for c in _with_pcts(stat)]
+    + EXPLORER_KEEP_RAW_ONLY
+)
+
+def get_compact_explorer_cols(df_cols):
+    """The kept explorer columns, in the full explorer file's column order.
+    Raises if any kept column is missing, so a dropped input never silently thins the file."""
+    full = get_explorer_cols(df_cols)
+    missing = EXPLORER_KEEP_COLS - set(full)
+    if missing:
+        raise ValueError(f"compact explorer: kept columns missing from the profiles: {sorted(missing)}")
+    return [c for c in full if c in EXPLORER_KEEP_COLS]
+
 def get_explorer_cols(df_cols):
     """Build Layer 2 column list — identifiers + raw + 6 pct contexts per stat."""
     seen = set()
@@ -232,6 +296,20 @@ def write_json(path, obj, season, scrub=True):
     the team index.json (convert_data.py has no scrub)."""
     text = json.dumps(obj, separators=(',', ':'))
     return guard.write_text(path, scrub_nan_text(text) if scrub else text, season=season)
+
+def columnar(records, cols):
+    """{"columns": cols, "rows": [[...], ...]} from record dicts, NaN -> None.
+    (The NaN scrub's ':NaN,' / ':NaN}' patterns cannot match inside arrays, so the
+    columnar writer does the NaN -> null itself.)"""
+    def cell(v):
+        return None if isinstance(v, float) and v != v else v
+    return {"columns": list(cols), "rows": [[cell(r[c]) for c in cols] for r in records]}
+
+def write_columnar(path, records, cols, season):
+    """Compact columnar JSON through the guard. allow_nan=False: a NaN or inf that got
+    past columnar() fails the build instead of reaching the site as a bare NaN token."""
+    text = json.dumps(columnar(records, cols), separators=(',', ':'), allow_nan=False)
+    return guard.write_text(path, text, season=season)
 
 def write_fragment(path, obj, season):
     """A per-season piece of a multi-season file: raw json (NaN kept), scrubbed on assembly."""

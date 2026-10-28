@@ -4,30 +4,39 @@ p107 — Player profiles CSV -> site JSON (one season)
 Year-scoped port of the repo's convert_player_data.py, Parts 1, 2 and 4:
 
     layer1_rosters/rosters_{Y}.json      written for the season
-    layer2_explorer/players_{Y}.json     written for the season
+    layer2_explorer/players_{Y}.json     written for the season (compact, see below)
     layer3_positional/*                  this season's slice saved as a fragment
 
 Parts 3 (per-player career files) and 5 (players_index.json) span every season by
 nature; they are built by pipeline.assemble_json. Output goes to <out_root>/json/,
 mirroring the repo layout — never into the repo.
 
+PHASE 4a (reviewed 2026-10-21) — the explorer file is COMPACT: only the 509 columns
+the site reads (json_common.EXPLORER_KEEP_COLS), stored columnar as
+{"columns": [...], "rows": [[...], ...]}. Same rows, same order, same values as the
+full-format file; js/explorer.js loadExplorerYear() rebuilds the records.
+legacy_explorer=True (dev only: --legacy-explorer) writes the old full 626-column
+array-of-records file instead, byte-for-byte as convert_player_data.py did.
+
 Usage:
     python -m pipeline.player.p107_convert_player_json --year 2018 [--year 2023 ...]
+    python -m pipeline.player.p107_convert_player_json --year 2018 --legacy-explorer   (dev)
 """
 
 import os
+import sys
 
 import pandas as pd
 import numpy as np
 
 from pipeline.player.json_common import (
-    clean_for_json, get_explorer_cols, get_roster_cols, POSITIONAL_STATS,
-    write_fragment, write_json,
+    clean_for_json, get_compact_explorer_cols, get_explorer_cols, get_roster_cols,
+    POSITIONAL_STATS, write_columnar, write_fragment, write_json,
 )
 from pipeline.stage import stage_main
 
 
-def run(year, paths):
+def run(year, paths, legacy_explorer=False):
     season = year   # the original's loops reuse the name `year`
 
     print("Loading player profiles dataset...")
@@ -82,12 +91,18 @@ def run(year, paths):
     for year in years:
         yr_df = df_explorer[df_explorer['year'] == year]
         records = yr_df.to_dict(orient='records')
+        explorer_path = paths.json_file("player_data", "layer2_explorer", f'players_{year}.json')
 
-        filepath = write_json(paths.json_file("player_data", "layer2_explorer", f'players_{year}.json'),
-                              records, season)
+        if legacy_explorer:
+            filepath = write_json(explorer_path, records, season)
+        else:
+            # PHASE 4a: compact columnar file — the kept columns of the same records.
+            filepath = write_columnar(explorer_path, records,
+                                      get_compact_explorer_cols(df_explorer.columns), season)
 
         size_kb = os.path.getsize(filepath) / 1024
-        print(f"  players_{year}.json — {len(records):,} players, {size_kb:.0f} KB")
+        print(f"  players_{year}.json — {len(records):,} players, {size_kb:.0f} KB"
+              f"{' (legacy full format)' if legacy_explorer else ' (compact)'}")
 
     # ============================================================
     # PART 4 — LAYER 3: POSITIONAL AVERAGES (this season's slice)
@@ -187,4 +202,7 @@ def run(year, paths):
 
 
 if __name__ == "__main__":
-    stage_main(run, __doc__)
+    legacy = "--legacy-explorer" in sys.argv
+    if legacy:
+        sys.argv.remove("--legacy-explorer")
+    stage_main(lambda year, paths: run(year, paths, legacy_explorer=legacy), __doc__)

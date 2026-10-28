@@ -8,6 +8,10 @@ each key or list item present on one side only). No tolerance, no normalization.
 Counts are positional for lists (item i vs item i), so a record-order drift shows up
 as differing values rather than being hidden.
 
+Phase 4a: a compact (columnar) players_{Y}.json is compared by value-equivalence with the
+published file projected to the kept columns — see pipeline.dev.compare_explorer. A
+full-format one (p107 --legacy-explorer) is still compared byte-for-byte.
+
 Usage:
     python -m pipeline.dev.compare_json                    (all frozen seasons)
     python -m pipeline.dev.compare_json --year 2018 --year 2026
@@ -25,7 +29,7 @@ from pipeline.paths import Paths
 PER_YEAR = {
     "cbb_{Y}.json (team)": ("data", "cbb_{Y}.json"),
     "rosters_{Y}.json": ("player_data", "layer1_rosters", "rosters_{Y}.json"),
-    "players_{Y}.json (explorer)": ("player_data", "layer2_explorer", "players_{Y}.json"),
+    "players_{Y}.json (explorer)*": ("player_data", "layer2_explorer", "players_{Y}.json"),
 }
 MULTI = {
     "data/index.json": ("data", "index.json"),
@@ -69,6 +73,24 @@ def compare_file(got, want):
     return n if n else "BYTES"          # same values, different bytes (e.g. formatting)
 
 
+def _is_compact(path):
+    if not path.exists():
+        return False
+    with open(path, "rb") as f:
+        return f.read(1) == b"{"
+
+
+def compare_explorer_file(got, want):
+    """Phase 4a: a compact explorer file is checked by value-equivalence against the
+    published file projected to the kept columns (pipeline.dev.compare_explorer)."""
+    from pipeline.dev.compare_explorer import compare_year, is_equivalent
+    r = compare_year(got, want)
+    if is_equivalent(r):
+        return 0
+    return r["value_diffs"] + r["order_moves"] + r["ragged_rows"] + abs(r["rows_old"] - r["rows_new"]) \
+        + int(not r["columns_ok"]) + len(r["unknown_kept"]) or "COLUMNS"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--year", type=int, action="append")
@@ -87,10 +109,16 @@ def main():
         counts = []
         for y in years:
             rel = Path(*[p.replace("{Y}", str(y)) for p in parts])
-            counts.append(compare_file(rebuilt / rel, repo / rel))
+            if label.startswith("players_") and _is_compact(rebuilt / rel):
+                counts.append(compare_explorer_file(rebuilt / rel, repo / rel))
+            else:
+                counts.append(compare_file(rebuilt / rel, repo / rel))
         total = sum(counts) if all(isinstance(c, int) for c in counts) else "n/a"
         ok &= total == 0
         print("  " + label.ljust(width) + "".join(f"{c:>8}" for c in counts) + f"{total:>8}")
+
+    print("  * compact explorer files: value-equivalence vs the published file projected to the\n"
+          "    kept columns (pipeline.dev.compare_explorer), not byte identity")
 
     print("\n  multi-season files" + " " * 18 + "differing values")
     for label, parts in MULTI.items():
@@ -125,7 +153,7 @@ def main():
     for name, c in examples[:5]:
         print(f"      e.g. {name}: {c}")
 
-    print(f"\nJSON LEG A RESULT: {'ALL BYTE-IDENTICAL' if ok else 'MISMATCH — see above'}")
+    print(f"\nJSON LEG A RESULT: {'ALL BYTE-IDENTICAL (explorer: all equivalent*)' if ok else 'MISMATCH — see above'}")
     sys.exit(0 if ok else 1)
 
 
