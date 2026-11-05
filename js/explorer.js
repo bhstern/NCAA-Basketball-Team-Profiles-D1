@@ -9,6 +9,9 @@ let cExplorerPctFilters = [];
 let cExplorerData = [];
 let cExplorerFiltered = [];
 let cExplorerPage = 1;
+let cExplorerPendingRoute = null;    // set by the router: {params, more} to apply once data + filters are built
+let cExplorerHeightBounds = null;    // this season's data height range {min, max}
+const EXPLORER_DEFAULT_YEAR = 2026;
 const EXPLORER_PAGE_SIZE = 200;
 
 // Default sort per tab
@@ -237,12 +240,20 @@ async function initExplorer() {
     const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
     yearSel.innerHTML = years.map(y=>`<option value="${y}" ${y===2026?'selected':''}>${yLabel(y)}</option>`).join('');
   }
+  const route = cExplorerPendingRoute; cExplorerPendingRoute = null;
+  if (route) {
+    const y = parseInt(route.params.get('y')) || EXPLORER_DEFAULT_YEAR;
+    if ([...yearSel.options].some(o=>parseInt(o.value)===y)) yearSel.value = String(y);
+  }
   const year = parseInt(yearSel.value)||2026;
-  if (cExplorerData.length>0 && cExplorerYear===year) { renderExplorerTable(); return; }
-  await loadAndRenderExplorer();
+  if (cExplorerData.length>0 && cExplorerYear===year) {
+    if (route) applyExplorerRoute(route);
+    renderExplorerTable(); return;
+  }
+  await loadAndRenderExplorer(route);
 }
 
-async function loadAndRenderExplorer() {
+async function loadAndRenderExplorer(route) {
   const wrap = document.getElementById('explorer-table-wrap');
   const empty = document.getElementById('explorer-empty');
   const loading = document.getElementById('explorer-loading');
@@ -257,9 +268,10 @@ async function loadAndRenderExplorer() {
     if (_cw) { _cw.dataset.built=''; _cw.innerHTML=''; }
     if (_tw) { _tw.dataset.built=''; _tw.innerHTML=''; }
     buildExplorerFilters();
-    applyExplorerFilters();
+    if (route) applyExplorerRoute(route); else applyExplorerFilters();
     loading.style.display='none'; wrap.style.display='block';
     renderExplorerTable();
+    syncURL('replace');
   } catch(e) {
     loading.style.display='none'; empty.style.display='flex';
     empty.textContent='Error loading player data: '+e.message;
@@ -352,6 +364,7 @@ function buildExplorerFilters() {
   const heights = cExplorerData.map(p=>parseInt(p.height_in)).filter(h=>!isNaN(h));
   const minH = Math.min(...heights), maxH = Math.max(...heights);
   EF.minHeight = minH; EF.maxHeight = maxH;
+  cExplorerHeightBounds = {min:minH, max:maxH};
   const minSlider = document.getElementById('slider-min-height');
   const maxSlider = document.getElementById('slider-max-height');
   if (minSlider && !minSlider.dataset.built) {
@@ -359,6 +372,11 @@ function buildExplorerFilters() {
     minSlider.min=minH; minSlider.max=maxH; minSlider.value=minH;
     maxSlider.min=minH; maxSlider.max=maxH; maxSlider.value=maxH;
     updateHeightLabel();
+  } else if (minSlider && maxSlider) {
+    // a new season reset the height filter to its range above — show that on the sliders too
+    minSlider.min=minH; minSlider.max=maxH; minSlider.value=minH;
+    maxSlider.min=minH; maxSlider.max=maxH; maxSlider.value=maxH;
+    setHeightLabels(minH, maxH);
   }
 }
 
@@ -416,7 +434,7 @@ function buildCheckboxDropdown(container, label, values, stateSet) {
     const item = document.createElement('label');
     item.className='mf-check-item'; item.dataset.val=v;
     const cb = document.createElement('input'); cb.type='checkbox';
-    cb.checked = stateSet.size===0 || stateSet.has(v);
+    cb.checked = !stateSet.has(v);          // stateSet holds the EXCLUDED values
     cb.onchange = () => {
       if (cb.checked) {
         // User checked this item - remove from excluded set
@@ -437,6 +455,7 @@ function buildCheckboxDropdown(container, label, values, stateSet) {
     item.appendChild(cb); item.appendChild(document.createTextNode(' '+v));
     menu.appendChild(item);
   });
+  if (stateSet.size) updateBtn();     // rebuilt with filters already active: label shows them
   btn.onclick = e => {
     e.stopPropagation();
     const open = menu.style.display!=='none';
@@ -556,12 +575,12 @@ function applyExplorerFilters() {
   cExplorerPage=1;
 }
 
-function onExplorerFilterChange() { applyExplorerFilters(); renderExplorerTable(); }
+function onExplorerFilterChange() { applyExplorerFilters(); renderExplorerTable(); syncURL('replace'); }
 
 function setExplorerSort(key) {
   if(cExplorerSort.key===key) { cExplorerSort.dir=cExplorerSort.dir==='desc'?'asc':'desc'; }
   else { cExplorerSort.key=key; cExplorerSort.dir='desc'; }
-  applyExplorerFilters(); renderExplorerTable();
+  applyExplorerFilters(); renderExplorerTable(); syncURL('replace');
 }
 
 function setExplorerStatTab(tab,btn) {
@@ -569,14 +588,14 @@ function setExplorerStatTab(tab,btn) {
   document.querySelectorAll('#explorer-stat-tabs .hist-cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(TAB_DEFAULT_SORT[tab]) { cExplorerSort={key:TAB_DEFAULT_SORT[tab],dir:'desc'}; }
-  applyExplorerFilters(); renderExplorerTable();
+  applyExplorerFilters(); renderExplorerTable(); syncURL('replace');
 }
 
 function setExplorerPctContext(ctx,btn) {
   cExplorerPctContext=ctx;
   document.querySelectorAll('#explorer-pct-toggle .view-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderExplorerTable();
+  renderExplorerTable(); syncURL('replace');
 }
 
 function addStatFilter() {
@@ -585,12 +604,12 @@ function addStatFilter() {
   const max=document.getElementById('sf-max').value;
   if(!stat) return;
   cExplorerStatFilters.push({stat,min,max});
-  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
+  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable(); syncURL('replace');
 }
 
 function removeStatFilter(i) {
   cExplorerStatFilters.splice(i,1);
-  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
+  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable(); syncURL('replace');
 }
 
 function addPctFilter() {
@@ -600,12 +619,12 @@ function addPctFilter() {
   const max=document.getElementById('pf-max').value;
   if(!stat||!ctx) return;
   cExplorerPctFilters.push({stat,ctx,min,max});
-  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
+  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable(); syncURL('replace');
 }
 
 function removePctFilter(i) {
   cExplorerPctFilters.splice(i,1);
-  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable();
+  renderStatFilterTags(); applyExplorerFilters(); renderExplorerTable(); syncURL('replace');
 }
 
 function renderStatFilterTags() {
@@ -626,6 +645,7 @@ function renderStatFilterTags() {
 function showMoreExplorer() {
   cExplorerPage++;
   renderExplorerTable(true);
+  syncURL('replace');          // Show More depth rides in history.state (Back restores it)
 }
 
 // ── RENDER TABLE ──────────────────────────────────────────────────────────────
@@ -845,6 +865,15 @@ function initStickyExplorerHeader() {
 }
 
 function resetExplorerFilters() {
+  resetExplorerState();
+  applyExplorerFilters();
+  renderExplorerTable();
+  syncURL('replace');
+}
+
+// Every filter / sort / context back to its default, controls included — no render
+// (shared by the Reset button and the router).
+function resetExplorerState(keepForm) {
   // Reset EF state
   EF.positions.clear();
   EF.levels.clear();
@@ -868,23 +897,24 @@ function resetExplorerFilters() {
   const gamesEl = document.getElementById('ef-min-games');
   if (gamesEl) gamesEl.value = 5;
 
-  // Reset stat filter dropdowns
-  const sfStat = document.getElementById('sf-stat-select');
-  const sfMin = document.getElementById('sf-min');
-  const sfMax = document.getElementById('sf-max');
-  if (sfStat) sfStat.value = '';
-  if (sfMin) sfMin.value = '';
-  if (sfMax) sfMax.value = '';
+  // Reset the "add a filter" forms (Reset button only; the router leaves a half-typed form alone)
+  if (!keepForm) {
+    const sfStat = document.getElementById('sf-stat-select');
+    const sfMin = document.getElementById('sf-min');
+    const sfMax = document.getElementById('sf-max');
+    if (sfStat) sfStat.value = '';
+    if (sfMin) sfMin.value = '';
+    if (sfMax) sfMax.value = '';
 
-  // Reset percentile filter dropdowns
-  const pfStat = document.getElementById('pf-stat-select');
-  const pfCtx = document.getElementById('pf-context-select');
-  const pfMin = document.getElementById('pf-min');
-  const pfMax = document.getElementById('pf-max');
-  if (pfStat) pfStat.value = '';
-  if (pfCtx) pfCtx.value = 'national';
-  if (pfMin) pfMin.value = '';
-  if (pfMax) pfMax.value = '';
+    const pfStat = document.getElementById('pf-stat-select');
+    const pfCtx = document.getElementById('pf-context-select');
+    const pfMin = document.getElementById('pf-min');
+    const pfMax = document.getElementById('pf-max');
+    if (pfStat) pfStat.value = '';
+    if (pfCtx) pfCtx.value = 'national';
+    if (pfMin) pfMin.value = '';
+    if (pfMax) pfMax.value = '';
+  }
 
   // Reset height sliders
   const minS = document.getElementById('slider-min-height');
@@ -892,7 +922,8 @@ function resetExplorerFilters() {
   if (minS && maxS) {
     minS.value = minS.min;
     maxS.value = maxS.max;
-    updateHeightLabel();
+    EF.minHeight = parseInt(minS.value); EF.maxHeight = parseInt(maxS.value);
+    setHeightLabels(EF.minHeight, EF.maxHeight);
   }
 
   // Reset all button groups — all active
@@ -936,9 +967,112 @@ function resetExplorerFilters() {
   document.querySelectorAll('#explorer-pct-toggle .view-btn').forEach((b,i) => {
     b.classList.toggle('active', i === 0);
   });
+}
 
+function setHeightLabels(lo, hi) {
+  const fmt=h=>`${Math.floor(h/12)}'${h%12}"`;
+  const lblMin=document.getElementById('height-label-min');
+  const lblMax=document.getElementById('height-label-max');
+  if(lblMin) lblMin.textContent=fmt(lo);
+  if(lblMax) lblMax.textContent=fmt(hi);
+}
+
+// ── URL <-> EXPLORER STATE (router) ───────────────────────────────────────────
+// Only non-default state is written. Conference / team filters are written as the
+// shorter of "only these" (conf=, teams=) or "all except these" (xconf=, xteams=).
+const TIER_CODES = {
+  core:'Core Player (26+ MPG)', primary:'Primary Rotation (18\u201326 MPG)',
+  bench:'Bench Rotation (10\u201318 MPG)', fringe:'Fringe Rotation (5\u201310 MPG)',
+  eob:'End of Bench (0\u20135 MPG)',
+};
+const DEFAULT_TIER_CODES = ['core','primary','bench','fringe'];
+
+function explorerValues(field) {
+  return [...new Set(cExplorerData.map(p=>p[field]).filter(Boolean))].sort();
+}
+
+function explorerRouteParams(p) {
+  if (cExplorerYear !== EXPLORER_DEFAULT_YEAR) p.set('y', cExplorerYear);
+  if (cExplorerStatTab !== 'overview') p.set('st', cExplorerStatTab);
+  if (cExplorerPctContext !== 'national') p.set('ctx', cExplorerPctContext);
+  const defSort = TAB_DEFAULT_SORT[cExplorerStatTab] || 'bpm';
+  if (cExplorerSort.key !== defSort || cExplorerSort.dir !== 'desc') p.set('sort', cExplorerSort.key + '.' + cExplorerSort.dir);
+  const join = set => [...set].join(',');
+  [['pos',EF.positions],['lvl',EF.levels],['cls',EF.classes],['role',EF.roles],['yrs',EF.yrsD1]]
+    .forEach(([k,set]) => { if (set.size) p.set(k, join(set)); });
+  const codes = Object.keys(TIER_CODES).filter(c => EF.tiers.has(TIER_CODES[c]));
+  if (EF.tiers.size === 0) p.set('tier', 'all');
+  else if (codes.join(',') !== DEFAULT_TIER_CODES.join(',')) p.set('tier', codes.join(','));
+  [['conf','xconf','conference',EF.conferences],['teams','xteams','team',EF.teams]].forEach(([inc,exc,field,excluded]) => {
+    if (!excluded.size) return;
+    const shown = explorerValues(field).filter(v => !excluded.has(v));
+    if (cExplorerData.length && shown.length <= excluded.size) p.set(inc, shown.join(','));
+    else p.set(exc, join(excluded));
+  });
+  if (EF.minGames !== 5) p.set('g', EF.minGames);
+  const b = cExplorerHeightBounds;
+  if (b && (EF.minHeight !== b.min || EF.maxHeight !== b.max)) p.set('ht', EF.minHeight + '-' + EF.maxHeight);
+  if (EF.name) p.set('q', EF.name);
+  if (cExplorerStatFilters.length) p.set('sf', cExplorerStatFilters.map(f=>[f.stat,f.min,f.max].join(':')).join(','));
+  if (cExplorerPctFilters.length) p.set('pf', cExplorerPctFilters.map(f=>[f.stat,f.ctx,f.min,f.max].join(':')).join(','));
+}
+
+// URL -> state + controls, then filter. Needs this season's data loaded and filters built.
+function applyExplorerRoute(route) {
+  const p = route.params;
+  resetExplorerState(true);
+  const list = k => p.get(k).split(',').filter(Boolean);
+  const st = p.get('st');
+  cExplorerStatTab = EXPLORER_STAT_TABS[st] ? st : 'overview';
+  const ctx = p.get('ctx');
+  cExplorerPctContext = PCT_SUFFIX[ctx] ? ctx : 'national';
+  const sort = p.get('sort') || '', i = sort.lastIndexOf('.');
+  cExplorerSort = i > 0 ? {key: sort.slice(0, i), dir: sort.slice(i + 1) === 'asc' ? 'asc' : 'desc'}
+                        : {key: TAB_DEFAULT_SORT[cExplorerStatTab] || 'bpm', dir: 'desc'};
+  [['pos','positions'],['lvl','levels'],['cls','classes'],['role','roles'],['yrs','yrsD1']]
+    .forEach(([k,f]) => { EF[f] = new Set(p.has(k) ? list(k) : []); });
+  if (p.has('tier')) EF.tiers = p.get('tier') === 'all' ? new Set() : new Set(list('tier').map(c => TIER_CODES[c]).filter(Boolean));
+  [['conf','xconf','conference','conferences'],['teams','xteams','team','teams']].forEach(([inc,exc,field,f]) => {
+    if (p.has(inc)) { const shown = new Set(list(inc)); EF[f] = new Set(explorerValues(field).filter(v => !shown.has(v))); }
+    else if (p.has(exc)) EF[f] = new Set(list(exc));
+  });
+  const g = parseInt(p.get('g')); if (!isNaN(g)) EF.minGames = g;
+  EF.name = p.get('q') || '';
+  const b = cExplorerHeightBounds;
+  if (b) { EF.minHeight = b.min; EF.maxHeight = b.max; }
+  const ht = (p.get('ht') || '').split('-').map(Number);
+  if (ht.length === 2 && !isNaN(ht[0]) && !isNaN(ht[1])) { EF.minHeight = ht[0]; EF.maxHeight = ht[1]; }
+  cExplorerStatFilters = p.has('sf') ? list('sf').map(x => { const [stat, min='', max=''] = x.split(':'); return {stat, min, max}; }).filter(f => f.stat) : [];
+  cExplorerPctFilters = p.has('pf') ? list('pf').map(x => { const [stat, c='national', min='', max=''] = x.split(':'); return {stat, ctx:c, min, max}; })
+                                        .filter(f => f.stat && PCT_SUFFIX[f.ctx]) : [];
+  syncExplorerFilterUI();
   applyExplorerFilters();
-  renderExplorerTable();
+  if (route.more > 1) cExplorerPage = route.more;    // Back: same "Show More" depth
+}
+
+// every explorer control shows the current state
+function syncExplorerFilterUI() {
+  const grp = (sel, set) => document.querySelectorAll(sel + ' .mf-btn')
+    .forEach(b => b.classList.toggle('active', set.size === 0 || set.has(b.dataset.value)));
+  grp('#mf-position', EF.positions); grp('#mf-level', EF.levels); grp('#mf-class', EF.classes);
+  grp('#mf-mpg-tier', EF.tiers); grp('#mf-role', EF.roles); grp('#mf-years-d1', EF.yrsD1);
+  [['#mf-conference','Conference',EF.conferences],['#mf-team','Team',EF.teams]].forEach(([sel,label,excluded]) => {
+    const items = [...document.querySelectorAll(sel + ' .mf-check-item[data-val]')];
+    items.forEach(it => { const cb = it.querySelector('input'); if (cb) cb.checked = !excluded.has(it.dataset.val); });
+    const btn = document.querySelector(sel + ' .mf-dropdown-btn');
+    if (!btn) return;
+    const out = items.filter(it => excluded.has(it.dataset.val)).length;
+    // no filter -> the label a freshly built dropdown shows
+    btn.innerHTML = (out === 0 ? label : out === items.length ? label + ': None' : `${label} (${items.length - out})`) + ' <span>▾</span>';
+  });
+  const nameEl = document.getElementById('ef-name-search'); if (nameEl) nameEl.value = EF.name;
+  const gamesEl = document.getElementById('ef-min-games'); if (gamesEl) gamesEl.value = EF.minGames;
+  const minS = document.getElementById('slider-min-height'), maxS = document.getElementById('slider-max-height');
+  if (minS && maxS) { minS.value = EF.minHeight; maxS.value = EF.maxHeight; }
+  setHeightLabels(EF.minHeight, EF.maxHeight);
+  renderStatFilterTags();
+  routeActivate('#explorer-stat-tabs .hist-cat-btn', cExplorerStatTab);
+  routeActivate('#explorer-pct-toggle .view-btn', cExplorerPctContext);
 }
 
 function updateExplorerCount() {

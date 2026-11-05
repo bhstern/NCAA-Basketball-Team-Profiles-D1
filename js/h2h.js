@@ -4,6 +4,7 @@ async function renderH2H(){
   const yA=parseInt(document.getElementById('h2h-year-a').value);
   const tB=document.getElementById('h2h-team-b').value;
   const yB=parseInt(document.getElementById('h2h-year-b').value);
+  syncURL('replace');   // matchup + category live in the URL (no Back entry)
   if(!tA||!yA||!tB||!yB)return;
   document.getElementById('h2h-empty').style.display='none';
   document.getElementById('h2h-loading').style.display='flex';

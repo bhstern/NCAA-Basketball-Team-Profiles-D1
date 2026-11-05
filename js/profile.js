@@ -13,6 +13,8 @@ let cPlayerInitView = 'career';     // view to land on after load (for ?view= de
 let cPlayerShotSeason = null;       // selected season (year) for shot charts; null → most recent
 let cPlayerShotBasis = 'national';  // shot-chart percentile basis: 'national' | 'pos'
 let cPlayerShotCompare = false;     // stack the previous season below
+let cPlayerPid = null;              // id being shown / loaded (the URL's pid, even before the file arrives)
+let PF_OPEN_TOKEN = 0;              // only the latest openPlayerProfile may render
 const PF_CONTEXTS = [
   {key:'national', label:'National'},
   {key:'conf',     label:'Conference'},
@@ -32,10 +34,22 @@ function pfLatest(seasons){
   return seasons.slice().sort((a,b)=>(b.year||0)-(a.year||0))[0];
 }
 
-// ── entry point: roster/explorer row click, or a ?pid= deep link ──
-async function openPlayerProfile(playerId, initView){
+// ── entry point: roster/explorer row click, or a ?pid= deep link / Back / Forward ──
+// route (from the router only): the URL's view state {st, ctx, ss, sb, cmp} to land on.
+async function openPlayerProfile(playerId, initView, route){
   if(!playerId) return;
+  const tok=++PF_OPEN_TOKEN;
   cPlayerInitView = (initView==='trends'||initView==='shots') ? initView : 'career';
+  cPlayerPid=playerId; cPlayer=null;
+  cPlayerStatTab='overview';
+  cPlayerView='career'; cPlayerShotSeason=null; cPlayerShotCompare=false;
+  if(route){
+    if(['overview','advanced','shooting','per40','context'].includes(route.st)) cPlayerStatTab=route.st;
+    cPlayerPctContext = PF_CONTEXTS.some(c=>c.key===route.ctx) ? route.ctx : 'national';
+    if(route.ss && !isNaN(parseInt(route.ss))) cPlayerShotSeason=parseInt(route.ss);
+    cPlayerShotBasis = route.sb==='pos' ? 'pos' : 'national';
+    cPlayerShotCompare = route.cmp==='1';
+  }
   cTab='player';
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
@@ -44,7 +58,7 @@ async function openPlayerProfile(playerId, initView){
   const banner=document.getElementById('banner'), desc=document.getElementById('page-desc');
   if(banner) banner.style.display='none';
   if(desc) desc.style.display='none';
-  history.replaceState(null,'','?tab=player&pid='+encodeURIComponent(playerId));
+  syncURL('push');            // opening a player is a navigation: new Back entry
 
   const empty=document.getElementById('player-empty');
   const loading=document.getElementById('player-loading');
@@ -56,13 +70,14 @@ async function openPlayerProfile(playerId, initView){
   try{
     const res=await fetch('player_data/layer2_profiles/player_'+playerId+'.json');
     if(!res.ok) throw new Error('not found');
-    cPlayer=await res.json();
-    cPlayerStatTab='overview';
-    cPlayerView='career'; cPlayerShotSeason=null; cPlayerShotCompare=false;
+    const data=await res.json();
+    if(tok!==PF_OPEN_TOKEN) return;          // a newer player was opened meanwhile
+    cPlayer=data;
     renderPlayerProfile();
     if(loading) loading.style.display='none';
     if(content) content.style.display='block';
   }catch(e){
+    if(tok!==PF_OPEN_TOKEN) return;
     if(loading) loading.style.display='none';
     if(empty){ empty.style.display='block'; empty.textContent='Could not load this player profile.'; }
   }
@@ -83,6 +98,7 @@ function renderPlayerProfile(){
   document.getElementById('player-career-view').style.display='';
   document.getElementById('player-shots-view').style.display='none';
   const trv=document.getElementById('player-trends-view'); if(trv) trv.style.display='none';
+  routeActivate('#player-cat-nav .hist-cat-btn', cPlayerStatTab);   // stat-tab buttons match the state
   renderPlayerCareer();
   // land on a deep-linked view if requested (and available)
   if(cPlayerInitView==='shots') switchPlayerView('shots');
@@ -99,10 +115,21 @@ function switchPlayerView(view, btn){
   document.getElementById('player-shots-view').style.display  = view==='shots'?'':'none';
   const trv=document.getElementById('player-trends-view'); if(trv) trv.style.display = view==='trends'?'':'none';
   if(view==='shots') renderPlayerShots();
-  // keep the URL in sync so the address bar is shareable (?pid=...&view=...)
-  if(cPlayer && cPlayer.player_id){
-    history.replaceState(null,'','?tab=player&pid='+encodeURIComponent(cPlayer.player_id)+'&view='+view);
-  }
+  // keep the URL in sync so the address bar is shareable (?tab=player&pid=...&view=...)
+  syncURL('replace');
+}
+
+// the player view's URL keys (router): pid + non-default sub-view / stat tab / context / shot settings
+function playerRouteParams(p){
+  if(!cPlayerPid) return;
+  p.set('pid', cPlayerPid);
+  if(cPlayerView!=='career') p.set('view', cPlayerView);
+  if(cPlayerStatTab!=='overview') p.set('st', cPlayerStatTab);
+  if(cPlayerPctContext!=='national') p.set('ctx', cPlayerPctContext);
+  const latest = cPlayer && cPlayer.seasons && cPlayer.seasons.length ? pfLatest(cPlayer.seasons).year : null;
+  if(cPlayerShotSeason!=null && cPlayerShotSeason!==latest) p.set('ss', cPlayerShotSeason);
+  if(cPlayerShotBasis==='pos') p.set('sb','pos');
+  if(cPlayerShotCompare) p.set('cmp','1');
 }
 
 // ── identity card (from the most recent season) ──
@@ -132,11 +159,13 @@ function switchPlayerStatTab(tab, btn){
   cPlayerStatTab=tab;
   document.querySelectorAll('#player-cat-nav .hist-cat-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  syncURL('replace');
   renderPlayerCareer();
 }
 
 function switchPlayerPctContext(ctx){
   cPlayerPctContext=ctx;
+  syncURL('replace');
   renderPlayerCareer();   // re-render rebuilds the toggle with the new active state
 }
 
@@ -326,9 +355,9 @@ function pfSeasonCharts(s, sfx, compact){
   </div>`;
 }
 
-function setPlayerShotSeason(y){ cPlayerShotSeason=parseInt(y); renderPlayerShots(); }
-function setPlayerShotBasis(b){ cPlayerShotBasis=b; renderPlayerShots(); }
-function setPlayerShotCompare(c){ cPlayerShotCompare=c; renderPlayerShots(); }
+function setPlayerShotSeason(y){ cPlayerShotSeason=parseInt(y); syncURL('replace'); renderPlayerShots(); }
+function setPlayerShotBasis(b){ cPlayerShotBasis=b; syncURL('replace'); renderPlayerShots(); }
+function setPlayerShotCompare(c){ cPlayerShotCompare=c; syncURL('replace'); renderPlayerShots(); }
 
 function renderPlayerShots(){
   const wrap=document.getElementById('player-shots');

@@ -285,6 +285,7 @@ function scRefreshBasis(){
 let scRenderToken=0;
 async function scRender(){
   const token=++scRenderToken;
+  syncURL('replace');            // builder setup lives in the URL (v1 keys, see scRouteParams)
   const charts=scActiveCharts();
 
   // gather rows / profiles for each active chart
@@ -692,6 +693,70 @@ function scApplyVisibility(){
   document.getElementById('sc-stackwrap').style.display=compare?'':'none';
   const courts=document.getElementById('sc-courts');
   if(courts) courts.classList.toggle('sc-stacked', compare && SC.stack);
+}
+
+/* ============================== URL STATE (router) ==============================
+   v1 keys — the meaningful setup, not every field:
+     subj=player|group|tvp  mode=compare  cmp=diff  basis=<basis>  color=rate
+     a= / b=  per chart:  <year>[:<team>[:d]]  (team charts)   <year>[:<pid>,<pid>…]  (player/group)
+   NOT captured (follow-up): custom titles/subtitles, Percentiles / Labels / Stack toggles. */
+function scRouteParams(p){
+  if(!SC.mounted) return;
+  if(SC.subject!=='team') p.set('subj',SC.subject);
+  if(SC.subject!=='tvp'){
+    if(SC.mode==='compare') p.set('mode','compare');
+    if(SC.intent==='diff') p.set('cmp','diff');
+  }
+  if(SC.intent==='pop' && SC.basis!==scDefaultBasis()) p.set('basis',SC.basis);
+  if(SC.colorMetric!=='fg') p.set('color',SC.colorMetric);
+  scActiveCharts().forEach(c=>{
+    const st=SC.charts[c];
+    let v;
+    if(scSubjectOf(c)==='team') v=st.team ? `${st.year}:${st.team}${st.side==='d'?':d':''}` : `${st.year}`;
+    else v=st.players.length ? `${st.year}:${st.players.map(r=>r.player_id).join(',')}` : `${st.year}`;
+    if(v!=='2026') p.set(c.toLowerCase(), v);
+  });
+}
+
+async function scApplyRoute(p){
+  const keys=['subj','mode','cmp','basis','color','a','b'];
+  if(!keys.some(k=>p.has(k))) return;              // bare ?tab=shotcharts: builder as it is
+  const subj=p.get('subj');
+  SC.subject=['team','player','group','tvp'].includes(subj) ? subj : 'team';
+  if(SC.subject==='tvp'){ SC.mode='compare'; SC.intent='diff'; }
+  else {
+    SC.mode = p.get('mode')==='compare' ? 'compare' : 'builder';
+    SC.intent = SC.mode==='compare' && p.get('cmp')==='diff' ? 'diff' : 'pop';
+  }
+  SC.colorMetric = p.get('color')==='rate' ? 'rate' : 'fg';
+  if(SC.intent==='diff'){ SC.showPct=false; const sp=document.getElementById('sc-showpct'); if(sp) sp.checked=false; }
+  for(const c of ['A','B']){
+    const st=SC.charts[c];
+    const parts=(p.get(c.toLowerCase())||'').split(':');
+    const y=parseInt(parts[0]);
+    st.year = SC_YEARS.includes(y) ? y : 2026;
+    const rest=parts.slice(1);
+    st.titleEdited=false;
+    if(scSubjectOf(c)==='team'){
+      st.side = rest.length>1 && (rest[rest.length-1]==='d'||rest[rest.length-1]==='o') ? rest.pop() : 'o';
+      if(rest.length) st.team=rest.join(':');
+      st.players=[];
+      await loadYear(st.year); scFillTeams(c);          // keeps st.team if that season has it
+    } else {
+      const ids=rest.join(':').split(',').filter(Boolean);
+      const arr=ids.length ? await loadExplorerYear(st.year) : [];
+      st.players=ids.map(id=>arr.find(r=>String(r.player_id)===id)).filter(Boolean);
+      if(scSubjectOf(c)==='player') st.players=st.players.slice(0,1);
+    }
+    const ys=document.getElementById('sc-year'+c); if(ys) ys.value=String(st.year);
+    document.querySelectorAll('.sc-side'+c).forEach(b=>b.classList.toggle('on',b.dataset.s===st.side));
+    scRenderChips(c); scAutoTitle(c);
+  }
+  [['#sc-subject',SC.subject],['#sc-mode',SC.mode],['#sc-intent',SC.intent],['#sc-colormetric',SC.colorMetric]]
+    .forEach(([sel,v])=>document.querySelectorAll(sel+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v)));
+  SC.basis = p.get('basis') || scDefaultBasis();
+  scSyncTitlePlaceholders(); scApplyVisibility(); scRefreshBasis();
+  await scRender();
 }
 
 /* entry point — called by switchTab('shotcharts') */

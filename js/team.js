@@ -38,16 +38,20 @@ function onTeamChange(){
   onSelectionChange();
 }
 
+let SEL_TOKEN=0;   // only the latest team/season selection may render (a slow older load is dropped)
 async function onSelectionChange(){
   const team=document.getElementById('team-select').value;
   const year=parseInt(document.getElementById('year-select').value);
   if(!team||!year)return;
+  const tok=++SEL_TOKEN;
   cTeam=team;cYear=year;cCompTeams=[];cCustomMode=false;
-  // Update URL so refresh/share preserves selection
-  updateURL();
+  // A new team or season is a navigation: new Back entry (refresh/share preserve it too)
+  syncURL('push');
   showLoading();
   try{
-    const yd=await loadYear(year);cYearData=yd;
+    const yd=await loadYear(year);
+    if(tok!==SEL_TOKEN)return;
+    cYearData=yd;
     const row=yd.find(d=>d.team_name===team);
     if(!row){showEmpty(`No data for ${team} in ${year}`);return;}
     cRow=row;
@@ -257,7 +261,7 @@ function updateBanner(row){
     }).join(''):'<span style="font-size:10px;color:var(--text4)">—</span>')+
     `<span class="d1-label">vs. All D1</span>`;
 
-  recalcBlurb(row,'d1');
+  recalcBlurb(row,cView);   // the summary sentence matches the selected view (was always All D1)
 }
 
 function recalcBlurb(row,view){
@@ -827,7 +831,7 @@ function renderTab(){
 
 // ── PROFILE ───────────────────────────────────────────────────────────────────
 function setView(v,btn){
-  cView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  cView=v;document.querySelectorAll('#profile-content .view-toggle .view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   updateURL();
   if(cRow){recalcBlurb(cRow,v);renderProfile();}
 }
@@ -1011,6 +1015,7 @@ function setTrendWindow(n,btn){
     if(b.textContent.includes('yr'))b.classList.remove('active');
   });
   btn.classList.add('active');
+  syncURL('replace');
   renderHistorical();
 }
 function setH2HCat(cat,btn){
@@ -1023,6 +1028,7 @@ function setConfCat(cat,btn){
   cConfCat=cat;
   document.querySelectorAll('#conf-cat-filter .hist-cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  syncURL('replace');
   renderConfStats();
 }
 function toggleShotRowByName(el){
@@ -1060,6 +1066,7 @@ function renderProfile(){
 function setTopN(n,btn){
   cTopN=n;cCustomMode=false;cCompTeams=[];
   document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  syncURL('replace');
   renderConfStats();
 }
 
@@ -1093,6 +1100,7 @@ function renderConference(){
       if(cCompTeams.length===0)cCustomMode=false;
       // Deactivate top N buttons when in custom mode
       document.querySelectorAll('.top-n-btn').forEach(b=>b.classList.toggle('active',!cCustomMode&&parseInt(b.textContent)==cTopN||(b.textContent==='All'&&cTopN===0)));
+      syncURL('replace');
       renderConference();
     };
     tbody.appendChild(tr);
@@ -1223,8 +1231,8 @@ function renderConfStats(){
 }
 
 // ── HISTORICAL ────────────────────────────────────────────────────────────────
-function setHistCat(cat,btn){cHistCat=cat;document.querySelectorAll('.hist-cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistorical();}
-function setHistComp(comp,btn){cHistComp=comp;document.querySelectorAll('.hist-comp-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistorical();}
+function setHistCat(cat,btn){cHistCat=cat;document.querySelectorAll('#hist-cat-filter .hist-cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');syncURL('replace');renderHistorical();}
+function setHistComp(comp,btn){cHistComp=comp;document.querySelectorAll('.hist-comp-btn[onclick^="setHistComp"]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');syncURL('replace');renderHistorical();}
 
 function initHistSelectors(){
   // No-op — season range replaced by trend window (years back from current season)

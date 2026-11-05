@@ -150,6 +150,7 @@ function setRosterStatTab(tab, btn) {
   cRosterStatTab = tab;
   document.querySelectorAll('#roster-stat-tabs .hist-cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  syncURL('replace');
   if (cTeam && cYear) renderRosterTable();
 }
 
