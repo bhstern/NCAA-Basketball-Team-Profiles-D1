@@ -9,6 +9,9 @@ run_pipeline — build ONE season end to end, in order, inside the _rebuild sand
     assemble  multi-season JSON: this season + every other season's existing output
 
 Stops at the first stage that raises, and at the first BLOCKING gate that fails.
+Row-count invariants (pipeline.row_invariants) are BLOCKING: after every fetch and every
+stage output they check not-zero, join retention, row preservation, and no sharp drop
+versus the previous successful run; a violation stops the run.
 All gates are advisory for now (Phase 2/3 decision): they are run and reported but
 never stop the run. They must become blocking before the Phase 6 cron.
 
@@ -38,7 +41,7 @@ import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pipeline import assemble_json, config, guard
+from pipeline import assemble_json, config, freshness, guard, row_invariants
 from pipeline.paths import Paths
 from pipeline.player import (
     history, p101_fetch_player_stats, p102_clean_player_stats, p103_player_stats_checks,
@@ -133,7 +136,12 @@ def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False)
         if simulate_current:
             steps.append(("player", "history_index (seasons before this one)", None))
         steps += STAGES
+        steps.append(("assemble", "freshness", None))
         steps.append(("assemble", "assemble_json", None))
+        fresh, site_meta = None, None      # pipeline.freshness: this run's state / index.json "_meta"
+
+        row_counts = {}
+        previous_counts = row_invariants.load_previous(paths, year)
 
         all_years = sorted(config.FROZEN_SEASONS | {year})
         source = lambda y: paths if y == year else main_paths   # other seasons: existing output
@@ -148,10 +156,21 @@ def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False)
                     result = None
                 elif name.startswith("history_index"):
                     result = history.build(paths, force=True, source=main_paths)
+                elif name == "freshness":
+                    if year == config.CURRENT_SEASON:     # the current (or simulated-current) season
+                        fresh = freshness.evaluate(paths, year)
+                        site_meta = freshness.meta(fresh)
+                        result = freshness.gate(fresh)
+                    else:                                 # frozen rebuild: keep the current season's stamp
+                        site_meta = freshness.meta(freshness.load(main_paths, config.CURRENT_SEASON))
+                        result = None
                 elif name == "assemble_json":
-                    result = assemble_json.run(all_years, paths, source)
+                    result = assemble_json.run(all_years, paths, source, meta=site_meta)
                 else:
                     result = fn(year, paths)
+                rows = row_invariants.check_after(name, year, paths, row_counts, previous_counts)
+                if rows:
+                    entry["rows"] = rows
             except Exception as e:
                 entry.update(status="ERROR", seconds=round(time.time() - started, 1),
                              error=f"{type(e).__name__}: {e}")
@@ -174,8 +193,14 @@ def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False)
                 report["steps"].append(entry)
         else:
             report["result"] = "COMPLETE"
+        report["row_counts"] = row_counts
 
     report["finished"] = datetime.now(timezone.utc).isoformat()
+    if report["result"] == "COMPLETE":
+        row_invariants.record_success(paths, year, row_counts, report["finished"])
+        if fresh:                                  # a failed run never moves last_updated
+            freshness.record(paths, year, fresh)
+            report["freshness"] = {k: fresh[k] for k in ("status", "last_updated", "games_total")}
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     report_path = guard.write_text(paths.out_root / "run_reports" / f"{year}_{stamp}.json",
                                    json.dumps(report, indent=2), season=None)
@@ -186,7 +211,8 @@ def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False)
 def print_report(report, report_path):
     print(f"\n{'=' * 78}\nRUN REPORT — {report['year']} ({report['mode']}) -> {report['out_root']}\n{'=' * 78}")
     for s in report["steps"]:
-        print(f"  {s['group']:<9}{s['step']:<42}{s['status']:<22}{s['seconds']:>7.1f}s")
+        rows = "  rows: " + ", ".join(f"{k}={v}" for k, v in s["rows"].items()) if s.get("rows") else ""
+        print(f"  {s['group']:<9}{s['step']:<42}{s['status']:<22}{s['seconds']:>7.1f}s{rows}")
     gates = [s for s in report["steps"] if s["status"].startswith("GATE")]
     if gates:
         print("\n  GATES (all advisory — reported, never stop the run)")

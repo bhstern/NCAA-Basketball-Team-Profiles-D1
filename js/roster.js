@@ -239,7 +239,9 @@ function renderRosterTable(playersArg) {
 
   const totalCols = ROSTER_FROZEN.length + stats.length;
 
-  let html = `<div class="roster-scroll-wrap"><div class="roster-table-wrap"><table class="roster-table"><thead><tr>`;
+  const pctOn = pctActive(cYear);   // season's player percentiles active? (data/index.json "_seasons")
+  let html = (pctOn ? '' : pctPendingNote(cYear, 'Raw stats are shown until then.')) +
+             `<div class="roster-scroll-wrap"><div class="roster-table-wrap"><table class="roster-table"><thead><tr>`;
 
   ROSTER_FROZEN.forEach(col => {
     const frozenStyle = col.frozen ? 'position:sticky;left:0;z-index:3;' : '';
@@ -286,7 +288,7 @@ function renderRosterTable(playersArg) {
           html += `<td class="roster-frozen-td roster-name-cell" style="position:sticky;left:0;z-index:1;">${nameHtml}</td>`;
         } else if (col.stacked) {
           const pctKey = col.pctKey || (col.key + '_pct');
-          const pctVal = p[pctKey];
+          const pctVal = pctOn ? p[pctKey] : null;
           const cellContent = (noPercentile || pctVal === null || pctVal === undefined)
             ? `<span class="roster-raw-white">${display}</span>`
             : rosterStackedCell(display, pctVal, isTier2);
@@ -317,7 +319,7 @@ function renderRosterTable(playersArg) {
         }
 
         const pctKey = s.pctKey || (s.key + '_pct');
-        const pctVal = p[pctKey];
+        const pctVal = pctOn ? p[pctKey] : null;
         const hasPct = pctVal !== undefined && pctVal !== null;
 
         if (noPercentile || !hasPct) {

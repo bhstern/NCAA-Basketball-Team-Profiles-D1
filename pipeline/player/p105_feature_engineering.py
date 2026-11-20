@@ -19,8 +19,9 @@ Cross-season logic (player_id_collision, years_in_d1, row order) reads the froze
 player history index — see pipeline.player.history. Team context comes from this
 season's t05 output, so the team chain must run first.
 
-KNOWN ISSUE, REPRODUCED ON PURPOSE (spec §6 item 3): the conference map has no fillna,
-so an unknown conference code becomes NaN.
+Conference (Phase 5 fix, spec §6 item 3): the map is the shared pipeline.conferences one;
+an unknown code falls back to the raw code with a loud warning (it used to become NaN).
+Power / Mid is season-aware: from 2027 the re-formed Pac-12 is Mid.
 
 Usage:
     python -m pipeline.player.p105_feature_engineering --year 2018 [--year 2023 ...]
@@ -29,7 +30,7 @@ Usage:
 import pandas as pd
 import numpy as np
 
-from pipeline import guard
+from pipeline import conferences, guard
 from pipeline.player import history
 from pipeline.player.ids import add_player_ids
 from pipeline.stage import stage_main
@@ -131,21 +132,10 @@ def run(year, paths):
     elif "conference_y" in df.columns:
         df = df.rename(columns={"conference_y": "conference"})
 
-    # Now apply the mapping *only if* conference exists
-    conference_map = {
-        "Slnd": "Southland", "WAC": "WAC", "MWC": "Mountain West", "MAC": "MAC",
-        "SWAC": "SWAC", "SEC": "SEC", "AE": "America East", "Pat": "Patriot",
-        "SB": "Sun Belt", "P12": "Pac-12", "B12": "Big 12", "OVC": "Ohio Valley",
-        "ASun": "Atlantic Sun", "WCC": "WCC", "MVC": "Missouri Valley",
-        "MEAC": "MEAC", "ACC": "ACC", "Ivy": "Ivy", "NEC": "Northeast",
-        "BE": "Big East", "BW": "Big West", "BSth": "Big South", "CAA": "CAA",
-        "MAAC": "MAAC", "CUSA": "Conference USA", "Amer": "American",
-        "SC": "SoCon", "ind": "Independent", "Horz": "Horizon", "A10": "A10",
-        "Sum": "Summit", "BSky": "Big Sky", "B10": "Big Ten"
-    }
-
+    # Phase 5: the shared map (pipeline.conferences). An unmapped code now falls back to the
+    # raw code with a loud warning instead of becoming NaN (186 player rows in early 2026-27).
     if "conference" in df.columns:
-        df["conference"] = df["conference"].map(conference_map)
+        df["conference"] = conferences.map_conferences(df["conference"], year, "p105", teams=df["team"])
     else:
         print("WARNING: conference column missing after merge.")
 
@@ -158,7 +148,7 @@ def run(year, paths):
         2 * (df["off_fga"] + 0.44 * df["fta_off_est"] + EPS)
     )
 
-    power_confs = {"ACC","Big Ten","Big 12","SEC","Pac-12","Big East"}
+    power_confs = conferences.power_conferences(year)
     df["power_mid"] = np.where(df["conference"].isin(power_confs), "Power", "Mid")
 
     df["team_efg"] = df["efg_rate_off"]

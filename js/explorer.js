@@ -1,6 +1,6 @@
 // ── PLAYER EXPLORER ───────────────────────────────────────────────────────────
 let EXPLORER_CACHE = {};
-let cExplorerYear = 2026;
+let cExplorerYear = null;           // season on screen (set on first load)
 let cExplorerStatTab = 'overview';
 let cExplorerPctContext = 'national';
 let cExplorerSort = {key: 'bpm', dir: 'desc'};
@@ -11,7 +11,11 @@ let cExplorerFiltered = [];
 let cExplorerPage = 1;
 let cExplorerPendingRoute = null;    // set by the router: {params, more} to apply once data + filters are built
 let cExplorerHeightBounds = null;    // this season's data height range {min, max}
-const EXPLORER_DEFAULT_YEAR = 2026;
+// Default season = the newest one in data/index.json (core.js indexYears), not a constant.
+function explorerDefaultYear(){ return newestSeason(); }
+// Default "min games": 5 normally; 1 while a season's percentiles are not yet active
+// (early season — nobody has 5 games yet, and a 5-game floor would hide every player).
+function explorerDefaultMinGames(year){ return pctActive(year) ? 5 : 1; }
 const EXPLORER_PAGE_SIZE = 200;
 
 // Default sort per tab
@@ -237,15 +241,15 @@ async function initExplorer() {
   const yearSel = document.getElementById('explorer-year-select');
   if (!yearSel) return;
   if (yearSel.options.length === 0) {
-    const years = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
-    yearSel.innerHTML = years.map(y=>`<option value="${y}" ${y===2026?'selected':''}>${yLabel(y)}</option>`).join('');
+    const years = indexYears(), def = explorerDefaultYear();
+    yearSel.innerHTML = years.map(y=>`<option value="${y}" ${y===def?'selected':''}>${yLabel(y)}</option>`).join('');
   }
   const route = cExplorerPendingRoute; cExplorerPendingRoute = null;
   if (route) {
-    const y = parseInt(route.params.get('y')) || EXPLORER_DEFAULT_YEAR;
+    const y = parseInt(route.params.get('y')) || explorerDefaultYear();
     if ([...yearSel.options].some(o=>parseInt(o.value)===y)) yearSel.value = String(y);
   }
-  const year = parseInt(yearSel.value)||2026;
+  const year = parseInt(yearSel.value)||explorerDefaultYear();
   if (cExplorerData.length>0 && cExplorerYear===year) {
     if (route) applyExplorerRoute(route);
     renderExplorerTable(); return;
@@ -260,8 +264,16 @@ async function loadAndRenderExplorer(route) {
   empty.style.display='none'; loading.style.display='flex'; wrap.style.display='none';
   try {
     const year = parseInt(document.getElementById('explorer-year-select').value);
+    const prevYear = cExplorerYear;
     cExplorerYear = year;
     cExplorerData = await loadExplorerYear(year);
+    if (!route) {
+      // switching seasons: carry the min-games floor only if the user changed it, and
+      // carry conference exclusions across a rename by lineage (MAAC ⇄ Metro Conference)
+      if (prevYear == null || EF.minGames === explorerDefaultMinGames(prevYear)) EF.minGames = explorerDefaultMinGames(year);
+      const gEl = document.getElementById('ef-min-games'); if (gEl) gEl.value = EF.minGames;
+      EF.conferences = explorerConfsForSeason([...EF.conferences]);
+    }
     // Clear built flags so conference and team dropdowns rebuild for the new year
     const _cw = document.getElementById('mf-conference');
     const _tw = document.getElementById('mf-team');
@@ -276,6 +288,16 @@ async function loadAndRenderExplorer(route) {
     loading.style.display='none'; empty.style.display='flex';
     empty.textContent='Error loading player data: '+e.message;
   }
+}
+
+// Conference names -> this season's names, by lineage. A name this season doesn't have is
+// replaced by its lineage partner(s) that it does have (e.g. 2026 "MAAC" -> 2027 "Metro
+// Conference"); a name with no counterpart this season is dropped.
+function explorerConfsForSeason(names) {
+  const present = new Set(explorerValues('conference'));
+  const out = new Set();
+  names.forEach(n => confLineageNames(n).forEach(m => { if (present.has(m)) out.add(m); }));
+  return out;
 }
 
 // ── BUILD FILTER UI ───────────────────────────────────────────────────────────
@@ -549,8 +571,8 @@ function applyExplorerFilters() {
     });
   });
 
-  // Percentile filters
-  cExplorerPctFilters.forEach(f=>{
+  // Percentile filters (ignored while this season's percentiles are not active — see note)
+  if (pctActive(cExplorerYear)) cExplorerPctFilters.forEach(f=>{
     const pctKey = f.stat + PCT_SUFFIX[f.ctx];
     data=data.filter(p=>{
       const v=parseFloat(p[pctKey]);
@@ -675,8 +697,11 @@ function renderExplorerTable(append=false) {
   const wrap=document.getElementById('explorer-table-wrap');
   if(!wrap) return;
 
+  const pctOn=pctActive(cExplorerYear);
+  const pendingNote=pctOn?'':pctPendingNote(cExplorerYear,
+    'Raw stats are shown until then'+(cExplorerPctFilters.length?'; percentile filters are ignored.':'.'));
   if(!cExplorerFiltered.length) {
-    wrap.innerHTML='<div class="empty-state">No players match the current filters.</div>';
+    wrap.innerHTML=pendingNote+'<div class="empty-state">No players match the current filters.</div>';
     updateExplorerCount();
     return;
   }
@@ -763,7 +788,7 @@ function renderExplorerTable(append=false) {
       }
 
       const pctKey=s.key+pctSuffix;
-      const pctVal=p[pctKey];
+      const pctVal=pctOn?p[pctKey]:null;
       const hasPct=pctVal!=null;
 
       if(noPercentile||!hasPct) {
@@ -780,7 +805,7 @@ function renderExplorerTable(append=false) {
     html+=`<div class="explorer-more-bar"><button class="view-btn" onclick="showMoreExplorer()">Show More (${cExplorerFiltered.length-pageEnd} remaining)</button></div>`;
   }
   const hint='<div class="explorer-sort-hint">Click any column header to sort</div>';
-  wrap.innerHTML=hint+html;
+  wrap.innerHTML=pendingNote+hint+html;
 
   updateExplorerCount();
   setTimeout(syncExplorerScrollbar,60);
@@ -884,7 +909,7 @@ function resetExplorerState(keepForm) {
   EF.yrsD1.clear();
   EF.tiers.clear();
   ['Core Player (26+ MPG)','Primary Rotation (18–26 MPG)','Bench Rotation (10–18 MPG)','Fringe Rotation (5–10 MPG)'].forEach(t=>EF.tiers.add(t));
-  EF.minGames = 5;
+  EF.minGames = explorerDefaultMinGames(cExplorerYear);
   EF.name = '';
   EF.minHeight = 0;
   EF.maxHeight = 999;
@@ -895,7 +920,7 @@ function resetExplorerState(keepForm) {
 
   // Reset min games
   const gamesEl = document.getElementById('ef-min-games');
-  if (gamesEl) gamesEl.value = 5;
+  if (gamesEl) gamesEl.value = EF.minGames;
 
   // Reset the "add a filter" forms (Reset button only; the router leaves a half-typed form alone)
   if (!keepForm) {
@@ -992,7 +1017,7 @@ function explorerValues(field) {
 }
 
 function explorerRouteParams(p) {
-  if (cExplorerYear !== EXPLORER_DEFAULT_YEAR) p.set('y', cExplorerYear);
+  if (cExplorerYear && cExplorerYear !== explorerDefaultYear()) p.set('y', cExplorerYear);
   if (cExplorerStatTab !== 'overview') p.set('st', cExplorerStatTab);
   if (cExplorerPctContext !== 'national') p.set('ctx', cExplorerPctContext);
   const defSort = TAB_DEFAULT_SORT[cExplorerStatTab] || 'bpm';
@@ -1009,7 +1034,7 @@ function explorerRouteParams(p) {
     if (cExplorerData.length && shown.length <= excluded.size) p.set(inc, shown.join(','));
     else p.set(exc, join(excluded));
   });
-  if (EF.minGames !== 5) p.set('g', EF.minGames);
+  if (EF.minGames !== explorerDefaultMinGames(cExplorerYear)) p.set('g', EF.minGames);
   const b = cExplorerHeightBounds;
   if (b && (EF.minHeight !== b.min || EF.maxHeight !== b.max)) p.set('ht', EF.minHeight + '-' + EF.maxHeight);
   if (EF.name) p.set('q', EF.name);
@@ -1033,8 +1058,10 @@ function applyExplorerRoute(route) {
     .forEach(([k,f]) => { EF[f] = new Set(p.has(k) ? list(k) : []); });
   if (p.has('tier')) EF.tiers = p.get('tier') === 'all' ? new Set() : new Set(list('tier').map(c => TIER_CODES[c]).filter(Boolean));
   [['conf','xconf','conference','conferences'],['teams','xteams','team','teams']].forEach(([inc,exc,field,f]) => {
-    if (p.has(inc)) { const shown = new Set(list(inc)); EF[f] = new Set(explorerValues(field).filter(v => !shown.has(v))); }
-    else if (p.has(exc)) EF[f] = new Set(list(exc));
+    // conference names in a link may be another season's (MAAC in a 2027 link): read by lineage
+    const names = k => field === 'conference' ? [...explorerConfsForSeason(list(k))] : list(k);
+    if (p.has(inc)) { const shown = new Set(names(inc)); EF[f] = new Set(explorerValues(field).filter(v => !shown.has(v))); }
+    else if (p.has(exc)) EF[f] = new Set(names(exc));
   });
   const g = parseInt(p.get('g')); if (!isNaN(g)) EF.minGames = g;
   EF.name = p.get('q') || '';

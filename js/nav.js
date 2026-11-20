@@ -230,7 +230,7 @@ function selectTeamYear(teamName, year){
   const opt = [...tSel.options].find(o => o.value && o.value.toLowerCase() === String(teamName).toLowerCase());
   if (!opt) return null;
   tSel.value = opt.value;
-  const availYears = Object.keys(INDEX).map(Number).filter(y => INDEX[String(y)].includes(opt.value)).sort((a,b) => b - a);
+  const availYears = indexYears().filter(y => INDEX[String(y)].includes(opt.value));
   ySel.innerHTML = '';
   availYears.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = yLabel(y); ySel.appendChild(o); });
   document.getElementById('year-group').style.display = 'flex';

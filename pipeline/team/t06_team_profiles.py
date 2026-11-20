@@ -15,39 +15,36 @@ standardizes conference names, and computes descriptive metrics including:
 All percentiles / z-scores / ranks are computed within the one season's pool — the
 original already looped per season, so the per-season loop is kept as-is.
 
-KNOWN RISK, REPRODUCED ON PURPOSE (spec §6 item 2): `.astype(int)` on the record and
-rank columns will crash on NaN (early-season sparse data).
+Rank columns (Phase 5 fix, spec §6 item 2): the original `.astype(int)` crashed on NaN —
+early-season sparse data has zones with 0 attempts, so FG% and its ranks are NaN. Ranks
+are now a nullable integer (Int64): NaN survives as "no value", and every other value is
+truncated exactly as `.astype(int)` did (tied ranks average to x.5 and were truncated),
+so ranks stay comparable with the frozen seasons — whose output is byte-identical.
+The record field's `.astype(int)` is unchanged: every team in the merge has played.
 
 Usage:
     python -m pipeline.team.t06_team_profiles --year 2018 [--year 2023 ...]
 """
 
+import numpy as np
 import pandas as pd
 
-from pipeline import guard
+from pipeline import conferences, guard
 from pipeline.stage import stage_main
 
 # ============================================================
 # CLEAN + STANDARDIZE CONFERENCE NAMES
 # ============================================================
 
-conference_map = {
-    "Slnd": "Southland", "WAC": "WAC", "MWC": "Mountain West", "MAC": "MAC",
-    "SWAC": "SWAC", "SEC": "SEC", "AE": "America East", "Pat": "Patriot",
-    "SB": "Sun Belt", "P12": "Pac-12", "B12": "Big 12", "OVC": "Ohio Valley",
-    "ASun": "Atlantic Sun", "WCC": "WCC", "MVC": "Missouri Valley",
-    "MEAC": "MEAC", "ACC": "ACC", "Ivy": "Ivy", "NEC": "Northeast",
-    "BE": "Big East", "BW": "Big West", "BSth": "Big South", "CAA": "CAA",
-    "MAAC": "MAAC", "CUSA": "Conference USA", "Amer": "American",
-    "SC": "SoCon", "ind": "Independent", "Horz": "Horizon", "A10": "A10",
-    "Sum": "Summit", "BSky": "Big Sky", "B10": "Big Ten"
-}
+# Torvik code -> display name: the shared map in pipeline.conferences (Phase 5 — one
+# copy for t06 + p105; adds the 2026-27 codes Metro and UAC)
 
 # ============================================================
 # POWER VS MID-MAJOR FIELD
 # ============================================================
 
-power_confs = ["Big 12", "Big East", "SEC", "ACC", "Big Ten", "Pac-12"]
+# Season-aware (pipeline.conferences.power_conferences): the original six through 2026;
+# from 2027 the re-formed Pac-12 is Mid-Major.
 
 # ============================================================
 # CURATED FEATURE LIST
@@ -176,6 +173,12 @@ def compute_descriptives(group, stat, direction):
     return z, pct, rank
 
 
+def rank_to_nullable_int(s):
+    """`.astype(int)` semantics — truncate toward zero, so a tied 4.5 -> 4 — but NaN
+    survives as <NA> instead of raising. Identical output to astype(int) when no NaN."""
+    return pd.Series(np.trunc(s.astype(float)), index=s.index).astype("Int64")
+
+
 def run(year, paths):
     # ============================================================
     # LOAD STEP 5 OUTPUT
@@ -208,7 +211,9 @@ def run(year, paths):
     df["xPPP_diff"] = df["xPPP_off"] - df["xPPP_def"]
     df["residual_diff"] = df["ppp_residual_off"] - df["ppp_residual_def"]
 
-    df["conference"] = df["conference"].map(conference_map).fillna(df["conference"])
+    # Phase 5: shared map; an unmapped code keeps its raw value (as before) but now warns loudly
+    df["conference"] = conferences.map_conferences(df["conference"], year, "t06", teams=df["team"])
+    power_confs = conferences.power_conferences(year)
 
     df["power_mid"] = df["conference"].apply(
         lambda c: "Power" if c in power_confs else "Mid-Major"
@@ -330,7 +335,7 @@ def run(year, paths):
     rank_cols = [col for col in df_team_profiles_full.columns if col.endswith("_rank")]
 
     for col in rank_cols:
-        df_team_profiles_full[col] = df_team_profiles_full[col].astype(int)
+        df_team_profiles_full[col] = rank_to_nullable_int(df_team_profiles_full[col])
 
     # ============================================================
     # SAVE OUTPUT

@@ -12,12 +12,40 @@ Usage:
 import calendar
 import os
 import re
+import unicodedata
 
 import pandas as pd
 
 from pipeline import guard
 from pipeline.legacy import pin_float_dtypes
 from pipeline.stage import stage_main
+from pipeline.team.t01_fetch_shooting_splits import HEADER as CORE_RAW_COLUMNS
+
+
+# ---------------------------------------------------------------------------
+# Phase 5 — raw-file hygiene for the live 2026-27 fetch (both no-ops on the frozen
+# hand-built files, which have exactly the 20 core columns and no symbol characters)
+# ---------------------------------------------------------------------------
+
+def keep_core_columns(df, filename):
+    """Keep the 20 hand-built columns, in order. Extra raw-only columns (e.g. And-1s,
+    which t01 stores after Year) never reach the cleaned splits or any later stage."""
+    missing = [c for c in CORE_RAW_COLUMNS if c not in df.columns]
+    if missing:
+        raise ValueError(f"{filename}: raw shooting splits missing core columns {missing}")
+    return df[CORE_RAW_COLUMNS]
+
+
+def strip_symbols(s):
+    """Drop pictographs from a team cell — Torvik's 🎯 "Interactive Shot Chart" link text
+    (Unicode category So, plus emoji variation selectors) — and collapse the spaces it
+    leaves, so 'Northwestern  🎯' keys as 'Northwestern', and 'Duke 1 🎯' still loses its seed."""
+    if not isinstance(s, str):
+        return s
+    kept = "".join(ch for ch in s if unicodedata.category(ch) != "So" and ch not in "︎️")
+    if kept == s:
+        return s                      # untouched unless a symbol was actually present
+    return re.sub(r"[ \xa0]+", lambda m: m.group(0)[0], kept).strip()
 
 # ---------------------------------------------------------------------------
 # 0. Team Name Normalization Function
@@ -130,6 +158,9 @@ def run(year, paths):
 
     df = pd.read_csv(filename)
 
+    # Phase 5: the 20 core columns only (raw-only extras such as And-1s stay in the raw file)
+    df = keep_core_columns(df, filename)
+
     # Drop the first column (Torvik index column)
     df = df.drop(df.columns[0], axis=1)
 
@@ -138,6 +169,9 @@ def run(year, paths):
 
     # Drop rows with missing team names
     df = df[df[team_col].notna()]
+
+    # Phase 5: strip the 🎯 shot-chart link text before the name becomes a merge key
+    df[team_col] = df[team_col].apply(strip_symbols)
 
     # Clean Torvik's trailing digits (e.g., "Gonzaga 11")
     df[team_col] = df[team_col].str.replace(r"\s+\d+$", "", regex=True)

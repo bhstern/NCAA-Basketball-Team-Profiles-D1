@@ -466,8 +466,17 @@ def run(year, paths):
                 f'{col}_pos_sub_rank',
             ])
 
-    final_cols = [c for c in final_cols if c in df_out.columns]
-    df_out = df_out[final_cols].copy()
+    # Phase 5: the schema is FIXED at the full list (155 base + 16 derived per ranked stat
+    # = 1,595), whatever the pool size. A derived column is only created when some Tier 1
+    # pool is non-empty, so early in a season (no Tier 1 players yet) most are never made;
+    # those are added here as all-NaN ("no percentile") instead of being dropped, which
+    # used to thin the header and break p107 + the cross-season assemble. Every frozen
+    # season already produces all 1,595, so this is a no-op for them.
+    never_created = [c for c in final_cols if c not in df_out.columns]
+    if never_created:
+        print(f"  {len(never_created):,} derived columns had no Tier 1 pool in any group — "
+              f"written as all-NaN (no percentile) to keep the {len(final_cols):,}-column schema")
+    df_out = df_out.reindex(columns=final_cols).copy()
 
     # ============================================================
     # CAST RANK COLUMNS TO INTEGER

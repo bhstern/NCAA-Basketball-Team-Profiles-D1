@@ -21,6 +21,8 @@ Usage:
 
 import json
 
+from pipeline.player.json_common import scrub_nan_text
+
 import pandas as pd
 
 from pipeline import guard
@@ -63,7 +65,12 @@ def run(year, paths):
         yr_df = df[df['year'] == year]
         records = yr_df.to_dict(orient='records')
         filepath = paths.json_file("data", f"cbb_{year}.json")
-        written.append(guard.write_text(filepath, json.dumps(records, separators=(',', ':')), season=season))
+        # NaN -> null: `df.where(notnull, None)` above leaves NaN in float columns, which
+        # json.dumps writes as the invalid token NaN (the browser's JSON.parse rejects the
+        # whole file). Frozen seasons have no missing team values, so their bytes are
+        # unchanged; an early-season file does (e.g. dunk FG% before a team's first dunk).
+        text = scrub_nan_text(json.dumps(records, separators=(',', ':')))
+        written.append(guard.write_text(filepath, text, season=season))
         print(f'  cbb_{year}.json — {len(records)} teams')
 
     # ── This season's slice of the team/year index ───────────────────────────────

@@ -966,3 +966,13 @@ select:focus{border-color:var(--accent);}
 .op-footer{ margin-top:18px; padding-top:12px; border-top:1px solid #223052; text-align:center; }
 .op-legend{ font-size:11px; color:#7f8fb0; }
 .op-brand{ font-size:11px; color:#5f6f8c; margin-top:4px; font-weight:600; }
+
+/* ── Early season: percentiles not yet active (flag from data/index.json "_seasons") ── */
+.pct-pending-note{ margin:0 0 12px; padding:8px 12px; border:1px solid rgba(74,158,255,0.35); border-left:3px solid var(--accent);
+  border-radius:6px; background:rgba(74,158,255,0.07); color:var(--text2); font-size:12.5px; line-height:1.45; }
+.op-page .pct-pending-note{ color:#c4d2ea; background:rgba(74,158,255,0.10); border-color:#2c4a7a; margin:6px 0 10px; }
+
+/* ── Data freshness stamp (index.json "_meta".last_updated, core.js renderDataStamp) ──
+   Inline second line under the nav brand: in the layout flow, never over content. */
+#data-stamp{ display:block; margin-top:2px; font-family:var(--font-mono); font-size:10px; font-weight:400;
+  letter-spacing:0.02em; text-transform:none; color:var(--text3); line-height:1.2; }

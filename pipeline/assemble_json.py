@@ -4,7 +4,11 @@ Assemble the multi-season site JSON from per-season outputs (validation path).
 Some site files cover every season at once. This step builds them inside the
 sandbox from what the per-season stages produced:
 
-    data/index.json                              merged from t07's per-season fragments
+    data/index.json                              merged from t07's per-season fragments,
+                                                 plus "_seasons": per-season percentile
+                                                 status (pipeline.season_status), and
+                                                 "_meta": last_updated (pipeline.freshness)
+    data/conference_lineage.json                 static, from pipeline.conferences
     player_data/layer3_positional/
         team_positional.json                     merged from p107's per-season fragments
         positional_benchmarks.json               merged from p107's per-season fragments
@@ -33,7 +37,8 @@ import shutil
 import pandas as pd
 import numpy as np
 
-from pipeline import config, guard
+from pipeline import conferences, config, guard
+from pipeline.season_status import season_status
 from pipeline.dev.stitch import stitch
 from pipeline.paths import Paths
 from pipeline.player.json_common import clean_for_json, get_profile_cols, write_json
@@ -47,10 +52,29 @@ def merge_fragments(name, years, source):
     return merged
 
 
-def assemble_team_index(years, paths, source):
-    out = write_json(paths.json_file("data", "index.json"), merge_fragments("team_index.json", years, source), None,
+def assemble_team_index(years, paths, source, meta=None):
+    index = merge_fragments("team_index.json", years, source)
+    # Non-season key: the site reads season keys as the numeric ones only (core.js indexYears)
+    # Threshold is a share of the PRIOR season's Tier 1 pool (pipeline.season_status)
+    prior = lambda y: source(y - 1).stage_file("player_profiles", y - 1) if (y - 1) in years else None
+    index["_seasons"] = {str(y): season_status(source(y).stage_file("player_profiles", y), prior(y))
+                         for y in sorted(years)}
+    # Non-season key: when the data was last genuinely refreshed (pipeline.freshness)
+    if meta:
+        index["_meta"] = meta
+    out = write_json(paths.json_file("data", "index.json"), index, None,
                      scrub=False)   # convert_data.py has no NaN scrub
     print(f"  index.json saved -> {out}")
+    for y, st in index["_seasons"].items():
+        if not st["percentiles_active"]:
+            print(f"  {y}: percentiles NOT active ({st['tier1_players']} Tier 1 players "
+                  f"< {st['min_tier1_pool']})")
+
+
+def assemble_conference_lineage(paths):
+    out = write_json(paths.json_file("data", "conference_lineage.json"),
+                     conferences.lineage_payload(), None, scrub=False)
+    print(f"  conference_lineage.json saved -> {out}")
 
 
 def assemble_positional(years, paths, source):
@@ -166,14 +190,15 @@ def assemble_player_cross_season(years, paths, source):
     print(f"  players_index.json — {len(index_records):,} players, {size_kb:.0f} KB")
 
 
-def run(years, paths=None, source=None):
+def run(years, paths=None, source=None, meta=None):
     """Assemble into `paths`. `source(year) -> Paths` says where each season's per-season
     outputs live (default: `paths`) — e.g. the frozen seasons from the main sandbox and
-    the season just built from the run's own output root."""
+    the season just built from the run's own output root. `meta` -> index.json "_meta"."""
     paths = paths or Paths()
     source = source or (lambda year: paths)
     print("\n--- Team index ---")
-    assemble_team_index(years, paths, source)
+    assemble_team_index(years, paths, source, meta)
+    assemble_conference_lineage(paths)
     print("\n--- Positional files ---")
     assemble_positional(years, paths, source)
     print("\n--- Career files + players index ---")

@@ -10,6 +10,11 @@ from lookup files and exports the rows client-side. We replicate that exactly:
     -> sort by Barthag desc (page default) -> drop blank WAB column (index 34)
     -> write with header + UTF-8 BOM, same filename as the hand-built files
 
+Additive-tolerant schema (Phase 5): Torvik may append columns to gdata. Known columns are
+checked by POSITION (statnames index -> name, plus value anchors: team name, W-L record,
+year), so a shifted or renamed known column still fails loudly; trailing additions are
+reported with their statnames and NOT written, so the raw CSV keeps the hand-built layout.
+
 Output defaults to the _scrape_test sandbox; all writes go through the frozen-history guard.
 
 Usage:
@@ -34,7 +39,7 @@ STATNAMES = {
     31: "PAKE", 32: "PASE", 33: "Talent", 35: "FT%", 36: "Op. FT%", 37: "PPP Off.",
     38: "PPP Def.", 39: "Elite SOS",
 }
-N_COLS = 40
+N_COLS = 40              # known gdata columns (indices 0..39); rows may be wider (trailing additions)
 DROP_INDEX = 34
 OUTPUT_INDICES = [i for i in range(N_COLS) if i != DROP_INDEX]
 
@@ -61,19 +66,42 @@ UNDEFINED = object()   # JS `undefined` -> empty field on export
 # Page parsing
 # ---------------------------------------------------------------------------
 
+RECORD_RE = re.compile(r"^\d+[-\u2013]\d+$")   # W–L; Torvik writes an en dash (all seasons)
+
+
 def parse_gdata(html):
     m = re.search(r"var gdata = (\[\[.*?\]\]);", html)
     if not m:
         raise TorvikFetchError("gdata array not found in team-tables page")
     rows = json.loads(m.group(1))
-    bad = {len(r) for r in rows} - {N_COLS}
-    if bad:
-        raise TorvikFetchError(f"Unexpected gdata row width(s): {bad} (expected {N_COLS})")
+    widths = {len(r) for r in rows}
+    if len(widths) > 1:
+        raise TorvikFetchError(f"Inconsistent gdata row widths: {sorted(widths)}")
+    if widths and min(widths) < N_COLS:
+        raise TorvikFetchError(f"gdata rows have {min(widths)} columns; expected at least {N_COLS}")
+    check_anchors(rows)
     return rows
 
 
+def check_anchors(rows):
+    """Known columns hold what they should (catches a column inserted before them even
+    if statnames were somehow unchanged)."""
+    bad = [r[0] for r in rows
+           if not isinstance(r[0], str) or not RECORD_RE.match(str(r[4]))
+           or not isinstance(r[30], (int, float, str)) or not str(r[30]).strip().isdigit()]
+    if bad:
+        raise TorvikFetchError(f"gdata anchor check failed (team@0, record@4, year@30) for e.g. {bad[:3]}")
+
+
+def extra_columns(html, rows):
+    """Trailing gdata columns beyond the known 40: {index: statname or None}."""
+    width = len(rows[0]) if rows else N_COLS
+    found = {int(i): name for i, name in re.findall(r"^\s*statnames\[(\d+)\]='([^']*)';", html, re.M)}
+    return {i: found.get(i) for i in range(N_COLS, width)}
+
+
 def check_statnames(html):
-    """Fail loudly if Torvik changes the column schema."""
+    """Fail loudly if Torvik changes the column schema of a KNOWN column."""
     found = {int(i): name for i, name in re.findall(r"^\s*statnames\[(\d+)\]='([^']*)';", html, re.M)}
     mismatched = {
         i: (found.get(i), STATNAMES.get(i))
@@ -167,6 +195,10 @@ def fetch_year(year, session, lookups):
     html = session.get(f"team-tables_each.php?year={year}&type=All&csv=1").text
     check_statnames(html)
     rows = parse_gdata(html)
+    extras = extra_columns(html, rows)
+    if extras:
+        print(f"  [NOTE] {year}: Torvik added {len(extras)} trailing team-table column(s) "
+              f"{extras} — not written; the raw CSV keeps the known {len(OUTPUT_INDICES)} columns")
 
     years_in_page = {int(r[30]) for r in rows}
     if years_in_page != {year}:

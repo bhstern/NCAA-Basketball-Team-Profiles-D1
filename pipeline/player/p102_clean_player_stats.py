@@ -16,7 +16,9 @@ import pandas as pd
 
 from pipeline import guard
 from pipeline.legacy import pin_float_dtypes
+from pipeline.player.p101_fetch_player_stats import KNOWN_COLUMNS, check_anchors
 from pipeline.stage import stage_main
+from pipeline.torvik import TorvikFetchError
 
 # ---------------------------------------------------------
 # Final 67-column header list (A → BO, 2026 schema)
@@ -158,9 +160,14 @@ def load_and_clean_year(year, raw_path):
 
     df = pd.read_csv(raw_path, header=None)
 
-    # Sanity check
-    if df.shape[1] != 67:
-        raise ValueError(f"{year}: expected 67 columns, found {df.shape[1]}")
+    # Sanity check (Phase 5: additive-tolerant). The 67 known columns must be in place
+    # (anchor-checked); trailing columns Torvik has appended are dropped here. The frozen
+    # hand-built files have exactly 67, so this is a no-op for them.
+    try:
+        check_anchors(df, year, source=f"raw file {raw_path}")
+    except TorvikFetchError as e:
+        raise ValueError(str(e)) from e
+    df = df.iloc[:, :KNOWN_COLUMNS]
 
     # Assign headers
     df.columns = HEADERS_67

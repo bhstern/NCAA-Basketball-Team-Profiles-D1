@@ -24,6 +24,11 @@ const PF_CONTEXTS = [
   {key:'pos_sub',  label:'Pos + Power/Mid'},
 ];
 
+// A season's percentile, or null while that season's percentiles are not active yet
+// (data/index.json "_seasons" flag, core.js pctActive). Frozen seasons are always active.
+function pfPct(season, key){ return pctActive(season.year) ? season[key] : null; }
+const PF_NEUTRAL = '#3a4a63';   // shot-zone fill for a season with no percentiles yet
+
 function pfHeightStr(inches){
   const i = parseInt(inches);
   if (isNaN(i)) return null;
@@ -264,6 +269,8 @@ function renderPlayerCareer(){
   const pctSuffix = ctxActive ? (PCT_SUFFIX[cPlayerPctContext]||'_pct') : '_pct';
 
   let html='';
+  const pending=[...new Set(seasons.filter(se=>!pctActive(se.year)).map(se=>se.year))];
+  pending.forEach(y=>{ html+=pctPendingNote(y, 'Raw stats are shown for this season until then.'); });
   if(ctxActive){
     html+='<div class="pf-ctx-toggle"><span class="pf-ctx-label">Percentiles vs</span>';
     PF_CONTEXTS.forEach(c=>{
@@ -298,7 +305,7 @@ function renderPlayerCareer(){
     stats.forEach(s=>{
       const rawDisplay = s.fmt ? s.fmt(season[s.key], season) : (season[s.key] ?? '—');
       const pctVal = (s.computed || (typeof STRING_KEYS_E!=='undefined' && STRING_KEYS_E.has(s.key)) || s.noBar)
-                     ? null : season[s.key+pctSuffix];
+                     ? null : pfPct(season, s.key+pctSuffix);
       html+=`<td class="roster-stat-td">${explorerStackedCell(rawDisplay, pctVal)}</td>`;
     });
     html+='<td class="pf-spacer"></td>';
@@ -326,9 +333,9 @@ function pfShotZones(season, sfx, metric){
   const out={};
   for(const z in PF_SHOT_ZONES){
     const d=PF_SHOT_ZONES[z];
-    const rp=season[d.rate+sfx], fgp=season[d.fg+sfx];
+    const rp=pfPct(season, d.rate+sfx), fgp=pfPct(season, d.fg+sfx);
     out[z]={ r:season[d.rate], rp:rp, fg:season[d.fg], fgp:fgp,
-             color:scPctColor(metric==='rate'?rp:fgp) };
+             color: pctActive(season.year) ? scPctColor(metric==='rate'?rp:fgp) : PF_NEUTRAL };
     if(metric==='fg') out[z].vol = pfInt(season[d.made])+'/'+pfInt(season[d.att]);  // volume shown on FG% chart only
   }
   return out;
@@ -343,7 +350,7 @@ function pfShotHeader(s){
 
 function pfSeasonCharts(s, sfx, compact){
   const zf = 18;   // stacking the percentile onto its own line buys room; same size in compare + single
-  const base={showPct:true, showLabels:true, stackPct:true, zoneFont:zf};
+  const base={showPct:pctActive(s.year), showLabels:true, stackPct:true, zoneFont:zf};
   const rate=buildCourtSVG({...base, zones:pfShotZones(s,sfx,'rate'), metricsShown:'rate'});
   const fg  =buildCourtSVG({...base, zones:pfShotZones(s,sfx,'fg'),   metricsShown:'fg'});
   return `<div class="pf-shot-season">
@@ -387,6 +394,8 @@ function renderPlayerShots(){
     html+=`<div class="pf-shot-flag">Position changed (${prior.position} → ${selected.position}) — the two seasons are ranked against different position pools.</div>`;
   }
 
+  [...new Set([selected, cPlayerShotCompare&&canCompare?prior:null].filter(x=>x&&!pctActive(x.year)).map(x=>x.year))]
+    .forEach(y=>{ html+=pctPendingNote(y, 'Zones show raw rates and FG% in a neutral color until then.'); });
   html+=pfSeasonCharts(selected, sfx, cPlayerShotCompare);
   if(cPlayerShotCompare && canCompare) html+=pfSeasonCharts(prior, sfx, cPlayerShotCompare);
   wrap.innerHTML=html;
@@ -489,12 +498,13 @@ function pfComputeTrending(seasonsDesc){
   const cur=seasonsDesc[0], prior=seasonsDesc[1];
   const c=pfMinUsgCtx(cur, prior);
   const out={singleSeason:!prior, improving:[], declining:[],
+             pctPending: !pctActive(cur.year),   // current season has no percentiles yet: no comparison
              curYear: cur.year, priorYear: prior?prior.year:null,
              context:{minutes:c.minutes, usage:c.usage,
                       transfer: prior?pfTransferCtx(cur,prior):null,
                       position: prior?pfPositionCtx(cur,prior):null,
                       curPosition: cur.position, curRole: cur.role}};
-  if(!prior) return out;
+  if(!prior || out.pctPending) return out;   // never trend off a 1–3 game sample
 
   const movers=[];
   PF_FAMILIES.forEach(f=>{
@@ -543,6 +553,10 @@ function pfTopContextFlag(ctx){
 function pfTrendingHeaderHTML(t){
   let h=`<div class="pf-th-line">${pfMinUsgText(t.context.minutes, t.context.usage)}</div>`;
   if(t.singleSeason){ return h+`<div class="pf-th-note">First D1 season — no year-over-year comparison yet</div>`; }
+  if(t.pctPending){                       // transfer/position facts are raw — still shown
+    const tc0=pfTopContextFlag(t.context);
+    return h+(tc0?`<div class="pf-th-flag">${tc0}</div>`:'')+`<div class="pf-th-note">${PF_TRENDS_PENDING}</div>`;
+  }
   const tc=pfTopContextFlag(t.context);
   if(tc) h+=`<div class="pf-th-flag">${tc}</div>`;
   const chips=[...t.improving,...t.declining].filter(m=>m.chip)
@@ -593,8 +607,10 @@ function pfCtxStatLines(unit, o, bigGate, midGate){
   else                   l1=`Similar (${o.from}${unit} to ${o.val}${unit})`;
   return [l1, l2];
 }
+const PF_TRENDS_PENDING = 'Trends activate with this season\u2019s percentiles, once enough players reach 10 games (in December).';
 function pfTrendsTabHTML(t){
   if(t.singleSeason) return '';
+  if(t.pctPending) return `<div class="pf-trends">${pctPendingNote(t.curYear, 'Trends compare this season with the last one on those percentiles, so they wait too. Earlier seasons are in Career Stats.')}</div>`;
   const items=[];
   const [ml1,ml2]=pfCtxStatLines('', t.context.minutes, 5, 3);
   const [ul1,ul2]=pfCtxStatLines('%', t.context.usage, 4, 2);
@@ -634,7 +650,7 @@ const OP_ADV=[['obpm','signed','OBPM'],['dbpm','signed','DBPM'],['or_pct','pct10
 
 function pfSlug(n){ return (n||'player').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
 function pfPctPair(season, statKey, showPos){
-  const n=season[statKey+'_pct'], p=season[statKey+'_pos_pct'];
+  const n=pfPct(season, statKey+'_pct'), p=pfPct(season, statKey+'_pos_pct');
   if(n==null||isNaN(n)) return '';
   const nP=Math.round(n*100);
   if(showPos && p!=null && !isNaN(p)) return `${nP}N / ${Math.round(p*100)}P`;
@@ -684,7 +700,7 @@ function pfOnePagerHeader(){
   </div>`;
 }
 function pfOnePagerCharts(s, sfx){
-  const base={showPct:true, showLabels:true, stackPct:true, zoneFont:18};
+  const base={showPct:pctActive(s.year), showLabels:true, stackPct:true, zoneFont:18};
   const rate=buildCourtSVG({...base, zones:pfShotZones(s,sfx,'rate'), metricsShown:'rate'});
   const fg  =buildCourtSVG({...base, zones:pfShotZones(s,sfx,'fg'),   metricsShown:'fg'});
   return `<div class="op-court"><div class="op-court-lbl">Shot Rate</div>${rate}</div>`+
@@ -692,6 +708,7 @@ function pfOnePagerCharts(s, sfx){
 }
 function pfOnePagerTrends(trend){
   if(trend.singleSeason) return '<div class="op-sec-h">Trends</div><div class="op-tr-empty">First D1 season — no year-over-year comparison yet</div>';
+  if(trend.pctPending) return `<div class="op-sec-h">Trends</div><div class="op-tr-empty">${PF_TRENDS_PENDING}</div>`;
   const row=m=>{
     const tag = m.stillStrong ? ' <span class="op-tag">still strong</span>'
               : m.stillWeak   ? ' <span class="op-tag">still below avg</span>' : '';
@@ -711,7 +728,8 @@ function pfOnePagerHTML(){
   return `<div class="op-page">
     ${pfOnePagerHeader()}
     ${pfOnePagerTrends(trend)}
-    <div class="op-sec-h">Shot Profile · ${yLabel(cur.year)} · National Percentiles</div>
+    <div class="op-sec-h">Shot Profile · ${yLabel(cur.year)} · ${pctActive(cur.year)?'National Percentiles':'Raw Rates &amp; FG%'}</div>
+    ${pctActive(cur.year)?'':pctPendingNote(cur.year)}
     <div class="op-shot-row">
       <div class="op-charts">${pfOnePagerCharts(cur,'_pct')}</div>
       ${pfOpSupplement(cur)}

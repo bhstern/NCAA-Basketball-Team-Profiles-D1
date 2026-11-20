@@ -1,6 +1,6 @@
 
 async function loadIndex(){
-  try{const r=await fetch('data/index.json');INDEX=await r.json();initSelectors();}
+  try{const r=await fetch('data/index.json');INDEX=await r.json();renderDataStamp();await loadConfLineage();initSelectors();}
   catch(e){document.getElementById('profile-empty').textContent='Error: '+e.message;console.error(e);}
 }
 
@@ -10,8 +10,8 @@ async function loadYear(y){
 }
 
 function initSelectors(){
-  const years=Object.keys(INDEX).map(Number).sort((a,b)=>b-a);
-  const teams=[...new Set(Object.values(INDEX).flat())].sort();
+  const years=indexYears();
+  const teams=[...new Set(years.flatMap(y=>INDEX[String(y)]))].sort();
   const tSel=document.getElementById('team-select');
   teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;tSel.appendChild(o);});
   const ySel=document.getElementById('year-select');
@@ -30,7 +30,7 @@ function onTeamChange(){
   const team=document.getElementById('team-select').value;
   if(!team)return;
   const ySel=document.getElementById('year-select');
-  const availYears=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(team)).sort((a,b)=>b-a);
+  const availYears=indexYears().filter(y=>INDEX[String(y)].includes(team));
   ySel.innerHTML='';
   availYears.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=yLabel(y);ySel.appendChild(o);});
   document.getElementById('year-group').style.display='flex';
@@ -91,6 +91,7 @@ function updateBanner(row){
   const cs=row.conference.replace(/ /g,'_').replace(/-/g,'_').replace(/\//g,'_');
   const clogo=document.getElementById('banner-conf-logo');
   clogo.style.display='block';
+  clogo.onerror=()=>{clogo.style.display='none';};   // e.g. a new conference with no logo file yet
   clogo.src=`${CDIR}${cs}.png`;
   document.getElementById('banner-conf-name').textContent=row.conference;
   document.getElementById('banner-record').textContent=row.full_season_record;
@@ -1036,11 +1037,27 @@ function toggleShotRowByName(el){
   toggleShotRow(name,el);
 }
 
+// Team ranks always show (opponent-adjusted); while the season's PLAYER percentile flag is
+// off (data/index.json "_seasons"), one line says they are early-season and will move.
+function renderTeamEarlyNote(){
+  let el=document.getElementById('team-early-note');
+  if(!el){
+    el=document.createElement('div');el.id='team-early-note';
+    const content=document.getElementById('profile-content');
+    content.insertBefore(el,content.firstChild);
+  }
+  if(pctActive(cYear)){el.innerHTML='';return;}
+  const m=String(cRow.full_season_record||'').match(/(\d+)\D+(\d+)/);
+  const gp=m?`${(+m[1])+(+m[2])} games played. `:'';
+  el.innerHTML=`<div class="pct-pending-note">${yLabel(cYear)}: ${gp}Ranks are early-season and will move.</div>`;
+}
+
 function renderProfile(){
   document.getElementById('profile-loading').style.display='none';
   document.getElementById('profile-empty').style.display='none';
   document.getElementById('profile-content').style.display='block';
   updatePageDesc();
+  renderTeamEarlyNote();
   const grid=document.getElementById('profile-grid');grid.innerHTML='';
   Object.entries(STAT_CATS).forEach(([cat,stats])=>{
     const card=document.createElement('div');card.className='stat-card';
@@ -1245,7 +1262,7 @@ async function renderHistorical(){
   document.getElementById('historical-content').style.display='none';
 
   // Build year list: current year back cTrendWindow years
-  const allYears=Object.keys(INDEX).map(Number).filter(y=>INDEX[String(y)].includes(cTeam)).sort((a,b)=>a-b);
+  const allYears=indexYears().filter(y=>INDEX[String(y)].includes(cTeam)).sort((a,b)=>a-b);
   const maxBack=cTrendWindow;
   // Take current year + up to maxBack prior years
   const yn=allYears.filter(y=>y<=cYear).slice(-( maxBack+1));
@@ -1270,6 +1287,17 @@ async function renderHistorical(){
     caveatEl.textContent=`* ${cTeam} data begins in ${yLabel(firstYear)}. Showing all available seasons.`;
   } else {
     caveatEl.style.display='none';
+  }
+  // Conference continuity across the window, by LINEAGE (MAAC → Metro Conference is one
+  // league). A real conference change makes the first→last conference trend compare
+  // different pools, so it is flagged and that trend line is suppressed.
+  const confChanged=td.length>1 && !td.every(d=>sameConfLineage(d.conference,td[td.length-1].conference));
+  if(confChanged && cHistComp==='d1conf'){
+    const moves=td.filter((d,i)=>i>0 && !sameConfLineage(d.conference,td[i-1].conference))
+                  .map(d=>{const prev=td[td.indexOf(d)-1];return `${prev.conference} → ${d.conference} (${yLabel(d.year)})`;});
+    caveatEl.style.display='block';
+    caveatEl.textContent=(yn.length<=maxBack?caveatEl.textContent+' ':'')+
+      `* Conference changed: ${moves.join(', ')}. Conference ranks are within each season's conference, so no conference trend is shown.`;
   }
 
   // Build stats list
@@ -1296,6 +1324,7 @@ async function renderHistorical(){
   const years=td.map(d=>d.year);
   const isD1Conf=cHistComp==='d1conf';
   const confName=cRow?cRow.conference:'Conf';
+  const confOf=y=>{const d=td.find(r=>r.year===y);return d&&d.conference?d.conference:confName;};   // per-season name
 
   // Build header
   let thead=`<thead><tr><th class="stat-col">Stat</th>`;
@@ -1309,9 +1338,9 @@ async function renderHistorical(){
   thead+=`<th>Trend</th></tr>`;
   if(isD1Conf){
     thead+=`<tr><th class="stat-col"></th>`;
-    years.forEach(()=>{
+    years.forEach(y=>{
       thead+=`<th style="font-size:9px;color:var(--text4);border-left:1px solid var(--border2)">All D1</th>`;
-      thead+=`<th style="font-size:9px;color:var(--text4)">${confName}</th>`;
+      thead+=`<th style="font-size:9px;color:var(--text4)">${confOf(y)}</th>`;
     });
     thead+=`<th></th></tr>`;
   }
@@ -1334,7 +1363,7 @@ async function renderHistorical(){
         const cp=parseFloat(d[stat.key+'_conf_pct']);confPct=isNaN(cp)?null:cp;
         confRank=d[stat.key+'_conf_rank'];
       }
-      return{raw,pct,rank,confPct:confPct||null,confRank:confRank||null};
+      return{raw,pct,rank,confPct:confPct||null,confRank:confRank||null,conf:d.conference};
     });
 
     // Trend using last cTrendWindow years
@@ -1372,7 +1401,7 @@ async function renderHistorical(){
         arrow=`<span class="hist-arrow ${d1Label.cls}">${d1Label.txt}</span>`;
 
         // Second line for D1+Conf view — conf trend using same labels
-        if(isD1Conf){
+        if(isD1Conf && sameConfLineage(tFirst?.conf,tLast?.conf)){
           const fcp=tFirst?.confPct,lcp=tLast?.confPct;
           if(fcp!==null&&fcp!==undefined&&lcp!==null&&lcp!==undefined){
             const confDiff=lcp-fcp;

@@ -191,6 +191,27 @@ def test_real_config_paths():
     assert config.SCRAPE_TEST_ROOT.parent == config.RAW_ROOT
 
 
+def _names_current_season(path):
+    """The ONE exemption: a published current-season file (e.g. data/cbb_2027.json) is
+    rewritten by every nightly run, so it is writable — but only as the current season."""
+    return config.CURRENT_SEASON in {int(y) for y in guard.YEAR_TOKEN.findall(os.path.basename(path))}
+
+
+ALL_SEASONS = (*FROZEN, CURRENT, None)
+
+
+def _writable(paths, seasons=ALL_SEASONS):
+    allowed = []
+    for f in paths:
+        for season in seasons:
+            try:
+                guard.check(f, season)
+                allowed.append((str(f), season))
+            except FrozenHistoryError:
+                pass
+    return allowed
+
+
 @pytest.mark.parametrize("root", REAL_ROOTS, ids=lambda p: p.name)
 def test_every_real_existing_file_refused(root):
     files = list(_real_files(root))
@@ -198,12 +219,54 @@ def test_every_real_existing_file_refused(root):
     allowed = []
     for f in files:
         for season in (2016, 2021, 2026, 2027, None):
+            if season == config.CURRENT_SEASON and _names_current_season(f):
+                continue                                  # the narrow exemption above
             try:
                 guard.check(f, season)
                 allowed.append((f, season))
             except FrozenHistoryError:
                 pass
     assert not allowed, f"{len(allowed)} real files would be writable, e.g. {allowed[:5]}"
+
+
+CURRENT_SEASON_FILES = [config.REPO_ROOT / "data" / f"cbb_{CURRENT}.json",
+                        config.REPO_ROOT / "player_data" / "layer1_rosters" / f"rosters_{CURRENT}.json",
+                        config.REPO_ROOT / "player_data" / "layer2_explorer" / f"players_{CURRENT}.json"]
+
+
+def test_current_season_files_refused_as_any_other_season():
+    assert config.CURRENT_SEASON == CURRENT
+    assert not _writable(CURRENT_SEASON_FILES, seasons=(*FROZEN, None))
+    with pytest.raises(FrozenHistoryError):              # the case that matters most
+        guard.check(config.REPO_ROOT / "data" / f"cbb_{CURRENT}.json", 2026)
+
+
+def test_frozen_year_filenames_refused_for_every_season():
+    synthetic = [p for y in FROZEN for p in (
+        config.REPO_ROOT / "data" / f"cbb_{y}.json",
+        config.REPO_ROOT / "player_data" / "layer1_rosters" / f"rosters_{y}.json",
+        config.REPO_ROOT / "player_data" / "layer2_explorer" / f"players_{y}.json")]
+    real = [f for root in REAL_ROOTS for f in _real_files(root)
+            if set(range(2016, 2027)) & {int(y) for y in guard.YEAR_TOKEN.findall(os.path.basename(f))}]
+    assert len(real) >= 33, "expected the published frozen per-season files"
+    assert not _writable(synthetic + real)
+
+
+def test_every_career_file_refused_for_every_season():
+    root = config.REPO_ROOT / "player_data" / "layer2_profiles"
+    files = list(_real_files(root))
+    assert len(files) > 24_000, f"only {len(files)} career files found"
+    assert not _writable(files)
+    assert not _writable([root / "player_NEW_2027-01-01_abcdef.json"])   # new names too
+
+
+def test_unseasoned_multi_season_files_refused_for_every_season():
+    files = [config.REPO_ROOT / "data" / "index.json",
+             config.REPO_ROOT / "player_data" / "layer3_positional" / "team_positional.json",
+             config.REPO_ROOT / "player_data" / "layer3_positional" / "positional_benchmarks.json",
+             config.REPO_ROOT / "player_data" / "players_index.json"]
+    assert all(f.exists() for f in files)
+    assert not _writable(files)
 
 
 def test_real_converter_refused():

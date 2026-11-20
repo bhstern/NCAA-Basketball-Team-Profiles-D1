@@ -13,9 +13,16 @@ Two hard limits, enforced here in addition to the frozen-history guard:
        (<_rebuild>/raw/Yearly Player Stats Raw/). An output root anywhere else raises
        before a request is made.
 
-Same download as the original: getadvstats.php?year=Y&csv=1 (67 columns, no header),
-round-tripped through pandas and saved with no header, so the file has the same
-layout as the hand-built raw files.
+Same download as the original: getadvstats.php?year=Y&csv=1 (no header), round-tripped
+through pandas and saved with no header, so the file has the same layout as the
+hand-built raw files.
+
+Additive-tolerant schema (Phase 5): the hand-built files have 67 columns; Torvik appends
+columns from time to time (2026-27: 78). The width is NOT pinned. Instead the 67 known
+columns are anchor-checked in place (year at 31, birthday at 66, plus a few identity
+columns); any columns beyond index 66 are tolerated, kept in the raw file as-is, and
+ignored downstream (p102 reads only the 67 known columns). Fewer than 67 columns, or an
+anchor that no longer looks right, fails loudly — that means a known column moved.
 
 Usage:
     python -m pipeline.player.p101_fetch_player_stats --year 2027
@@ -32,8 +39,41 @@ from pipeline import config, guard
 from pipeline.paths import Paths
 from pipeline.torvik import TorvikFetchError, TorvikSession
 
-EXPECTED_COLUMNS = 67
+KNOWN_COLUMNS = 67        # the hand-built layout (p102 HEADERS_67); more are tolerated
 YEAR_COLUMN = 31          # "year" in the 67-column layout (see p102 HEADERS_67)
+BIRTHDAY_COLUMN = 66      # last known column — "YYYY-MM-DD"
+CLASS_COLUMN = 25
+KNOWN_CLASSES = {"Fr", "So", "Jr", "Sr"}
+ANCHOR_MIN_SHARE = 0.95   # share of non-blank values that must look right (blanks allowed)
+
+
+def check_anchors(df, year, source="player stats"):
+    """Fail loudly unless the 67 known columns are still where p102 expects them.
+    Returns the number of trailing (unknown, tolerated) columns."""
+    if df.shape[1] < KNOWN_COLUMNS:
+        raise TorvikFetchError(f"{year}: {source} has {df.shape[1]} columns, expected at least {KNOWN_COLUMNS}")
+
+    def share(col, ok):
+        vals = df[col].dropna().astype(str).str.strip()
+        vals = vals[vals != ""]
+        return 1.0 if vals.empty else float(ok(vals).mean())
+
+    years_in_file = set(pd.to_numeric(df[YEAR_COLUMN], errors="coerce").unique())
+    if years_in_file != {year}:
+        raise TorvikFetchError(f"Requested {year}, {source} column {YEAR_COLUMN} (year) contains "
+                               f"{sorted(years_in_file, key=str)[:6]} — known columns shifted?")
+    checks = {
+        f"{BIRTHDAY_COLUMN} (birthday, YYYY-MM-DD)":
+            share(BIRTHDAY_COLUMN, lambda v: v.str.fullmatch(r"\d{4}-\d{2}-\d{2}")),
+        f"{CLASS_COLUMN} (class)": share(CLASS_COLUMN, lambda v: v.isin(KNOWN_CLASSES)),
+        "0 (name, text)": share(0, lambda v: ~v.str.fullmatch(r"[-\d.]+")),
+        "3 (games, whole number)": share(3, lambda v: v.str.fullmatch(r"\d+")),
+    }
+    bad = {k: round(s, 3) for k, s in checks.items() if s < ANCHOR_MIN_SHARE}
+    if bad:
+        raise TorvikFetchError(f"{year}: {source} anchor column(s) no longer match the known "
+                               f"layout (share matching): {bad}")
+    return df.shape[1] - KNOWN_COLUMNS
 
 
 # Captured at import: even if a caller later overrides config in-process (the
@@ -68,13 +108,12 @@ def fetch_year(year, session):
     except Exception as e:
         raise TorvikFetchError(f"{year}: player stats response is not a CSV ({e}): {content[:200]!r}") from e
 
-    if df.shape[1] != EXPECTED_COLUMNS:
-        raise TorvikFetchError(f"{year}: expected {EXPECTED_COLUMNS} columns, found {df.shape[1]}")
     if df.empty:
         raise TorvikFetchError(f"{year}: player stats response has no rows")
-    years_in_file = set(df[YEAR_COLUMN].unique())
-    if years_in_file != {year}:
-        raise TorvikFetchError(f"Requested {year}, response contains years {sorted(years_in_file)}")
+    extra = check_anchors(df, year)
+    if extra:
+        print(f"  NOTE: {year} player CSV has {df.shape[1]} columns — {extra} trailing column(s) beyond "
+              f"the {KNOWN_COLUMNS} known; kept in the raw file, ignored downstream.")
     return df
 
 

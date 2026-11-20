@@ -16,7 +16,9 @@
      Group (2+)  -> runtime pooling + ranking vs the season's qualified players
    ========================================================================== */
 
-const SC_YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
+// Seasons come from data/index.json (core.js indexYears), newest first; default = newest.
+const scYears = () => indexYears();
+const scDefaultYear = () => newestSeason();
 
 const SC = {
   mounted:false,
@@ -30,8 +32,8 @@ const SC = {
   stack:false,        // compare charts stacked vertically (better for phone/outreach), else side by side
   _seededTeam:null,   // team chart A was last auto-seeded to (so context changes can follow it)
   charts:{
-    A:{year:2026, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false},
-    B:{year:2026, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false},
+    A:{year:null, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false},   // year: set on mount (newest season)
+    B:{year:null, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false},
   },
 };
 
@@ -146,12 +148,12 @@ function scZonesTeam(row, side, intent, basisSuffix, otherProf){
   return out;
 }
 
-function scZonesPlayer(row, intent, basisSuffix, otherProf){
-  const out={};
+function scZonesPlayer(row, intent, basisSuffix, otherProf, year){
+  const out={}, on=pctActive(year);
   for(const z of ['rim','mid','three']){
     const k=SC_PZ[z], r=row[`${k}_rate`], fg=row[`${k}_fg_pct`], zd={ r, fg, rp:null, fgp:null };
     if(intent==='pop'){
-      zd.rp=row[`${k}_rate${basisSuffix}`]; zd.fgp=row[`${k}_fg_pct${basisSuffix}`];
+      zd.rp=on?row[`${k}_rate${basisSuffix}`]:null; zd.fgp=on?row[`${k}_fg_pct${basisSuffix}`]:null;
       zd.color=scPctColor(SC.colorMetric==='fg'?zd.fgp:zd.rp);
     } else {
       const od=otherProf?otherProf[z]:null;
@@ -168,7 +170,9 @@ function scZonesGroup(prof, POP, basisKey, intent, otherProf){
   const out={};
   for(const z of ['rim','mid','three']){
     const zd={ r:prof[z].rate, fg:prof[z].fg, rp:null, fgp:null };
-    if(intent==='pop'){
+    if(intent==='pop' && !POP){            // season's percentiles not active yet: raw values, neutral color
+      zd.color=SC_NEUTRAL;
+    } else if(intent==='pop'){
       const base=POP[basisKey]||POP.all;
       zd.rp=scPctileIn(prof[z].rate, base[z].rate);
       zd.fgp=scPctileIn(prof[z].fg,   base[z].fg);
@@ -184,6 +188,7 @@ function scZonesGroup(prof, POP, basisKey, intent, otherProf){
   return out;
 }
 
+const SC_NEUTRAL = '#3a4a63';   // zone fill when a season has no percentiles yet (raw values only)
 const SC_EMPTY_ZONES = ()=>({
   rim:{r:null,fg:null,rp:null,fgp:null,color:'#1e2d42'},
   mid:{r:null,fg:null,rp:null,fgp:null,color:'#1e2d42'},
@@ -301,7 +306,7 @@ async function scRender(){
       ctx[c]={ row: p ? arr.find(r=>r.player_id===p.player_id) || p : null };
     } else { // group
       ctx[c]={ prof: st.players.length ? scPoolGroup(st.players) : null,
-               pop: st.players.length ? await scGetPop(st.year) : null };
+               pop: st.players.length && pctActive(st.year) ? await scGetPop(st.year) : null };
     }
   }
   if(token!==scRenderToken) return; // a newer render superseded this one
@@ -333,16 +338,18 @@ async function scRender(){
     } else if(subj==='team'){
       zones=scZonesTeam(ctx[c].row, st.side, SC.intent, SC.basis, otherProf);
     } else if(subj==='player'){
-      zones=scZonesPlayer(ctx[c].row, SC.intent, SC.basis, otherProf);
+      zones=scZonesPlayer(ctx[c].row, SC.intent, SC.basis, otherProf, st.year);
     } else {
       zones=scZonesGroup(ctx[c].prof, ctx[c].pop, SC.basis, SC.intent, otherProf);
     }
+    const pending = hasData && scPctPending(c);
+    if(pending && subj==='player') for(const z in zones) zones[z].color=SC_NEUTRAL;   // not the "no data" grey
     const mount=document.getElementById('sc-court'+c);
     if(mount) mount.innerHTML=buildCourtSVG({
-      zones, showPct: showPct && hasData, showLabels:SC.showLabels,
+      zones, showPct: showPct && hasData && !pending, showLabels:SC.showLabels,
       title: scDisplayTitle(c), subtitle: st.subtitle.trim(), titleSize: sharedTitleSize,
-      basisNote: (SC.intent==='pop' && hasData) ? 'Compared vs. '+scFooterText(c) : '',
-      colorNote: (SC.intent==='pop' && hasData) ? 'Colored by '+(SC.colorMetric==='fg'?'FG%':'rate') : '',
+      basisNote: (SC.intent==='pop' && hasData) ? (pending ? 'Raw rates · percentiles not active yet' : 'Compared vs. '+scFooterText(c)) : '',
+      colorNote: (SC.intent==='pop' && hasData && !pending) ? 'Colored by '+(SC.colorMetric==='fg'?'FG%':'rate') : '',
       diffMetric: SC.intent==='diff' ? SC.colorMetric : null,
     });
   }
@@ -350,10 +357,19 @@ async function scRender(){
   scUpdateLegend();
 }
 
+/* a player/group chart in population mode whose season has no percentiles yet */
+function scPctPending(c){
+  if(SC.intent!=='pop' || scSubjectOf(c)==='team') return false;
+  return !pctActive(SC.charts[c].year);
+}
+
 function scUpdateLegend(){
   const bar=document.getElementById('sc-legbar'), lbl=document.getElementById('sc-leglbl'), sub=document.getElementById('sc-legsub');
   if(!bar) return;
   const groupMulti = scActiveCharts().some(c=>scSubjectOf(c)==='group' && SC.charts[c].players.length>1);
+  const note=document.getElementById('sc-pctnote');
+  const pendingYears=[...new Set(scActiveCharts().filter(scPctPending).map(c=>SC.charts[c].year))];
+  if(note) note.innerHTML = pendingYears.map(y=>pctPendingNote(y,'Player zones show raw rates and FG% in a neutral color until then.')).join('');
   const poolNote = " Group zones pool every player's makes and attempts, so values are volume-weighted, not a flat average of the players' rates.";
   if(SC.intent==='pop'){
     bar.style.background='linear-gradient(90deg,#c0392b,#e67e22,#f1c40f,#82b74b,#27ae60)';
@@ -529,6 +545,7 @@ function scMount(){
         <button class="sc-btn ghost" id="sc-reset">Reset</button></div>
     </div>
 
+    <div id="sc-pctnote"></div>
     <div class="sc-courts" id="sc-courts">
       ${scChartColumnHTML('A')}
       ${scChartColumnHTML('B')}
@@ -548,7 +565,7 @@ function scMount(){
   // season selects
   ['A','B'].forEach(c=>{
     const sel=document.getElementById('sc-year'+c);
-    sel.innerHTML=SC_YEARS.map(y=>`<option value="${y}" ${y===SC.charts[c].year?'selected':''}>${yLabel(y)}</option>`).join('');
+    sel.innerHTML=scYears().map(y=>`<option value="${y}" ${y===SC.charts[c].year?'selected':''}>${yLabel(y)}</option>`).join('');
     sel.onchange=async ()=>{
       const st=SC.charts[c];
       st.year=parseInt(sel.value);
@@ -603,11 +620,12 @@ function scMount(){
       document.querySelectorAll('#sc-mode button').forEach(x=>x.classList.toggle('on',x.dataset.v==='compare'));
       scSetIntentButtons();
       SC.showPct=false; document.getElementById('sc-showpct').checked=false;
-      SC.charts.A.year=2026; SC.charts.B.year=2026;
+      const ny=scDefaultYear();
+      SC.charts.A.year=ny; SC.charts.B.year=ny;
       const yA=document.getElementById('sc-yearA'), yB=document.getElementById('sc-yearB');
-      if(yA) yA.value='2026'; if(yB) yB.value='2026';
-      await loadYear(2026); scFillTeams('A');
-      const arr=YCACHE[2026]||[];
+      if(yA) yA.value=String(ny); if(yB) yB.value=String(ny);
+      await loadYear(ny); scFillTeams('A');
+      const arr=YCACHE[ny]||[];
       const seedA=(typeof cTeam==='string'&&arr.find(r=>r.team_name===cTeam)) ? cTeam
                 : (arr.find(r=>r.team_name==='Houston') ? 'Houston' : (arr[0]&&arr[0].team_name));
       if(seedA){ SC.charts.A.team=seedA; const s=document.getElementById('sc-teamA'); if(s) s.value=seedA; }
@@ -657,7 +675,7 @@ function scReset(){
   SC.subject='team'; SC.mode='builder'; SC.intent='pop'; SC.colorMetric='fg';
   SC.showPct=false; SC.showLabels=true; SC.basis='_pct'; SC.stack=false;
   ['A','B'].forEach(c=>Object.assign(SC.charts[c],
-    {year:2026, side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false, _seeded:false}));
+    {year:scDefaultYear(), side:'o', team:null, players:[], title:'', subtitle:'', titleEdited:false, _seeded:false}));
   scMount();          // rebuild DOM + rebind (segmented defaults match the reset state)
   initShotCharts();   // reload team data, re-seed marquee teams, render
 }
@@ -714,7 +732,7 @@ function scRouteParams(p){
     let v;
     if(scSubjectOf(c)==='team') v=st.team ? `${st.year}:${st.team}${st.side==='d'?':d':''}` : `${st.year}`;
     else v=st.players.length ? `${st.year}:${st.players.map(r=>r.player_id).join(',')}` : `${st.year}`;
-    if(v!=='2026') p.set(c.toLowerCase(), v);
+    if(v!==String(scDefaultYear())) p.set(c.toLowerCase(), v);
   });
 }
 
@@ -734,7 +752,7 @@ async function scApplyRoute(p){
     const st=SC.charts[c];
     const parts=(p.get(c.toLowerCase())||'').split(':');
     const y=parseInt(parts[0]);
-    st.year = SC_YEARS.includes(y) ? y : 2026;
+    st.year = scYears().includes(y) ? y : scDefaultYear();
     const rest=parts.slice(1);
     st.titleEdited=false;
     if(scSubjectOf(c)==='team'){
@@ -761,6 +779,7 @@ async function scApplyRoute(p){
 
 /* entry point — called by switchTab('shotcharts') */
 async function initShotCharts(){
+  ['A','B'].forEach(c=>{ if(SC.charts[c].year==null) SC.charts[c].year=scDefaultYear(); });
   if(!SC.mounted) scMount();
   if(SC.subject==='team'){
     for(const c of scActiveCharts()){ await loadYear(SC.charts[c].year); scFillTeams(c); }

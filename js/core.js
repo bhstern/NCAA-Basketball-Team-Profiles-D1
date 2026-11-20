@@ -5,6 +5,58 @@ let cView='d1', cHistCat='Overview', cHistComp='d1conf', cTopN=0, cCompTeams=[],
 function isPower(row){return row&&row.power_mid==='Power';}
 function jsq(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}  // safe inside onclick="fn('...')" when value has apostrophes
 function yLabel(y){return y===2026?'2025-26':`${y-1}-${String(y).slice(2)}`;}
+// ── SEASONS (data/index.json is the source of truth) ─────────────────────────
+// index.json maps each season ("2016"…) to its team list, plus one non-season key,
+// "_seasons": {year: {percentiles_active, tier1_players, min_tier1_pool}}, written by the
+// pipeline (pipeline/season_status.py). Only numeric keys are seasons.
+function indexYears(){return Object.keys(INDEX).filter(k=>/^\d{4}$/.test(k)).map(Number).sort((a,b)=>b-a);}
+function newestSeason(){return indexYears()[0]||2026;}
+function seasonMeta(y){return (INDEX._seasons||{})[String(y)]||null;}
+// Percentiles are shown for a season only when the pipeline says its Tier 1 pool is big
+// enough. A season with no status entry (an older index.json) is treated as active.
+function pctActive(y){const m=seasonMeta(y);return !m||m.percentiles_active!==false;}
+function pctOrNull(y,v){return pctActive(y)?v:null;}
+const PCT_PENDING_TEXT='Percentiles activate once enough players reach 10 games (in December).';
+// ── DATA FRESHNESS: index.json "_meta".last_updated, written by the pipeline
+// (pipeline/freshness.py) — the time the data was built, and it only advances when a run
+// genuinely brought new data. Never the page-load time; no _meta -> nothing shown.
+// Rendered inline under the nav brand (in the layout flow), pinned to US Eastern + en-US
+// so every visitor reads the same text; the exact ISO time is in the tooltip.
+function renderDataStamp(){
+  const iso=(INDEX._meta||{}).last_updated, d=iso?new Date(iso):null;
+  let el=document.getElementById('data-stamp');
+  if(!d||isNaN(d)){ if(el) el.remove(); return; }
+  if(!el){
+    const brand=document.querySelector('nav .nav-brand'); if(!brand) return;
+    el=document.createElement('span'); el.id='data-stamp'; brand.appendChild(el);
+  }
+  el.textContent='Data updated '+d.toLocaleString('en-US',{timeZone:'America/New_York',
+    month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})+' ET';
+  el.title='Built '+iso;
+}
+function pctPendingNote(y,extra){
+  const lbl=y?yLabel(y)+': ':'';
+  return `<div class="pct-pending-note">${lbl}${PCT_PENDING_TEXT}${extra?' '+extra:''}</div>`;
+}
+
+// ── CONFERENCE LINEAGE (data/conference_lineage.json, generated from pipeline/conferences.py)
+// One continuous league under different names across seasons (MAAC → Metro Conference)
+// shares one lineage key. Use confLineage() wherever the site groups, filters or compares
+// conferences ACROSS seasons; per-season views keep showing the season's actual name.
+let CONF_LINEAGE={by_name:{},lineages:{}};
+async function loadConfLineage(){
+  try{const r=await fetch('data/conference_lineage.json');if(r.ok)CONF_LINEAGE=await r.json();}
+  catch(e){/* optional: without it every conference is its own lineage */}
+}
+function confLineage(name){return (name&&CONF_LINEAGE.by_name[name])||name;}
+function sameConfLineage(a,b){return confLineage(a)===confLineage(b);}
+// conference names that share `name`'s lineage (always includes name itself)
+function confLineageNames(name){
+  const k=CONF_LINEAGE.by_name[name];
+  if(!k||!CONF_LINEAGE.lineages[k])return [name];
+  return CONF_LINEAGE.lineages[k].names.map(n=>n.name);
+}
+
 function sf(n){return n.replace(/ /g,'_').replace(/\./g,'').replace(/'/g,'').replace(/&/g,'').replace(/\//g,'_');}
 
 const TIPS={
