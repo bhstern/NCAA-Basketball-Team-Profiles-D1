@@ -125,6 +125,22 @@ class Paths:
         first, last = min(config.FROZEN_SEASONS), max(config.FROZEN_SEASONS)
         return self.out_root / "player_history" / f"player_history_{first}_{last}.csv"
 
+    # --- Torvik player numbers (pipeline.player.torvik_ids) ---
+
+    def torvik_numbers_file(self, year):
+        """p102 side file: Torvik's player number per row, row-aligned with player_stats.csv."""
+        return self.year_dir(year) / "torvik_numbers.csv"
+
+    def torvik_match_log(self, year):
+        """Every current-season row's lookup outcome (matched / re-attached / skipped / no match)."""
+        return self.year_dir(year) / "torvik_match_log.csv"
+
+    @property
+    def torvik_owner_file(self):
+        """torvik_number -> player_id, seeded once from the frozen seasons."""
+        first, last = min(config.FROZEN_SEASONS), max(config.FROZEN_SEASONS)
+        return self.out_root / "player_history" / f"torvik_owners_{first}_{last}.csv"
+
     # --- site JSON (mirrors the repo layout under <out_root>/json/) ---
 
     @property

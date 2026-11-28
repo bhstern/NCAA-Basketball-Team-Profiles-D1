@@ -18,6 +18,11 @@ never stop the run. They must become blocking before the Phase 6 cron.
 Writes only inside the _rebuild sandbox; any other --out-root is refused. Every stage
 also writes through the frozen-history guard. --publish is refused (Phase 6).
 
+--reuse-fetched-raw re-runs the CURRENT season from the raw files a previous --fetch run
+already landed in <_rebuild>/raw/ — no network. Refused with --fetch or --simulate-current,
+for any other season, or if any of the three raw files is missing. The three files are
+hashed before and after the run; a change fails the run.
+
 --simulate-current builds a FROZEN season as if it were the current one — for
 rehearsing the nightly run before Torvik has 2026-27 data. Inside the run only, that
 season is treated as current (stable row order, t03 not evaluated, a history index of
@@ -29,10 +34,12 @@ Usage:
     python -m pipeline.run_pipeline --year 2018
     python -m pipeline.run_pipeline --year 2026 --simulate-current
     python -m pipeline.run_pipeline --year 2027 --fetch            (once Torvik has data)
+    python -m pipeline.run_pipeline --year 2027 --reuse-fetched-raw
 """
 
 import argparse
 import contextlib
+import hashlib
 import json
 import os
 import sys
@@ -46,7 +53,8 @@ from pipeline.paths import Paths
 from pipeline.player import (
     history, p101_fetch_player_stats, p102_clean_player_stats, p103_player_stats_checks,
     p105_feature_engineering, p105b_player_fe_checks, p105c_column_trim,
-    p106_player_profiles, p106b_player_profiles_validation, p107_convert_player_json,
+    p106_player_profiles, p106b_player_profiles_validation, p106c_split_detector,
+    p107_convert_player_json,
 )
 from pipeline.stage import GateResult
 from pipeline.team import (
@@ -71,6 +79,7 @@ STAGES = [
     ("player",   "p105c_column_trim",         p105c_column_trim.run),
     ("player",   "p106_player_profiles",      p106_player_profiles.run),
     ("player",   "p106b_player_profiles_validation", p106b_player_profiles_validation.run),
+    ("player",   "p106c_split_detector",      p106c_split_detector.run),
     ("convert",  "t07_convert_team_json",     t07_convert_team_json.run),
     ("convert",  "p107_convert_player_json",  p107_convert_player_json.run),
 ]
@@ -107,9 +116,30 @@ def fetch_current(year, paths):
     return raw_root
 
 
-def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False):
+def fetched_raw_files(year, raw_root):
+    return [config.team_tables_path(year, raw_root=raw_root),
+            config.shooting_splits_path(year, raw_root=raw_root),
+            config.player_raw_path(year, raw_root=raw_root)]
+
+
+def hash_files(files):
+    return {str(f): hashlib.sha256(Path(f).read_bytes()).hexdigest() for f in files}
+
+
+def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False,
+        reuse_fetched_raw=False):
     if not _inside_rebuild(out_root):
         raise RunRefused(f"run_pipeline only writes inside {config.REBUILD_ROOT}; refusing {out_root}")
+    reused = None
+    if reuse_fetched_raw:
+        if fetch or simulate_current:
+            raise RunRefused("--reuse-fetched-raw cannot be combined with --fetch or --simulate-current")
+        if year != config.CURRENT_SEASON:
+            raise RunRefused(f"--reuse-fetched-raw is only for the current season ({config.CURRENT_SEASON}), not {year}")
+        reused = fetched_raw_files(year, Paths(out_root=out_root).fetched_raw_root)
+        missing = [str(f) for f in reused if not Path(f).exists()]
+        if missing:
+            raise RunRefused(f"--reuse-fetched-raw: raw file(s) missing, run --fetch first: {missing}")
     if simulate_current:
         if year not in config.FROZEN_SEASONS:
             raise RunRefused(f"--simulate-current is for rehearsing on a frozen season; {year} is not frozen")
@@ -122,6 +152,9 @@ def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False)
 
     main_paths = Paths(out_root=out_root)
     paths = Paths(out_root=Path(out_root) / SIM_DIR) if simulate_current else main_paths
+    if reused:
+        paths = Paths(raw_root=main_paths.fetched_raw_root, out_root=out_root)
+        raw_before = hash_files(reused)
     report = {
         "year": year, "mode": "simulate-current" if simulate_current else
                              ("current" if year == config.CURRENT_SEASON else "frozen"),
@@ -195,6 +228,13 @@ def run(year, out_root=config.REBUILD_ROOT, fetch=False, simulate_current=False)
             report["result"] = "COMPLETE"
         report["row_counts"] = row_counts
 
+    if reused:
+        raw_after = hash_files(reused)
+        report["reused_raw"] = {"before": raw_before, "after": raw_after,
+                                "unchanged": raw_before == raw_after}
+        if raw_before != raw_after and report["result"] == "COMPLETE":
+            report["result"] = "FAILED (reused raw files changed during the run)"
+
     report["finished"] = datetime.now(timezone.utc).isoformat()
     if report["result"] == "COMPLETE":
         row_invariants.record_success(paths, year, row_counts, report["finished"])
@@ -215,9 +255,10 @@ def print_report(report, report_path):
         print(f"  {s['group']:<9}{s['step']:<42}{s['status']:<22}{s['seconds']:>7.1f}s{rows}")
     gates = [s for s in report["steps"] if s["status"].startswith("GATE")]
     if gates:
-        print("\n  GATES (all advisory — reported, never stop the run)")
+        print("\n  GATES (advisory unless marked BLOCKING)")
         for g in gates:
-            print(f"    {g['step']}: {g['status'].removeprefix('GATE ')}")
+            print(f"    {g['step']}: {g['status'].removeprefix('GATE ')}"
+                  + ("  [BLOCKING]" if g.get("blocking") else ""))
             for m in g["messages"][:6]:
                 print(f"        - {m}")
             if len(g["messages"]) > 6:
@@ -225,6 +266,8 @@ def print_report(report, report_path):
     for s in report["steps"]:
         if s["status"] == "ERROR":
             print(f"\n  ERROR in {s['step']}: {s['error']}")
+    if report.get("reused_raw"):
+        print(f"\n  REUSED RAW (no fetch): unchanged before/after = {report['reused_raw']['unchanged']}")
     total = sum(s["seconds"] for s in report["steps"])
     print(f"\n  RESULT: {report['result']}   ({total / 60:.1f} min)\n  report: {report_path}")
 
@@ -235,6 +278,8 @@ def main():
     ap.add_argument("--out-root", default=str(config.REBUILD_ROOT),
                     help="must be inside the _rebuild sandbox")
     ap.add_argument("--fetch", action="store_true", help="fetch raw data first (current season only)")
+    ap.add_argument("--reuse-fetched-raw", action="store_true",
+                    help="re-run the current season from <_rebuild>/raw/ (no network)")
     ap.add_argument("--simulate-current", action="store_true",
                     help="rehearse a nightly run on a frozen season (output to _rebuild/_sim_current)")
     ap.add_argument("--publish", action="store_true", help="REFUSED until Phase 6")
@@ -242,7 +287,8 @@ def main():
     if args.publish:
         ap.error("--publish is disabled until Phase 6 — nothing is written outside _rebuild/")
     try:
-        report = run(args.year, out_root=args.out_root, fetch=args.fetch, simulate_current=args.simulate_current)
+        report = run(args.year, out_root=args.out_root, fetch=args.fetch,
+                     simulate_current=args.simulate_current, reuse_fetched_raw=args.reuse_fetched_raw)
     except RunRefused as e:
         ap.error(str(e))
     sys.exit(0 if report["result"] == "COMPLETE" else 1)

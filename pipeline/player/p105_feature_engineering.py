@@ -31,7 +31,7 @@ import pandas as pd
 import numpy as np
 
 from pipeline import conferences, guard
-from pipeline.player import history
+from pipeline.player import history, torvik_ids
 from pipeline.player.ids import add_player_ids
 from pipeline.stage import stage_main
 
@@ -51,6 +51,11 @@ def run(year, paths):
     # (unchanged) so the history index is keyed by exactly the same IDs.
 
     player = add_player_ids(player)
+
+    # Current season only: a returning player keeps his existing player_id via Torvik's
+    # player number (pipeline.player.torvik_ids). Frozen seasons are returned untouched.
+    # Runs BEFORE collision flags and years_in_d1, which both key on player_id.
+    player = torvik_ids.apply(player, year, paths)
 
     # ------------------------------------------------------------
     # TRUE COLLISION FLAG

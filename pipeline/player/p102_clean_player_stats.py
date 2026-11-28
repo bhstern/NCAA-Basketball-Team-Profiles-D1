@@ -7,6 +7,11 @@ cleaned one season at a time and then concatenated; this writes the one season.
 Assigns the 67-column header, drops the unidentifiable columns, converts height
 ("6-10", or Excel-corrupted "10-Jun") to inches.
 
+Torvik's own player number (column AG, header "col_33_unidentifiable") is dropped from
+the stage CSV exactly as the original did, so the stage output stays byte-identical. It
+is written instead to a row-aligned side file, by_year/{Y}/torvik_numbers.csv, which
+pipeline.player.torvik_ids uses to keep a returning player's ID stable.
+
 Usage:
     python -m pipeline.player.p102_clean_player_stats --year 2018 [--year 2023 ...]
 """
@@ -152,10 +157,16 @@ def parse_height_to_inches(value):
 
     return np.nan
 
+# Torvik's player number (raw column AG): dropped from the stage CSV, kept in a side file
+TORVIK_NUMBER_COL = "col_33_unidentifiable"
+
+
 # ---------------------------------------------------------
 # Load + clean a single year
 # ---------------------------------------------------------
-def load_and_clean_year(year, raw_path):
+def load_and_clean_year(year, raw_path, with_torvik_number=False):
+    """The cleaned season. With with_torvik_number=True, returns (df, torvik_numbers):
+    Torvik's player number per row (column AG), row-aligned with df."""
     print(f"Loading raw file for {year}: {raw_path}")
 
     df = pd.read_csv(raw_path, header=None)
@@ -172,17 +183,21 @@ def load_and_clean_year(year, raw_path):
     # Assign headers
     df.columns = HEADERS_67
 
+    torvik_numbers = df[TORVIK_NUMBER_COL].astype("int64").rename("torvik_number")
+
     # Drop unidentifiable columns
     df = df.drop(columns=DROP_COLS, errors="ignore")
 
     # Fix height
     df["height"] = df["height"].apply(parse_height_to_inches)
 
+    if with_torvik_number:
+        return df, torvik_numbers.reset_index(drop=True)
     return df
 
 
 def run(year, paths):
-    df_year = load_and_clean_year(year, paths.raw_player(year))
+    df_year, torvik_numbers = load_and_clean_year(year, paths.raw_player(year), with_torvik_number=True)
     print(f"{year}: rows={df_year.shape[0]}, cols={df_year.shape[1]}")
 
     full = pd.concat([df_year], ignore_index=True)
@@ -193,6 +208,12 @@ def run(year, paths):
 
     out = guard.to_csv(full, paths.stage_file("player_stats", year), season=year, index=False)
     print(f"Saved CLEAN dataset to: {out}")
+
+    # Side file, row-aligned with the stage CSV (never a column in it: see the docstring)
+    if len(torvik_numbers) != len(full):
+        raise ValueError(f"{year}: {len(torvik_numbers)} Torvik numbers for {len(full)} rows")
+    side = guard.to_csv(torvik_numbers.to_frame(), paths.torvik_numbers_file(year), season=year, index=False)
+    print(f"Saved Torvik numbers to: {side}")
     return out
 
 
